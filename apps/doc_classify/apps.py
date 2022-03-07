@@ -3,7 +3,7 @@ import pickle
 
 from django.apps import AppConfig
 
-from apps.app import settings
+from app import settings
 
 
 class DocClassifyConfig(AppConfig):
