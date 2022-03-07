@@ -14,6 +14,9 @@ from pathlib import Path
 
 import environ
 
+import os
+
+
 # Initialise environment variables
 env = environ.Env()
 environ.Env.read_env()
@@ -128,3 +131,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MODELS = os.path.join(BASE_DIR, 'doc_classify/models')
+RESOURCES = os.path.join(BASE_DIR, 'doc_classify/resources')

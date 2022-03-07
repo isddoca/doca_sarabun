@@ -1,22 +1,50 @@
+import numpy as np
+import pandas as pd
 from django.contrib.auth.models import User, Group
-from rest_framework import viewsets
-from rest_framework import permissions
-from .serializers import UserSerializer, GroupSerializer
+from pythainlp import word_tokenize
+from pythainlp.corpus import thai_stopwords, thai_words
+from pythainlp.util import dict_trie
+
+from .apps import DocClassifyConfig
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+custom_trie = dict_trie(dict_source=DocClassifyConfig.DICT_FILE)
+th_words = set(thai_words())
+th_words.update(custom_trie)
+th_word_trie = dict_trie(th_words)
+stopwords = list(thai_stopwords())
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+def tokenize(title, unit):
+    tokenized = word_tokenize(title.replace(',', "").replace('"', "").replace('/', ""), engine="newmm",
+                              custom_dict=th_word_trie,
+                              keep_whitespace=False)
+    tokenized.append(unit)
+    return [word for word in tokenized if word not in stopwords]
 
 
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+def vec_for_testing(model_dbow, topic, epochs):
+    regressors = tuple([model_dbow.infer_vector(topic, epochs=epochs)])
+    return regressors
+
+
+class DocClassification(APIView):
+    def post(self, request):
+        data = request.data
+        epochs = 20
+        thresholds = 0.05
+        unit = data['unit']
+        title = data['title']
+        logreg_model = DocClassifyConfig.model
+        d2v_model = DocClassifyConfig.d2v
+
+        tokenized_title = tokenize(title, unit)
+        regressor = vec_for_testing(d2v_model, tokenized_title, epochs)
+        raw_received_units = logreg_model.predict_proba(regressor)
+        classes = logreg_model.classes_[0]
+        result = pd.DataFrame(raw_received_units[0], columns=classes)
+        received_units = result.apply(lambda row: row.index[row >= thresholds].tolist(), axis=1)
+
+        response_dict = {"received_units": np.array(received_units).flatten()[0]}
+        return Response(response_dict, status=200)
