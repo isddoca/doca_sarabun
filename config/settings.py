@@ -62,7 +62,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'doc_record/template'],
+        'DIRS': [BASE_DIR / 'template'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -132,3 +132,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MODELS = os.path.join(BASE_DIR, 'doc_classify/models')
 RESOURCES = os.path.join(BASE_DIR, 'doc_classify/resources')
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login'

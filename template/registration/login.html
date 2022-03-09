@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>เข้าสู่ระบบ - ระบบสารบรรณอิเล็กทรอนิกส์ กร.ทบ.</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
+    {#    <link rel="stylesheet" href="style.css">#}
+</head>
+<body>
+<form method="post">
+    {% csrf_token %}
+    <p>
+        <label for="id_username">ชื่อผู้ใช้:</label>
+        <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150"
+               required id="id_username">
+    </p>
+    <p>
+        <label for="id_password">รหัสผ่าน:</label>
+        <input type="password" name="password" autocomplete="current-password" required id="id_password">
+    </p>
+    <button type="submit">Log In</button>
+</form>
+</body>
+</html>

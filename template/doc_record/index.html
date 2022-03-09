@@ -1,0 +1,15 @@
+{% extends 'doc_record/base.html' %}
+
+{% block title %}หน้าหลัก{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        Hi {{ user.username }}!
+    {% else %}
+        <p>You are not logged in</p>
+        <a href="{% url 'login' %}">Log In</a>
+    {% endif %}
+    <p>เรื่อง: {{ title }}</p>
+    <p>จาก: {{ unit }}</p>
+    <p>การปฏิบัติ: {{ receive_unit }}</p>
+{% endblock %}
