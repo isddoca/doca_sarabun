@@ -1,7 +1,8 @@
 import os
 import pickle
+
+from config import settings
 from django.apps import AppConfig
-from app import settings
 
 
 class DocClassifyConfig(AppConfig):

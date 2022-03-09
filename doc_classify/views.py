@@ -1,13 +1,12 @@
 import numpy as np
 import pandas as pd
-from django.contrib.auth.models import User, Group
 from pythainlp import word_tokenize
 from pythainlp.corpus import thai_stopwords, thai_words
 from pythainlp.util import dict_trie
-
-from .apps import DocClassifyConfig
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from apps import DocClassifyConfig
 
 custom_trie = dict_trie(dict_source=DocClassifyConfig.DICT_FILE)
 th_words = set(thai_words())
