@@ -7,21 +7,113 @@
     <title>เข้าสู่ระบบ - ระบบสารบรรณอิเล็กทรอนิกส์ กร.ทบ.</title>
     <meta name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
-    {#    <link rel="stylesheet" href="style.css">#}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/lineicons.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 </head>
 <body>
-<form method="post">
-    {% csrf_token %}
-    <p>
-        <label for="id_username">ชื่อผู้ใช้:</label>
-        <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150"
-               required id="id_username">
-    </p>
-    <p>
-        <label for="id_password">รหัสผ่าน:</label>
-        <input type="password" name="password" autocomplete="current-password" required id="id_password">
-    </p>
-    <button type="submit">Log In</button>
-</form>
+<div class="container-fluid">
+
+    {% for message in messages %}
+        <div class="alert alert-success">
+            <a class="close" href="#" data-dismiss="alert">×</a>
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="row g-0 auth-row">
+        <div class="col-lg-6">
+            <div class="auth-cover-wrapper bg-primary-100">
+                <div class="auth-cover">
+                    <div class="title text-center">
+                        <h1 class="text-primary mb-10">ระบบสารบรรณอิเล็กทรอนิกส์</h1>
+                        <p class="text-medium">
+                            สำหรับกรมกิจการพลเรือนทหารบก
+                        </p>
+                    </div>
+                    <div class="cover-image">
+                        <img src="{% static 'assets/images/auth/signin-image.svg' %}" alt=""/>
+                    </div>
+                    <div class="shape-image">
+                        <img src="{% static 'assets/images/auth/shape.svg' %}" alt=""/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end col -->
+        <div class="col-lg-6">
+            <div class="signin-wrapper">
+                <div class="form-wrapper">
+                    <h6 class="mb-15">ลงชื่อใช้งาน</h6>
+                    <p class="text-sm mb-25">
+                        กรุณาลงชื่อเข้าใช้งานก่อนใช้งานระบบ
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="input-style-1">
+                                    <label for="id_username">ชื่อผู้ใช้:</label>
+                                    <input type="text" name="username" autofocus autocapitalize="none"
+                                           autocomplete="username" maxlength="150"
+                                           required id="id_username">
+                                </div>
+                            </div>
+                            <!-- end col -->
+                            <div class="col-12">
+                                <div class="input-style-1">
+                                    <label for="id_password">รหัสผ่าน:</label>
+                                    <input type="password" name="password" autocomplete="current-password" required
+                                           id="id_password"
+                                           class="form-control">
+                                </div>
+                            </div>
+                            <!-- end col -->
+                            <div class="col-xxl-6 col-lg-12 col-md-6">
+                                <div class="form-check checkbox-style mb-30">
+                                    <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            value=""
+                                            id="checkbox-remember"
+                                    />
+                                    <label class="form-check-label" for="checkbox-remember">
+                                        จดจำการเข้าใช้งานครั้งถัดไป
+                                    </label>
+                                </div>
+                            </div>
+                            <!-- end col -->
+                            <div class="col-xxl-6 col-lg-12 col-md-6">
+                                <div
+                                        class="text-start text-md-end text-lg-start text-xxl-end mb-30">
+                                    <a href="#0" class="hover-underline">
+                                        ลืมรหัสผ่าน?
+                                    </a>
+                                </div>
+                            </div>
+                            <!-- end col -->
+                            <div class="col-12">
+                                <div class="button-group d-flex justify-content-center flex-wrap">
+                                    <button class="main-btn primary-btn btn-hover w-100 text-center" type="submit">
+                                        ลงชื่อเข้าใช้
+                                    </button>
+                                </div>
+                                <p class="text-sm text-medium text-dark text-center">
+                                    ยังไม่มีบัญชีใช่ไหม?
+                                    <a href="signup.html">สร้างบัญชีเลย</a>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- end row -->
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- end col -->
+    </div>
+    <!-- end row -->
+</div>
 </body>
 </html>

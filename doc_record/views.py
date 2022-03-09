@@ -1,6 +1,6 @@
 import requests
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 
 # Create your views here.
@@ -21,6 +21,3 @@ def index(request):
     }
     return render(request, 'doc_record/index.html', context)
 
-
-def login(request):
-    return render(request, 'doc_record/login.html')
