@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}{% endblock %} - ระบบสารบรรณอิเล็กทรอนิกส์ กร.ทบ.</title>
-    {#    <link rel="stylesheet" href="style.css">#}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
 </head>
-<body>
-    {% block content %}
-    {% endblock %}
+<body class="container-fluid">
+{% block content %}
+{% endblock %}
 </body>
 </html>
