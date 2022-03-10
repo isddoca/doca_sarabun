@@ -11,19 +11,11 @@
     <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/lineicons.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 </head>
 <body>
-<div class="container-fluid">
+<div class="container">
 
-    {% for message in messages %}
-        <div class="alert alert-success">
-            <a class="close" href="#" data-dismiss="alert">×</a>
-            {{ message }}
-        </div>
-    {% endfor %}
-
-    <div class="row g-0 auth-row">
+    <div class="row g-0 auth-row mt-30">
         <div class="col-lg-6">
             <div class="auth-cover-wrapper bg-primary-100">
                 <div class="auth-cover">
@@ -50,6 +42,17 @@
                     <p class="text-sm mb-25">
                         กรุณาลงชื่อเข้าใช้งานก่อนใช้งานระบบ
                     </p>
+
+                    {% if form.errors %}
+                        <div class="alert-box danger-alert">
+                            <div class="alert">
+                                <p class="text-medium">
+                                    ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <form method="post">
                         {% csrf_token %}
                         <div class="row">
@@ -115,5 +118,9 @@
     </div>
     <!-- end row -->
 </div>
+
+
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
 </body>
 </html>
