@@ -6,7 +6,7 @@ from pythainlp.util import dict_trie
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps import DocClassifyConfig
+from .apps import DocClassifyConfig
 
 custom_trie = dict_trie(dict_source=DocClassifyConfig.DICT_FILE)
 th_words = set(thai_words())
