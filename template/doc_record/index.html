@@ -1,16 +1,15 @@
 {% extends 'doc_record/base.html' %}
 
-{% block title %}หน้าหลัก{% endblock %}
-
 {% block content %}
+    <div class="card-style mb-30">
     {% if user.is_authenticated %}
         Hi {{ user.username }}!
-        <p><a href="{% url 'logout' %}">ออกจากระบบ</a></p>
     {% else %}
         <p>You are not logged in</p>
         <a href="{% url 'login' %}">เข้าสู่ระบบ</a>
     {% endif %}
-    <p>เรื่อง: {{ title }}</p>
-    <p>จาก: {{ unit }}</p>
-    <p>การปฏิบัติ: {{ receive_unit }}</p>
+    <p>เรื่อง: {{ doc_title }}</p>
+    <p>จาก: {{ doc_unit }}</p>
+    <p>การปฏิบัติ: {{ doc_receive_unit }}</p>
+    </div>
 {% endblock %}

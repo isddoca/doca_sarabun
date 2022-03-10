@@ -33,8 +33,8 @@ class DocClassification(APIView):
         data = request.data
         epochs = 20
         thresholds = 0.05
-        unit = data['unit']
-        title = data['title']
+        unit = data['doc_unit']
+        title = data['doc_title']
         logreg_model = DocClassifyConfig.model
         d2v_model = DocClassifyConfig.d2v
 
