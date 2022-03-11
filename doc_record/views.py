@@ -2,10 +2,16 @@ import requests
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
-
 # Create your views here.
+from .models import Unit
+
+
 @login_required(login_url='/accounts/login')
 def index(request):
+    return redirect('/send')
+
+
+def send_index(request):
     data = {
         'doc_title': "รับผิดชอบการฝึกร่วม/ผสม คอบร้าโกลด์",
         'doc_unit': "กร.ทหาร",
@@ -15,10 +21,10 @@ def index(request):
     result = requests.post(URL, data=data).json()
 
     context = {
-        'page_title': "หน้าแรก",
+        'page_title': "ระเบียนรับ",
         'doc_title': data.get('doc_title'),
         'doc_unit': data.get('doc_unit'),
         'doc_receive_unit': ', '.join(result['received_units']),
     }
-    return render(request, 'doc_record/index.html', context)
 
+    return render(request, 'doc_record/send_index.html', context)

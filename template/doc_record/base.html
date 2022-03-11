@@ -13,45 +13,45 @@
     <link rel="stylesheet" href="{% static 'assets/css/lineicons.css' %}" />
     <link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
   </head>
-  <body class="container-fluid">
+
+  <body>
     {% include 'doc_record/navbar.html' %}
 
     <!-- ======== main-wrapper start =========== -->
     <main class="main-wrapper">
       {% include 'doc_record/header.html' %}
-
-      <div class="title-wrapper pt-30">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <div class="titlemb-30">
-              <h2>{{ page_title }}</h2>
+      <div class="container-fluid">
+        <div class="title-wrapper pt-30">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <div class="titlemb-30">
+                <h2>{{ page_title }}</h2>
+              </div>
             </div>
-          </div>
-          <!-- end col -->
-          <div class="col-md-6">
-            <div class="breadcrumb-wrapper mb-30">
-              <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                  <li class="breadcrumb-item">
-                    <a href="#0">Dashboard</a>
-                  </li>
-                  <li class="breadcrumb-item active" aria-current="page">
-                    Page
-                  </li>
-                </ol>
-              </nav>
+            <!-- end col -->
+            <div class="col-md-6">
+              <div class="breadcrumb-wrapper mb-30">
+                <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                      <a href="#0">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                      Page
+                    </li>
+                  </ol>
+                </nav>
+              </div>
             </div>
+            <!-- end col -->
           </div>
-          <!-- end col -->
+          <!-- end row -->
         </div>
-        <!-- end row -->
-      </div>
-      <!-- ========== title-wrapper end ========== -->
+        <!-- ========== title-wrapper end ========== -->
 
-      <!-- ========== signin-section start ========== -->
-      <section class="signin-section">
-        {% block content %} {% endblock %}
-      </section>
+        <!-- ========== signin-section start ========== -->
+        <section>{% block content %} {% endblock %}</section>
+      </div>
       <!-- ========== signin-section end ========== -->
       {% include 'doc_record/footer.html' %}
     </main>

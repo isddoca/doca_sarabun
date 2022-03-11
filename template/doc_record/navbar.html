@@ -11,11 +11,10 @@
       <li class="nav-item nav-item-has-children">
         <a
           href="#0"
-          class="collapsed"
           data-bs-toggle="collapse"
           data-bs-target="#ddmenu_1"
           aria-controls="ddmenu_1"
-          aria-expanded="false"
+          aria-expanded="true"
           aria-label="Toggle navigation"
         >
           <span class="icon">
@@ -33,12 +32,12 @@
           </span>
           <span class="text">ระเบียนรับ - ส่ง</span>
         </a>
-        <ul id="ddmenu_1" class="collapse dropdown-nav">
+        <ul id="ddmenu_1" class="collapse dropdown-nav show">
           <li>
-            <a href="index.html">ระเบียนรับ</a>
+            <a href="/send" class="{% if page_title == 'ระเบียนรับ' %}active{% endif %}">ระเบียนรับ</a>
           </li>
           <li>
-            <a href="index.html">ระเบียนส่ง</a>
+            <a href="/receive">ระเบียนส่ง</a>
           </li>
         </ul>
       </li>
