@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>{{ page_title }} | ระบบสารบรรณอิเล็กทรอนิกส์ กร.ทบ.</title>
+    <title>{% block page_title %} {% endblock %} | ระบบสารบรรณอิเล็กทรอนิกส์ กร.ทบ.</title>
     {% load static %}
     <link
       rel="stylesheet"
@@ -12,6 +12,7 @@
     />
     <link rel="stylesheet" href="{% static 'assets/css/lineicons.css' %}" />
     <link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
+    {% block css %} {% endblock %}
   </head>
 
   <body>
@@ -20,35 +21,6 @@
     <!-- ======== main-wrapper start =========== -->
     <main class="main-wrapper">
       {% include 'doc_record/header.html' %}
-      <div class="container-fluid">
-        <div class="title-wrapper pt-30">
-          <div class="row align-items-center">
-            <div class="col-md-6">
-              <div class="titlemb-30">
-                <h2>{{ page_title }}</h2>
-              </div>
-            </div>
-            <!-- end col -->
-            <div class="col-md-6">
-              <div class="breadcrumb-wrapper mb-30">
-                <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                      <a href="#0">Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                      Page
-                    </li>
-                  </ol>
-                </nav>
-              </div>
-            </div>
-            <!-- end col -->
-          </div>
-          <!-- end row -->
-        </div>
-        <!-- ========== title-wrapper end ========== -->
-
         <!-- ========== signin-section start ========== -->
         <section>{% block content %} {% endblock %}</section>
       </div>
@@ -58,5 +30,6 @@
 
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'assets/js/main.js' %}"></script>
+    {% block js %} {% endblock %}
   </body>
 </html>

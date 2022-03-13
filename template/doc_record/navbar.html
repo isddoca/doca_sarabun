@@ -1,4 +1,8 @@
 <!-- ======== sidebar-nav start =========== -->
+
+{% url 'receive' as url_receive %}
+{% url 'send' as url_send %}
+
 <aside class="sidebar-nav-wrapper">
   <div class="navbar-logo">
     <a href="index.html">
@@ -34,10 +38,10 @@
         </a>
         <ul id="ddmenu_1" class="collapse dropdown-nav show">
           <li>
-            <a href="/send" class="{% if page_title == 'ระเบียนรับ' %}active{% endif %}">ระเบียนรับ</a>
+            <a href="/receive" class="{% if request.path == url_receive %}active{% endif %}">ทะเบียนหนังสือรับ</a>
           </li>
           <li>
-            <a href="/receive">ระเบียนส่ง</a>
+            <a href="/send" class="{% if request.path == url_send %}active{% endif %}">ทะเบียนหนังสือส่ง</a>
           </li>
         </ul>
       </li>
