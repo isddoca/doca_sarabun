@@ -1,9 +1,10 @@
 import requests
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 
 # Create your views here.
-from .models import Unit
+from .models import DocReceive
 
 
 @login_required(login_url='/accounts/login')
@@ -12,19 +13,10 @@ def index(request):
 
 
 def send_index(request):
-    data = {
-        'doc_title': "รับผิดชอบการฝึกร่วม/ผสม คอบร้าโกลด์",
-        'doc_unit': "กร.ทหาร",
-    }
-
-    URL = 'http://localhost:8000/classify'
-    result = requests.post(URL, data=data).json()
 
     context = {
-        'page_title': "ระเบียนรับ",
-        'doc_title': data.get('doc_title'),
-        'doc_unit': data.get('doc_unit'),
-        'doc_receive_unit': ', '.join(result['received_units']),
+        'page_title': "ทะเบียนหนังสือรับ",
+        'doc_receives': DocReceive.objects.filter(group=request.user.groups.all()[0].id),
     }
 
     return render(request, 'doc_record/send_index.html', context)
