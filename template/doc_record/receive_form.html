@@ -1,0 +1,91 @@
+{% extends 'doc_record/base.html' %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"/>
+{% endblock %}
+
+
+
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>{% block page_title %} รับหนังสือ {% endblock %}</h2>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper mb-30">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">ระเบียนรับส่ง</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#0">ทะเบียนหนังสือรับ</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    รับหนังสือ
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+
+        <div class="card-style mb-30">
+            <form method="get">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-auto">
+                        <label for="query_year" class="col-form-label">ปี</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">เลขรับหนังสือ</label>
+                        <input type="text" class="form-control" id="receive_no"
+                               placeholder="เลขรับหนังสือ">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">ที่</label>
+                        <input type="text" class="form-control" id="doc_no"
+                               placeholder="กห 0405">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">จาก</label>
+                        <input type="text" class="form-control" id="doc_form"
+                               placeholder="จาก">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">ถึง</label>
+                        <input type="text" class="form-control" id="exampleFormControlInput1"
+                               placeholder="ถึง">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">เรื่อง</label>
+                        <input type="text" class="form-control" id="exampleFormControlInput1"
+                               placeholder="เรื่อง">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">การปฏิบัติ</label>
+                        <input type="text" class="form-control" id="exampleFormControlInput1"
+                               placeholder="การปฏิบัติ">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">หมายเหตุ</label>
+                        <input type="text" class="form-control" id="exampleFormControlInput1"
+                               placeholder="หมายเหตุ">
+                    </div>
+
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">ค้นหา</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
