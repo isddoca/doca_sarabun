@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
 
 from .models import DocReceive
 
@@ -27,8 +28,39 @@ class DocReceiveListView(ListView):
 
 
 @method_decorator(login_required, name='dispatch')
-class DocReceiveView(View):
-    a=1+1
+class DocReceiveCreateView(CreateView):
+    model = DocReceive
+    fields = [
+        "receive_no",
+        "action",
+        "note",
+    ]
+
+    def form_valid(self, form):
+        print(form)
+        # doc = Doc()
+        # self.object - form.save(commit=False)
+
+
+class DocReceiveDetailView(DetailView):
+    model = DocReceive
+
+
+class DocReceiveUpdateView(UpdateView):
+    model = DocReceive
+    fields = [
+        "receive_no"
+        "doc"
+        "action"
+        "note"
+    ]
+
+
+class DocReceiveDeleteView(DeleteView):
+    model = DocReceive
+    success_url = "/receive"
+
+
 
 
 

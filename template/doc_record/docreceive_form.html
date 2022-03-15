@@ -39,7 +39,7 @@
         <!-- ========== title-wrapper end ========== -->
 
         <div class="card-style mb-30">
-            <form method="get">
+            <form action="" method="post">
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-auto">
@@ -47,42 +47,35 @@
                     </div>
                     <div class="mb-3">
                         <label for="exampleFormControlInput1" class="form-label">เลขรับหนังสือ</label>
-                        <input type="text" class="form-control" id="receive_no"
-                               placeholder="เลขรับหนังสือ">
+                        <input type="text" class="form-control" id="receive_no">
                     </div>
                     <div class="mb-3">
                         <label for="exampleFormControlInput1" class="form-label">ที่</label>
-                        <input type="text" class="form-control" id="doc_no"
-                               placeholder="กห 0405">
+                        <input type="text" class="form-control" id="doc_no">
                     </div>
                     <div class="mb-3">
                         <label for="exampleFormControlInput1" class="form-label">จาก</label>
-                        <input type="text" class="form-control" id="doc_form"
-                               placeholder="จาก">
+                        <input type="text" class="form-control" id="doc_from">
                     </div>
                     <div class="mb-3">
                         <label for="exampleFormControlInput1" class="form-label">ถึง</label>
-                        <input type="text" class="form-control" id="exampleFormControlInput1"
-                               placeholder="ถึง">
+                        <input type="text" class="form-control" id="doc_to">
                     </div>
                     <div class="mb-3">
                         <label for="exampleFormControlInput1" class="form-label">เรื่อง</label>
-                        <input type="text" class="form-control" id="exampleFormControlInput1"
-                               placeholder="เรื่อง">
+                        <input type="text" class="form-control" id="doc_title">
                     </div>
                     <div class="mb-3">
                         <label for="exampleFormControlInput1" class="form-label">การปฏิบัติ</label>
-                        <input type="text" class="form-control" id="exampleFormControlInput1"
-                               placeholder="การปฏิบัติ">
+                        <input type="text" class="form-control" id="action">
                     </div>
                     <div class="mb-3">
                         <label for="exampleFormControlInput1" class="form-label">หมายเหตุ</label>
-                        <input type="text" class="form-control" id="exampleFormControlInput1"
-                               placeholder="หมายเหตุ">
+                        <input type="text" class="form-control" id="note">
                     </div>
 
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">ค้นหา</button>
+                    <div>
+                        <button type="submit" class="btn btn-primary col-1">บันทึก</button>
                     </div>
                 </div>
             </form>

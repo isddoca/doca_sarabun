@@ -66,6 +66,7 @@
                         <th>ถึง</th>
                         <th>เรื่อง</th>
                         <th>การปฏิบัติ</th>
+                        <th>เครื่องมือ</th>
                     </tr>
                     </thead>
 
@@ -81,6 +82,14 @@
                             <td class="small">{{ data.doc.doc_to }}</td>
                             <td class="small">{{ data.doc.title }}</td>
                             <td class="small">{{ data.action }}</td>
+                            <td class="text-center">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <a href="" class="btn btn-info m-1"><i class="fas fa-pencil-alt"></i></a>
+                                        <a href="" class="btn btn-danger m-1"><i class="fas fa-trash-alt"></i></a>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     {% endfor %}
                     </tbody>
