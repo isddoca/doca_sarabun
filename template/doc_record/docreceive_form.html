@@ -4,7 +4,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"/>
 {% endblock %}
 
-
+{% load crispy_forms_tags %}
 
 
 {% block content %}
@@ -26,7 +26,7 @@
                                     <a href="#0">ทะเบียนหนังสือรับ</a>
                                 </li>
                                 <li class="breadcrumb-item active" aria-current="page">
-                                    รับหนังสือ
+                                    ลงทะเบียนรับหนังสือ
                                 </li>
                             </ol>
                         </nav>
@@ -41,43 +41,7 @@
         <div class="card-style mb-30">
             <form action="" method="post">
                 {% csrf_token %}
-                <div class="row">
-                    <div class="col-auto">
-                        <label for="query_year" class="col-form-label">ปี</label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">เลขรับหนังสือ</label>
-                        <input type="text" class="form-control" id="receive_no">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">ที่</label>
-                        <input type="text" class="form-control" id="doc_no">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">จาก</label>
-                        <input type="text" class="form-control" id="doc_from">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">ถึง</label>
-                        <input type="text" class="form-control" id="doc_to">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">เรื่อง</label>
-                        <input type="text" class="form-control" id="doc_title">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">การปฏิบัติ</label>
-                        <input type="text" class="form-control" id="action">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">หมายเหตุ</label>
-                        <input type="text" class="form-control" id="note">
-                    </div>
-
-                    <div>
-                        <button type="submit" class="btn btn-primary col-1">บันทึก</button>
-                    </div>
-                </div>
+                {% crispy form %}
             </form>
         </div>
     </div>
