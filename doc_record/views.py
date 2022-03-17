@@ -4,9 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, DetailView, UpdateView, DeleteView, CreateView
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 
-from form import DocReceiveForm
+from form import DocReceiveModelForm, DocModelForm
 from .models import DocReceive, Doc
 
 
@@ -23,7 +23,7 @@ class DocReceiveListView(ListView):
 
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        object_list = DocReceive.objects.filter(group=current_group_id, doc__doc_date__year=date.today().year + 543,
+        object_list = DocReceive.objects.filter(group=current_group_id, doc__doc_date__year=2022,
                                                 doc__credential__id=1).order_by('-receive_no')
         return object_list
 
@@ -31,49 +31,46 @@ class DocReceiveListView(ListView):
 @login_required(login_url='/accounts/login')
 def doc_receive_form(request):
     if request.method == 'POST':
-        form = DocReceiveForm(request.POST, user=request.user, secret=False)
-        if form.is_valid():
-            group_id = form.user.groups.all()[0].id
-            row_count = DocReceive.objects.filter(group_id=group_id,
-                                                  doc__doc_date__year=date.today().year + 543,
-                                                  doc__credential__id=1).count()
-            doc_id = "{year}-{no}".format(year=date.today().year, no=f'{row_count:06}')
-            doc = Doc.objects.create(id=doc_id, doc_no=form.cleaned_data['doc_no'],
-                                     doc_date=form.cleaned_data['doc_date'],
-                                     doc_from=form.cleaned_data['doc_from'], doc_to=form.cleaned_data['doc_to'],
-                                     urgent_id=form.cleaned_data['doc_urgent'],
-                                     credential_id=form.cleaned_data['doc_credential'], active=True,
-                                     title=form.cleaned_data['doc_title'],
-                                     create_by_id=form.user.id, create_time=datetime.now())
-            doc.save()
+        user = request.user
+        group_id = user.groups.all()[0].id
+        row_count = DocReceive.objects.filter(group_id=group_id,
+                                              doc__doc_date__year=date.today().year,
+                                              doc__credential__id=1).count()+1
+        doc_id = "{year}-{no}".format(year=date.today().year, no=f'{row_count:06}')
+        doc_form = DocModelForm(request.POST)
+        doc_receive_form = DocReceiveModelForm(request.POST)
 
-            doc_receive = DocReceive.objects.create(receive_no=form.cleaned_data['receive_no'],
-                                                    doc_id=doc.id,
-                                                    group_id=group_id,
-                                                    action=form.cleaned_data['action'],
-                                                    note=form.cleaned_data['note'])
-            doc_receive.save()
+        if doc_form.is_valid() and doc_receive_form.is_valid():
+            doc_model = doc_form.save(commit=False)
+            doc_model.id = doc_id
+            doc_model.active = 1
+            doc_model.create_time = datetime.now()
+            doc_model.create_by = user
+            doc_model.save()
+
+            doc_receive_model = doc_receive_form.save(commit=False)
+            doc_receive_model.doc = doc_model
+            doc_receive_model.group = user.groups.all()[0]
+            print(doc_receive_model.receive_no)
+            doc_receive_model.save()
+
             return HttpResponseRedirect('/receive')
 
-
     else:
-        form = DocReceiveForm(user=request.user, secret=False)
-    return render(request, 'doc_record/docreceive_form.html', {'form': form})
+        doc_form = DocModelForm
+        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user)})
+
+    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form}
+    return render(request, 'doc_record/docreceive_form.html', context)
 
 
-@method_decorator(login_required, name='dispatch')
-class DocReceiveCreateView(CreateView):
-    model = DocReceive
-    fields = [
-        "receive_no",
-        "action",
-        "note",
-    ]
-
-    def form_valid(self, form):
-        print(form)
-        # doc = Doc()
-        # self.object - form.save(commit=False)
+def get_docs_no(user, is_secret=False):
+    current_group_id = user.groups.all()[0].id
+    if is_secret:
+        docs = DocReceive.objects.filter(group=current_group_id, doc__credential__id__gt=1)
+    else:
+        docs = DocReceive.objects.filter(group=current_group_id, doc__credential__id=1)
+    return 1 if len(docs) == 0 else docs.last().receive_no + 1
 
 
 class DocReceiveDetailView(DetailView):

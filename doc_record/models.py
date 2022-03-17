@@ -35,6 +35,9 @@ class DocCredential(models.Model):
         managed = True
         db_table = 'doc_credential'
 
+    def __str__(self):
+        return self.name
+
 
 class DocReceive(models.Model):
     receive_no = models.IntegerField(blank=True, null=True)
@@ -84,9 +87,13 @@ class DocUrgent(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         managed = True
         db_table = 'doc_urgent'
+
 
 
 class Unit(models.Model):

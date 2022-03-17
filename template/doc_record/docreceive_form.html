@@ -1,12 +1,11 @@
-{% extends 'doc_record/base.html' %}
-
-{% block css %}
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"/>
+{% extends 'doc_record/base.html' %} {% block css %}
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"
+    />
 {% endblock %}
-
 {% load crispy_forms_tags %}
-
-
 {% block content %}
     <div class="container-fluid">
         <div class="title-wrapper pt-30">
@@ -41,8 +40,50 @@
         <div class="card-style mb-30">
             <form action="" method="post">
                 {% csrf_token %}
-                {% crispy form %}
-            </form>
+                <div class="row form-row">
+                    <div class="form-group col-md-4">
+                        {{ doc_receive_form.receive_no | as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-4">
+                        {{ doc_form.doc_no | as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-4">
+                        {{ doc_form.doc_date | as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row ">
+                    <div class="form-group col-md-3">
+                        {{ doc_form.urgent | as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-3">
+                        {{ doc_form.credential | as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-3">
+                        {{ doc_form.doc_from | as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-3">
+                        {{ doc_form.doc_to | as_crispy_field }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    {{ doc_form.title | as_crispy_field }}
+                </div>
+                <div class="mb-3">
+                    {{ doc_receive_form.action | as_crispy_field }}
+                </div>
+                <div class="mb-3">
+                    {{ doc_receive_form.note | as_crispy_field }}
+                </div>
+                <div class="mb-3">
+                    <input type="submit"
+                           name="submit"
+                           value="บันทึก"
+                           class="btn btn-primary btn-primary"
+                           id="submit-id-submit"
+
+                    /></div>
         </div>
+        </form>
+    </div>
     </div>
 {% endblock %}
