@@ -1,10 +1,10 @@
-from datetime import date
+from datetime import date, datetime
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit
 from django import forms
+from pythainlp import thai_strftime
 
-from config import settings
 from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc
 
 URGENT = DocUrgent.objects.all().values_list("id", "name")
@@ -71,12 +71,20 @@ class DocReceiveForm(forms.Form):
         self.fields['receive_no'].widget.attrs['readonly'] = True
 
 
+class ThaiDateInput(forms.DateInput):
+    def to_python(self, value):
+        splitdate = value.split('/')
+        splitdate[2] = str(int(splitdate[2]) + 543)
+        return "/".join(splitdate)
+
+
 class DocModelForm(forms.ModelForm):
     helper = FormHelper()
 
-    doc_date = forms.DateField(initial=date.today().strftime("%d-%m-%Y"), label='ลงวันที่',
-                               widget=forms.widgets.DateInput(attrs={'type': 'date', 'format': '%d-%m-%Y'}),
-                               input_formats=settings.DATE_INPUT_FORMATS)
+    doc_date = forms.DateField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.today(), "%d/%m/%Y"),
+                               label='ลงวันที่',
+                               widget=ThaiDateInput(attrs={'class': 'datepicker form-control'}))
+
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label="กรุณาเลือก", label='ความเร่งด่วน')
     credential = forms.ModelChoiceField(queryset=DocCredential.objects, empty_label="กรุณาเลือก", label='ชั้นความลับ')
 
@@ -85,9 +93,9 @@ class DocModelForm(forms.ModelForm):
         fields = ['doc_no', 'doc_date', 'doc_from', 'doc_to', 'title', 'urgent', 'credential']
         labels = {'doc_no': 'เลขที่หนังสือ', 'doc_date': 'ลงวันที่', 'title': 'เรื่อง', 'doc_from': 'จาก',
                   'doc_to': 'ถึง'}
-        widgets = {'doc_date': forms.DateInput(),
-                   'title': forms.TextInput(),
-                   }
+        widgets = {
+            'title': forms.TextInput(),
+        }
 
 
 class DocReceiveModelForm(forms.ModelForm):

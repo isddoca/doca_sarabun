@@ -1,9 +1,12 @@
-{% extends 'doc_record/base.html' %} {% block css %}
+{% extends 'doc_record/base.html' %}
+{% load static %}
+{% block css %}
     <link
             rel="stylesheet"
             type="text/css"
             href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"
     />
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/thdatepicker/css/bootstrap-datepicker.min.css' %}"/>
 {% endblock %}
 {% load crispy_forms_tags %}
 {% block content %}
@@ -82,8 +85,23 @@
                            id="submit-id-submit"
 
                     /></div>
+            </form>
+
         </div>
-        </form>
     </div>
-    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="{% static 'vendor/thdatepicker/js/bootstrap-datepicker-thai.js' %}"></script>
+    <script src="{% static 'vendor/thdatepicker/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'vendor/thdatepicker/locales/bootstrap-datepicker.th.min.js' %}"></script>
+    <script>
+        $('.datepicker').datepicker({
+            format: "dd/mm/yyyy",
+            orientation: "bottom auto",
+            language:'th-th',
+        });
+    </script>
 {% endblock %}
