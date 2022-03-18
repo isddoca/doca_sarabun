@@ -71,22 +71,23 @@ class DocReceiveForm(forms.Form):
         self.fields['receive_no'].widget.attrs['readonly'] = True
 
 
-class ThaiDateInput(forms.DateInput):
+class ThaiDateCEField(forms.DateField):
     def to_python(self, value):
         splitdate = value.split('/')
-        splitdate[2] = str(int(splitdate[2]) + 543)
-        return "/".join(splitdate)
+        ce = int(splitdate[2]) - 543
+        splitdate[2] = str(ce)
+        return "-".join(splitdate[::-1])
 
 
 class DocModelForm(forms.ModelForm):
     helper = FormHelper()
 
-    doc_date = forms.DateField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.today(), "%d/%m/%Y"),
+    doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.today(), "%d/%m/%Y"),
                                label='ลงวันที่',
-                               widget=ThaiDateInput(attrs={'class': 'datepicker form-control'}))
+                               widget=forms.DateInput(attrs={'class': 'datepicker form-control'}))
 
-    urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label="กรุณาเลือก", label='ความเร่งด่วน')
-    credential = forms.ModelChoiceField(queryset=DocCredential.objects, empty_label="กรุณาเลือก", label='ชั้นความลับ')
+    urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน')
+    credential = forms.ModelChoiceField(queryset=DocCredential.objects, empty_label=None, label='ชั้นความลับ')
 
     class Meta:
         model = Doc

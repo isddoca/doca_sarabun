@@ -46,6 +46,7 @@ def doc_receive_form(request):
             doc_model.active = 1
             doc_model.create_time = datetime.now()
             doc_model.create_by = user
+            print(doc_model)
             doc_model.save()
 
             doc_receive_model = doc_receive_form.save(commit=False)
