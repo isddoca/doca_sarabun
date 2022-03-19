@@ -1,13 +1,14 @@
 from datetime import date, datetime
 
+import pytz
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 
-from form import DocReceiveModelForm, DocModelForm
-from .models import DocReceive, Doc
+from .forms import DocReceiveModelForm, DocModelForm
+from .models import DocReceive, DocTrace
 
 
 @login_required(login_url='/accounts/login')
@@ -30,12 +31,13 @@ class DocReceiveListView(ListView):
 
 @login_required(login_url='/accounts/login')
 def doc_receive_form(request):
+    timezone = pytz.timezone('Asia/Bangkok')
     if request.method == 'POST':
         user = request.user
         group_id = user.groups.all()[0].id
         row_count = DocReceive.objects.filter(group_id=group_id,
                                               doc__doc_date__year=date.today().year,
-                                              doc__credential__id=1).count()+1
+                                              doc__credential__id=1).count() + 1
         doc_id = "{year}-{no}".format(year=date.today().year, no=f'{row_count:06}')
         doc_form = DocModelForm(request.POST)
         doc_receive_form = DocReceiveModelForm(request.POST)
@@ -44,7 +46,7 @@ def doc_receive_form(request):
             doc_model = doc_form.save(commit=False)
             doc_model.id = doc_id
             doc_model.active = 1
-            doc_model.create_time = datetime.now()
+            doc_model.create_time = datetime.now(timezone)
             doc_model.create_by = user
             print(doc_model)
             doc_model.save()
@@ -52,8 +54,11 @@ def doc_receive_form(request):
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.doc = doc_model
             doc_receive_model.group = user.groups.all()[0]
-            print(doc_receive_model.receive_no)
             doc_receive_model.save()
+
+            doc_trace_model = DocTrace(doc_id=doc_id, doc_status_id=1, time=datetime.now(tz=timezone),
+                                       create_by=user, action_to=user)
+            doc_trace_model.save()
 
             return HttpResponseRedirect('/receive')
 
