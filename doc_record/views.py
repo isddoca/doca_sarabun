@@ -30,7 +30,7 @@ class DocReceiveListView(ListView):
 
 
 @login_required(login_url='/accounts/login')
-def doc_receive_form(request):
+def doc_receive_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     if request.method == 'POST':
         user = request.user
@@ -61,10 +61,44 @@ def doc_receive_form(request):
             doc_trace_model.save()
 
             return HttpResponseRedirect('/receive')
-
     else:
         doc_form = DocModelForm
         doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user)})
+
+    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form}
+    return render(request, 'doc_record/docreceive_form.html', context)
+
+@login_required(login_url='/accounts/login')
+def doc_receive_edit(request, id):
+    doc_receive = DocReceive.objects.get(id=id)
+    timezone = pytz.timezone('Asia/Bangkok')
+    if request.method == 'POST':
+        user = request.user
+        group_id = user.groups.all()[0].id
+        doc_form = DocModelForm(request.POST)
+        doc_receive_form = DocReceiveModelForm(request.POST)
+
+        if doc_form.is_valid() and doc_receive_form.is_valid():
+            doc_model = doc_form.save(commit=False)
+            doc_model.id = doc_receive.doc.id
+            doc_model.active = 1
+            doc_model.update_time = datetime.now(timezone)
+            doc_model.update_by = user
+            doc_model.create_time = doc_receive.doc.create_time
+            doc_model.create_by = doc_receive.doc.create_by
+            doc_model.save()
+
+            doc_receive_model = doc_receive_form.save(commit=False)
+            doc_receive_model.id = doc_receive.id
+            doc_receive_model.doc = doc_model
+            doc_receive_model.group = user.groups.all()[0]
+            doc_receive_model.save()
+
+            return HttpResponseRedirect('/receive')
+    else:
+        print(doc_receive.doc.doc_no)
+        doc_form = DocModelForm(instance=doc_receive.doc)
+        doc_receive_form = DocReceiveModelForm(instance=doc_receive)
 
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form}
     return render(request, 'doc_record/docreceive_form.html', context)
