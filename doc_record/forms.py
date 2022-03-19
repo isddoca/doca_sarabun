@@ -1,7 +1,7 @@
-from datetime import date, datetime
+from datetime import datetime
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit
+from crispy_forms.layout import Submit
 from django import forms
 from pythainlp import thai_strftime
 
@@ -37,7 +37,8 @@ class DocModelForm(forms.ModelForm):
 
     doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.today(), "%d/%m/%Y"),
                                label='ลงวันที่',
-                               widget=forms.DateInput(attrs={'class': 'datepicker form-control'}))
+                               widget=forms.DateInput(attrs={'class': 'form-control', 'data-provide': "datepicker",
+                                                             'data-date-language': "th-th"}))
 
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน')
     credential = forms.ModelChoiceField(queryset=DocCredential.objects, empty_label=None, label='ชั้นความลับ')

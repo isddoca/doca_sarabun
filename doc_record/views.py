@@ -96,7 +96,8 @@ def doc_receive_edit(request, id):
 
             return HttpResponseRedirect('/receive')
     else:
-        print(doc_receive.doc.doc_no)
+        tmp_doc_date = doc_receive.doc.doc_date
+        doc_receive.doc.doc_date = tmp_doc_date.replace(year=2565)
         doc_form = DocModelForm(instance=doc_receive.doc)
         doc_receive_form = DocReceiveModelForm(instance=doc_receive)
 
