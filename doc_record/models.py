@@ -11,7 +11,8 @@ class Doc(models.Model):
     doc_from = models.CharField(max_length=200, blank=True, null=True)
     doc_to = models.CharField(max_length=200, blank=True, null=True)
     title = models.TextField()
-    credential = models.ForeignKey('DocCredential', on_delete=models.CASCADE, db_column='credential', blank=True, null=True)
+    credential = models.ForeignKey('DocCredential', on_delete=models.CASCADE, db_column='credential', blank=True,
+                                   null=True)
     urgent = models.ForeignKey('DocUrgent', on_delete=models.CASCADE, db_column='urgent', blank=True, null=True)
     active = models.IntegerField()
     create_time = models.DateTimeField(blank=True, null=True)
@@ -73,7 +74,10 @@ class DocStatus(models.Model):
 
 class DocTrace(models.Model):
     time = models.DateTimeField(blank=True, null=True)
-    action_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='action_by', blank=True, null=True)
+    action_to = models.ForeignKey(User, on_delete=models.CASCADE, db_column='action_to', blank=True, null=True,
+                                  related_name='trace_action_to')
+    create_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='create_by', blank=True, null=True,
+                                  related_name='trace_create_by')
     doc = models.ForeignKey(Doc, models.DO_NOTHING)
     doc_status = models.ForeignKey(DocStatus, on_delete=models.CASCADE, db_column='doc_status')
     note = models.TextField(blank=True, null=True)
@@ -93,7 +97,6 @@ class DocUrgent(models.Model):
     class Meta:
         managed = True
         db_table = 'doc_urgent'
-
 
 
 class Unit(models.Model):

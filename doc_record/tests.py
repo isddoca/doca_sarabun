@@ -54,5 +54,5 @@ class receiveDocTestCase(TestCase):
 
         doc_trace = DocTrace.objects.filter(doc_id=doc_test.id)
         self.assertEqual(len(doc_trace), 2)
-        self.assertEqual(doc_trace[0].action_by.groups.all()[0].unit.unit_id, "0405")
-        self.assertEqual(doc_trace[1].action_by.groups.all()[0].unit.unit_id, "0405.3")
+        self.assertEqual(doc_trace[0].action_to.groups.all()[0].unit.unit_id, "0405")
+        self.assertEqual(doc_trace[1].action_to.groups.all()[0].unit.unit_id, "0405.3")
