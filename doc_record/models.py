@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from multiselectfield import MultiSelectField
 
 class Doc(models.Model):
     id = models.CharField(primary_key=True, max_length=64)
@@ -40,18 +40,6 @@ class DocCredential(models.Model):
         return self.name
 
 
-class DocReceive(models.Model):
-    receive_no = models.IntegerField(blank=True, null=True)
-    doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True)
-    action = models.TextField(blank=True, null=True)
-    note = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = True
-        db_table = 'doc_receive'
-
-
 class DocSend(models.Model):
     send_no = models.IntegerField(blank=True, null=True)
     doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
@@ -74,7 +62,7 @@ class DocStatus(models.Model):
 
 class DocTrace(models.Model):
     time = models.DateTimeField(blank=True, null=True)
-    action_to = models.ForeignKey(User, on_delete=models.CASCADE, db_column='action_to', blank=True, null=True,
+    action_to = models.ForeignKey(Group, on_delete=models.CASCADE, db_column='action_to', blank=True, null=True,
                                   related_name='trace_action_to')
     create_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='create_by', blank=True, null=True,
                                   related_name='trace_create_by')
@@ -85,6 +73,22 @@ class DocTrace(models.Model):
     class Meta:
         managed = True
         db_table = 'doc_trace'
+
+    def __str__(self):
+        return self.action_to.name
+
+
+class DocReceive(models.Model):
+    receive_no = models.IntegerField(blank=True, null=True)
+    doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True, related_name='current_group')
+    send_to = models.ManyToManyField(Group, blank=True, null=True)
+    action = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'doc_receive'
 
 
 class DocUrgent(models.Model):
