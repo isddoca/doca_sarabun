@@ -7,6 +7,9 @@
             href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"
     />
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/thdatepicker/css/datepicker.css' %}"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.bootstrap4.min.css"/>
 {% endblock %}
 {% load crispy_forms_tags %}
 {% block content %}
@@ -71,6 +74,17 @@
                 <div class="mb-3">
                     {{ doc_form.title | as_crispy_field }}
                 </div>
+                <div class="row ">
+                    <div class="form-group col-md-10">
+                        {{ doc_receive_form.send_to | as_crispy_field }}
+                    </div>
+                    <div class="form-group col-md-2 ">
+                        <label class="form-label">จำแนกเอกสาร</label>
+                        <button class="btn btn-primary form-control" onclick="classify_doc()" type="button">
+                            จำแนกเอกสาร
+                        </button>
+                    </div>
+                </div>
                 <div class="mb-3">
                     {{ doc_receive_form.action | as_crispy_field }}
                 </div>
@@ -83,8 +97,8 @@
                            value="บันทึก"
                            class="btn btn-primary btn-primary"
                            id="submit-id-submit"
-
-                    /></div>
+                    />
+                </div>
             </form>
 
         </div>
@@ -97,7 +111,48 @@
     <script src="{% static 'vendor/thdatepicker/js/bootstrap-datepicker.js' %}"></script>
     <script src="{% static 'vendor/thdatepicker/js/bootstrap-datepicker-thai.js' %}"></script>
     <script src="{% static 'vendor/thdatepicker/js/locales/bootstrap-datepicker.th.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
     <script>
-        $('.datepicker').datepicker({});
+
+    $('.datepicker').datepicker({});
+
+    $(".selectmultiple").selectize({
+        delimiter: ",",
+        persist: false,
+        create: function (input) {
+            return {
+                value: input,
+                text: input,
+            };
+        },
+    });
+
+    function classify_doc() {
+        let doc = {
+            doc_title: $("#id_title").val(),
+            doc_unit: $("#id_doc_from").val(),
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/classify',
+            data: doc,
+            dataType: "json",
+            success: function (response) {
+                // on successfull creating object
+                // 1. clear the form.
+                // display the newly friend to table.
+                let instance = response["received_units"];
+                alert(instance)
+
+            },
+            error: function (response) {
+                // alert the error if any error occured
+                alert(response["responseJSON"]["error"]);
+            }
+        })
+
+    }
     </script>
 {% endblock %}

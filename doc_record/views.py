@@ -24,7 +24,7 @@ class DocReceiveListView(ListView):
 
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        object_list = DocReceive.objects.filter(group=current_group_id, doc__doc_date__year=2022,
+        object_list = DocReceive.objects.filter(group_id=current_group_id, doc__doc_date__year=2022,
                                                 doc__credential__id=1).order_by('-receive_no')
         return object_list
 
@@ -55,10 +55,9 @@ def doc_receive_add(request):
             doc_receive_model.doc = doc_model
             doc_receive_model.group = user.groups.all()[0]
             doc_receive_model.save()
+            doc_receive_form.save_m2m()
 
-            doc_trace_model = DocTrace(doc_id=doc_id, doc_status_id=1, time=datetime.now(tz=timezone),
-                                       create_by=user, action_to=user)
-            doc_trace_model.save()
+
 
             return HttpResponseRedirect('/receive')
     else:
@@ -93,6 +92,7 @@ def doc_receive_edit(request, id):
             doc_receive_model.doc = doc_model
             doc_receive_model.group = user.groups.all()[0]
             doc_receive_model.save()
+            doc_receive_form.save_m2m()
 
             return HttpResponseRedirect('/receive')
     else:
@@ -108,9 +108,9 @@ def doc_receive_edit(request, id):
 def get_docs_no(user, is_secret=False):
     current_group_id = user.groups.all()[0].id
     if is_secret:
-        docs = DocReceive.objects.filter(group=current_group_id, doc__credential__id__gt=1)
+        docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id__gt=1)
     else:
-        docs = DocReceive.objects.filter(group=current_group_id, doc__credential__id=1)
+        docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id=1)
     return 1 if len(docs) == 0 else docs.last().receive_no + 1
 
 

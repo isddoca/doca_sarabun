@@ -3,6 +3,7 @@ from datetime import datetime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
+from django.contrib.auth.models import Group
 from pythainlp import thai_strftime
 
 from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc
@@ -57,10 +58,14 @@ class DocReceiveModelForm(forms.ModelForm):
     helper = FormHelper()
     helper.add_input(Submit('submit', 'บันทึก', css_class='btn-primary'))
 
+    send_to = forms.ModelMultipleChoiceField(queryset=Group.objects,
+                                            widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+                                            label="ส่งไปยัง", required=False)
+
     class Meta:
         model = DocReceive
-        fields = ['receive_no', 'action', 'note']
+        fields = ['receive_no', 'send_to', 'action', 'note']
         labels = {'receive_no': 'เลขรับ', 'action': 'การปฏิบัติ', 'note': 'หมายเหตุ'}
         widgets = {'receive_no': forms.TextInput(),
-                   'action': forms.TextInput(),
-                   'note': forms.TextInput()}
+                   'note': forms.TextInput(),
+                   'action': forms.TextInput()}
