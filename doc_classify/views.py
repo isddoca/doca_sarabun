@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from django.contrib.auth.models import Group
 from pythainlp import word_tokenize
 from pythainlp.corpus import thai_stopwords, thai_words
 from pythainlp.util import dict_trie

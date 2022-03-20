@@ -114,45 +114,81 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
     <script>
 
-    $('.datepicker').datepicker({});
+        $('.datepicker').datepicker({});
 
-    $(".selectmultiple").selectize({
-        delimiter: ",",
-        persist: false,
-        create: function (input) {
-            return {
-                value: input,
-                text: input,
-            };
-        },
-    });
-
-    function classify_doc() {
-        let doc = {
-            doc_title: $("#id_title").val(),
-            doc_unit: $("#id_doc_from").val(),
-            csrfmiddlewaretoken: '{{ csrf_token }}'
+        let option = {
+            delimiter: ",",
+            persist: false,
+            create: function (input) {
+                return {
+                    value: input,
+                    text: input,
+                };
+            },
         }
 
-        $.ajax({
-            type: 'POST',
-            url: '/classify',
-            data: doc,
-            dataType: "json",
-            success: function (response) {
-                // on successfull creating object
-                // 1. clear the form.
-                // display the newly friend to table.
-                let instance = response["received_units"];
-                alert(instance)
+        let select = $(".selectmultiple").selectize(option);
+        let selectize = select[0].selectize;
 
-            },
-            error: function (response) {
-                // alert the error if any error occured
-                alert(response["responseJSON"]["error"]);
+        function classify_doc() {
+            let doc = {
+                doc_title: $("#id_title").val(),
+                doc_unit: $("#id_doc_from").val(),
+                csrfmiddlewaretoken: '{{ csrf_token }}'
             }
-        })
 
-    }
+
+            function getCodeByUnitName(unit_list) {
+                let unit = [
+                    {id: 2, name: 'กธก.(กพ.)'},
+                    {id: 2, name: 'กธก.(สก.)'},
+                    {id: 2, name: 'กธก.(สบ.)'},
+                    {id: 2, name: 'กธก.(บร.)'},
+                    {id: 2, name: 'กธก.(ธน.)'},
+                    {id: 17, name: 'ผกง.'},
+                    {id: 18, name: 'งป.'},
+                    {id: 3, name: 'กนผ.'},
+                    {id: 4, name: 'กคง.'},
+                    {id: 5, name: 'กสท.'},
+                    {id: 6, name: 'รร.กร.กร.ทบ.'},
+                    {id: 7, name: 'สกร.'},
+                    {id: 8, name: 'กกร.'},
+                    {id: 9, name: 'กพน.'},
+                    {id: 10, name: 'กบภ.'},
+                    {id: 11, name: 'สจว.'},
+                    {id: 12, name: 'กปจว.'},
+                    {id: 13, name: 'กปส.'},
+                    {id: 14, name: 'กกช.'},
+                    {id: 15, name: 'ฝกร.'},
+                    {id: 16, name: 'สทบ.'},
+                ]
+
+                let unit_code = []
+                console.log(unit_list);
+                for (const unit_name of unit_list) {
+                    console.log(unit_name);
+                    unit_code.push(unit.filter(function (unit) {return unit.name === unit_name})[0].id)
+                }
+                return unit_code;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/classify',
+                data: doc,
+                dataType: "json",
+                success: function (response) {
+                    // on successfull creating object
+                    // 1. clear the form.
+                    // display the newly friend to table.
+                    let instance = response["received_units"];
+                    selectize.setValue(getCodeByUnitName(instance))
+                },
+                error: function (response) {
+                    // alert the error if any error occured
+                    alert(response["responseJSON"]["error"]);
+                }
+            })
+        }
     </script>
 {% endblock %}
