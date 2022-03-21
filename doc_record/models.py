@@ -4,10 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-class File(models.Model):
-    file = models.FileField(upload_to="upload/doc/%Y%m%d")
-
-
 class Doc(models.Model):
     id = models.CharField(primary_key=True, max_length=64)
     doc_no = models.CharField(max_length=64, blank=True, null=True)
@@ -25,11 +21,19 @@ class Doc(models.Model):
     update_time = models.DateTimeField(blank=True, null=True)
     update_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='update_by', blank=True, null=True,
                                   related_name='update_by')
-    file = models.ManyToManyField(File, blank=True)
 
     class Meta:
         managed = True
         db_table = 'doc'
+
+
+class DocFile(models.Model):
+    file = models.FileField(upload_to="upload/doc/%Y%m%d")
+    doc = models.ForeignKey(Doc, max_length=200, on_delete=models.CASCADE, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'doc_file'
 
 
 class DocCredential(models.Model):
@@ -86,7 +90,7 @@ class DocReceive(models.Model):
     receive_no = models.IntegerField(blank=True, null=True)
     doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True, related_name='current_group')
-    send_to = models.ManyToManyField(Group)
+    send_to = models.ManyToManyField(Group, blank=True)
     action = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
 

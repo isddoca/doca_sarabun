@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 
 from .forms import DocReceiveModelForm, DocModelForm
-from .models import DocReceive, DocTrace, File
+from .models import DocReceive, DocFile
 
 
 @login_required(login_url='/accounts/login')
@@ -35,24 +35,20 @@ def doc_receive_add(request):
     user = request.user
     group_id = user.groups.all()[0].id
     if request.method == 'POST':
-        doc_id = generate_doc_id(group_id)
         doc_form = DocModelForm(request.POST, request.FILES)
         doc_receive_form = DocReceiveModelForm(request.POST)
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
             doc_model = doc_form.save(commit=False)
+            doc_model.id = generate_doc_id(group_id)
             doc_model.active = 1
             doc_model.create_time = datetime.now(timezone)
             doc_model.create_by = user
             doc_model.save()
 
-            files = request.FILES.getlist('file')
-            print(len(files))
-            for f in files:
-                print(f)
-                file_instance = File.objects.create(file=f)
-                file_instance.save()
-
+            req_files = request.FILES.getlist('file')
+            for f in req_files:
+                DocFile.objects.create(file=f, doc=doc_model)
 
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.doc = doc_model
@@ -60,7 +56,7 @@ def doc_receive_add(request):
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
-            # return HttpResponseRedirect('/receive')
+            return HttpResponseRedirect('/receive')
     else:
         doc_form = DocModelForm(initial={'id': generate_doc_id(group_id)})
         doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user)})
@@ -80,21 +76,22 @@ def generate_doc_id(group_id):
 def doc_receive_edit(request, id):
     doc_receive = DocReceive.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
+
     if request.method == 'POST':
+        print("POST")
         user = request.user
         doc_form = DocModelForm(request.POST, request.FILES)
         doc_receive_form = DocReceiveModelForm(request.POST)
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
             doc_model = doc_form.save(commit=False)
-            doc_model.id = doc_receive.doc.id
+            doc_model.id = doc_receive.id
             doc_model.active = 1
             doc_model.update_time = datetime.now(timezone)
             doc_model.update_by = user
             doc_model.create_time = doc_receive.doc.create_time
             doc_model.create_by = doc_receive.doc.create_by
             doc_model.save()
-            doc_model.save_m2m()
 
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.id = doc_receive.id
@@ -103,12 +100,12 @@ def doc_receive_edit(request, id):
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
-            files = request.FILES.getlist('files')
+            #TODO ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
+            files = request.FILES.getlist('file')
             print(len(files))
             for f in files:
-                print(f)
-                file_instance = File(file=f)
-                file_instance.save()
+                DocFile.objects.create(file=f, doc=doc_model)
+
 
             return HttpResponseRedirect('/receive')
     else:

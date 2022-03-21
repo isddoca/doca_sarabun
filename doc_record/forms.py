@@ -46,11 +46,10 @@ class DocModelForm(forms.ModelForm):
 
     class Meta:
         model = Doc
-        fields = ['id', 'doc_no', 'doc_date', 'doc_from', 'doc_to', 'title', 'urgent', 'credential', 'file']
+        fields = ['doc_no', 'doc_date', 'doc_from', 'doc_to', 'title', 'urgent', 'credential', 'file']
         labels = {'doc_no': 'เลขที่หนังสือ', 'doc_date': 'ลงวันที่', 'title': 'เรื่อง', 'doc_from': 'จาก',
                   'doc_to': 'ถึง'}
         widgets = {
-            'id': forms.HiddenInput(),
             'title': forms.TextInput(),
         }
 
