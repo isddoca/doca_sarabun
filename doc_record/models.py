@@ -2,7 +2,11 @@ from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from multiselectfield import MultiSelectField
+
+
+class File(models.Model):
+    file = models.FileField(upload_to="upload/doc/%Y%m%d")
+
 
 class Doc(models.Model):
     id = models.CharField(primary_key=True, max_length=64)
@@ -21,7 +25,7 @@ class Doc(models.Model):
     update_time = models.DateTimeField(blank=True, null=True)
     update_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='update_by', blank=True, null=True,
                                   related_name='update_by')
-    filepath = models.CharField(max_length=255, blank=True, null=True)
+    file = models.ManyToManyField(File, blank=True)
 
     class Meta:
         managed = True
@@ -82,7 +86,7 @@ class DocReceive(models.Model):
     receive_no = models.IntegerField(blank=True, null=True)
     doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True, related_name='current_group')
-    send_to = models.ManyToManyField(Group, blank=True, null=True)
+    send_to = models.ManyToManyField(Group)
     action = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
 

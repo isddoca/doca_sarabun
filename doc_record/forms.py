@@ -4,6 +4,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
 from django.contrib.auth.models import Group
+from django.forms import ClearableFileInput
 from pythainlp import thai_strftime
 
 from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc
@@ -34,8 +35,6 @@ class ThaiDateCEField(forms.DateField):
 
 
 class DocModelForm(forms.ModelForm):
-    helper = FormHelper()
-
     doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.today(), "%d/%m/%Y"),
                                label='ลงวันที่',
                                widget=forms.DateInput(attrs={'class': 'form-control', 'data-provide': "datepicker",
@@ -43,13 +42,15 @@ class DocModelForm(forms.ModelForm):
 
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน')
     credential = forms.ModelChoiceField(queryset=DocCredential.objects, empty_label=None, label='ชั้นความลับ')
+    file = forms.FileField(widget=ClearableFileInput(attrs={'multiple': True}), required=False, label='ไฟล์เอกสาร')
 
     class Meta:
         model = Doc
-        fields = ['doc_no', 'doc_date', 'doc_from', 'doc_to', 'title', 'urgent', 'credential']
+        fields = ['id', 'doc_no', 'doc_date', 'doc_from', 'doc_to', 'title', 'urgent', 'credential', 'file']
         labels = {'doc_no': 'เลขที่หนังสือ', 'doc_date': 'ลงวันที่', 'title': 'เรื่อง', 'doc_from': 'จาก',
                   'doc_to': 'ถึง'}
         widgets = {
+            'id': forms.HiddenInput(),
             'title': forms.TextInput(),
         }
 
