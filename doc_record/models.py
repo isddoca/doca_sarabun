@@ -43,6 +43,9 @@ class DocFile(models.Model):
         managed = True
         db_table = 'doc_file'
 
+    def filename(self):
+        return os.path.basename(self.file.name)
+
 
 class DocCredential(models.Model):
     id = models.IntegerField(primary_key=True)

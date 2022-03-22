@@ -78,7 +78,7 @@ def generate_doc_id(group_id):
 def doc_receive_edit(request, id):
     doc_receive = DocReceive.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
-
+    doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
     if request.method == 'POST':
         print("POST")
         user = request.user
@@ -102,19 +102,15 @@ def doc_receive_edit(request, id):
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
-            #TODO ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
+            #ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
             files = request.FILES.getlist('file')
             if len(files) > 0:
-                old_files = DocFile.objects.filter(doc=doc_model)
-
-                for f in old_files:
+                for f in doc_old_files:
                     os.remove(os.path.join(settings.MEDIA_ROOT, f.file.name))
                     f.delete()
 
                 for f in files:
                     DocFile.objects.create(file=f, doc=doc_model)
-
-
 
             return HttpResponseRedirect('/receive')
     else:
@@ -123,7 +119,8 @@ def doc_receive_edit(request, id):
         doc_form = DocModelForm(instance=doc_receive.doc)
         doc_receive_form = DocReceiveModelForm(instance=doc_receive)
 
-    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form}
+    print(doc_old_files)
+    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files}
     return render(request, 'doc_record/docreceive_form.html', context)
 
 

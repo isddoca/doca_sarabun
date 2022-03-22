@@ -91,6 +91,16 @@
                 <div class="mb-3">
                     {{ doc_receive_form.note | as_crispy_field }}
                 </div>
+
+                {% if doc_files %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">ไฟล์เอกสารเดิม</label>
+                        {% for doc_file in doc_files %}
+                            <a href="{{MEDIA_URL}}{{ doc_file.file.url }}" class="btn btn-outline-primary ">{{ doc_file.filename }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <div class="mb-3">
                     {{ doc_form.file | as_crispy_field }}
                 </div>
@@ -170,7 +180,9 @@
                 console.log(unit_list);
                 for (const unit_name of unit_list) {
                     console.log(unit_name);
-                    unit_code.push(unit.filter(function (unit) {return unit.name === unit_name})[0].id)
+                    unit_code.push(unit.filter(function (unit) {
+                        return unit.name === unit_name
+                    })[0].id)
                 }
                 return unit_code;
             }
