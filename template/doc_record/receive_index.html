@@ -37,24 +37,26 @@
 
 
         <div class="card-style mb-30">
-            <form method="get">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-auto">
-                        <label for="query_year" class="col-form-label">ปี</label>
-                    </div>
-                    <div class="col">
-                        <select class="form-select" aria-label="ปี" id="query_year">
-                            <option value="2565">2565</option>
-                            <option value="2564">2564</option>
-                            <option value="2563">2563</option>
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">ค้นหา</button>
-                    </div>
+
+            <div class="row">
+                <div class="col-auto">
+                    <label for="query_year" class="col-form-label">ปี</label>
                 </div>
-            </form>
+                <div class="col">
+                    <select class="form-select" aria-label="ปี" id="query_year">
+                        <option value="2565">2565</option>
+                        <option value="2564">2564</option>
+                        <option value="2563">2563</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">ค้นหา</button>
+                </div>
+                <div class="col-auto">
+                    <a type="button" class="btn btn-primary" href="add">ลงทะเบียนรับหนังสือ</a>
+                </div>
+            </div>
+
             <div class="table-responsive mt-3">
                 <table id="datatable" class="table table-sm">
                     <thead>
@@ -89,7 +91,8 @@
                             <td class="text-center">
                                 <div class="row">
                                     <div class="col-auto">
-                                        <a href="" class="btn btn-info m-1"><i class="fas fa-pencil-alt"></i></a>
+                                        <a href="{{ data.id }}/edit" class="btn btn-info m-1"><i
+                                                class="fas fa-pencil-alt"></i></a>
                                         <a href="" class="btn btn-danger m-1"><i class="fas fa-trash-alt"></i></a>
                                     </div>
                                 </div>
