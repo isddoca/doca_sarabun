@@ -32,6 +32,14 @@ class DocReceiveListView(ListView):
 
 
 @login_required(login_url='/accounts/login')
+def doc_receive_detail(request, id):
+    doc_receive = DocReceive.objects.get(id=id)
+    doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
+    context = {'doc_receive': doc_receive, 'doc_files': doc_old_files}
+    return render(request, 'doc_record/docreceive_view.html', context)
+
+
+@login_required(login_url='/accounts/login')
 def doc_receive_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
