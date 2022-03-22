@@ -43,68 +43,68 @@
         </div>
         <!-- ========== title-wrapper end ========== -->
         <div class="card-style mb-30">
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">เลขรับ</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {{ doc_receive.receive_no }}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">ที่</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {{ doc_receive.doc.doc_no }}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">ลงวันที่</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {{ doc_receive.doc.doc_date_th }}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">จาก</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {{ doc_receive.doc.doc_from }}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">ถึง</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {{ doc_receive.doc.doc_to }}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">เรื่อง</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {{ doc_receive.doc.title }}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">ส่งไปยัง</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {{ doc_receive.send_to.all|join:", " }}
 
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">การปฏิบัติ</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {% if doc_receive.action %}
                         {{ doc_receive.action }}
                     {% else %}
@@ -112,11 +112,11 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">หมายเหตุ</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     {% if doc_receive.note %}
                         {{ doc_receive.note }}
                     {% else %}
@@ -124,11 +124,11 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="row form-row">
-                <div class="form-group col-md-2">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
                     <p class="fw-bold">ไฟล์เอกสาร</p>
                 </div>
-                <div class="form-group col-md-10">
+                <div class="form-group col-sm-10">
                     <ul>
                         {% if doc_files %}
                             {% for doc_file in doc_files %}

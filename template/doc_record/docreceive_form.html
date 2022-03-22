@@ -57,7 +57,7 @@
                         {{ doc_form.doc_date | as_crispy_field }}
                     </div>
                 </div>
-                <div class="row ">
+                <div class="row form-row">
                     <div class="form-group col-md-3">
                         {{ doc_form.urgent | as_crispy_field }}
                     </div>
@@ -71,10 +71,10 @@
                         {{ doc_form.doc_to | as_crispy_field }}
                     </div>
                 </div>
-                <div class="mb-3">
+                <div class="row form-row">
                     {{ doc_form.title | as_crispy_field }}
                 </div>
-                <div class="row ">
+                <div class="row form-row">
                     <div class="form-group col-md-10">
                         {{ doc_receive_form.send_to | as_crispy_field }}
                     </div>
@@ -85,15 +85,15 @@
                         </button>
                     </div>
                 </div>
-                <div class="mb-3">
+                <div class="row form-row">
                     {{ doc_receive_form.action | as_crispy_field }}
                 </div>
-                <div class="mb-3">
+                <div class="row form-row">
                     {{ doc_receive_form.note | as_crispy_field }}
                 </div>
 
                 {% if doc_files %}
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label class="form-label">ไฟล์เอกสารเดิม</label>
                         <ul class="list-inline">
                             {% for doc_file in doc_files %}
@@ -105,10 +105,10 @@
                     </div>
                 {% endif %}
 
-                <div class="mb-3">
+                <div class="row form-row">
                     {{ doc_form.file | as_crispy_field }}
                 </div>
-                <div class="mb-3">
+                <div class="mb-2">
                     <input type="submit"
                            name="submit"
                            value="บันทึก"
