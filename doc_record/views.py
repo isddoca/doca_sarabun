@@ -68,8 +68,7 @@ def doc_receive_add(request):
 
 
 def generate_doc_id(group_id):
-    row_count = DocReceive.objects.filter(group_id=group_id,
-                                          doc__doc_date__year=date.today().year).count() + 1
+    row_count = DocReceive.objects.filter(doc__doc_date__year=date.today().year).count() + 1
     doc_id = "{year}-{no}".format(year=date.today().year, no=f'{row_count:06}')
     return doc_id
 
