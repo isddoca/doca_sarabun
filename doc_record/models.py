@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from pythainlp import thai_strftime
 
 
 class Doc(models.Model):
@@ -24,6 +25,9 @@ class Doc(models.Model):
     update_time = models.DateTimeField(blank=True, null=True)
     update_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='update_by', blank=True, null=True,
                                   related_name='update_by')
+
+    def doc_date_th(self):
+        return thai_strftime(datetime(self.doc_date.year, self.doc_date.month, self.doc_date.day), "%d %b %Y")
 
     class Meta:
         managed = True
