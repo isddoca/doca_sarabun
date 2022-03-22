@@ -95,9 +95,13 @@
                 {% if doc_files %}
                     <div class="form-group mb-3">
                         <label class="form-label">ไฟล์เอกสารเดิม</label>
-                        {% for doc_file in doc_files %}
-                            <a href="{{MEDIA_URL}}{{ doc_file.file.url }}" class="btn btn-outline-primary ">{{ doc_file.filename }}</a>
+                        <ul class="list-inline">
+                            {% for doc_file in doc_files %}
+                            <li class="list-inline-item">
+                                <a href="{{ MEDIA_URL }}{{ doc_file.file.url }}">{{ doc_file.filename }}</a>
+                            </li>
                         {% endfor %}
+                        </ul>
                     </div>
                 {% endif %}
 
