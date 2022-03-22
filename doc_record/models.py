@@ -1,3 +1,6 @@
+import os
+from datetime import datetime
+
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models.signals import post_save
@@ -27,9 +30,14 @@ class Doc(models.Model):
         db_table = 'doc'
 
 
+def update_doc_filename(instance, filename):
+    path = "doc/{date}/{doc_id}".format(date=datetime.today().strftime('%Y%m%d'), doc_id=instance.doc.id)
+    return os.path.join(path, filename)
+
+
 class DocFile(models.Model):
-    file = models.FileField(upload_to="upload/doc/%Y%m%d")
     doc = models.ForeignKey(Doc, max_length=200, on_delete=models.CASCADE, blank=True, null=True)
+    file = models.FileField(upload_to=update_doc_filename)
 
     class Meta:
         managed = True

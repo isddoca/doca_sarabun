@@ -1,3 +1,4 @@
+import os
 from datetime import date, datetime
 
 import pytz
@@ -7,6 +8,7 @@ from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 
+from config import settings
 from .forms import DocReceiveModelForm, DocModelForm
 from .models import DocReceive, DocFile
 
@@ -85,7 +87,7 @@ def doc_receive_edit(request, id):
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
             doc_model = doc_form.save(commit=False)
-            doc_model.id = doc_receive.id
+            doc_model.id = doc_receive.doc.id
             doc_model.active = 1
             doc_model.update_time = datetime.now(timezone)
             doc_model.update_by = user
@@ -102,9 +104,16 @@ def doc_receive_edit(request, id):
 
             #TODO ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
             files = request.FILES.getlist('file')
-            print(len(files))
-            for f in files:
-                DocFile.objects.create(file=f, doc=doc_model)
+            if len(files) > 0:
+                old_files = DocFile.objects.filter(doc=doc_model)
+
+                for f in old_files:
+                    os.remove(os.path.join(settings.MEDIA_ROOT, f.file.name))
+                    f.delete()
+
+                for f in files:
+                    DocFile.objects.create(file=f, doc=doc_model)
+
 
 
             return HttpResponseRedirect('/receive')
