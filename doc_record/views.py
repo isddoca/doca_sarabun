@@ -41,7 +41,7 @@ class DocTraceListView(ListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
         object_list = DocTrace.objects.filter(
-            Q(create_by=self.request.user) | Q(action_to_id=current_group_id))
+            Q(create_by=self.request.user) | Q(action_to_id=current_group_id)).order_by('-time')
         return object_list
 
 
@@ -84,6 +84,11 @@ def doc_receive_add(request):
             DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_to_id=group_id)
             for unit in send_to:
                 DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit)
+
+            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user)
+            if doc_receive_model.send_to.all():
+                for unit in doc_receive_model.send_to.all():
+                    DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit)
 
             return HttpResponseRedirect('/receive')
     else:
