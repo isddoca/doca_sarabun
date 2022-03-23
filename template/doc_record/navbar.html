@@ -1,79 +1,80 @@
 <!-- ======== sidebar-nav start =========== -->
 
-{% url 'receive' as url_receive %}
-{% url 'receive_credential' as url_receive_credential %}
-{% url 'send' as url_send %}
-{% url 'send_credential' as url_receive_credential %}
-{% url 'order' as url_order %}
-{% url 'order_specific' as url_order_specific %}
-
 {% load static %}
+{% with url_name=request.resolver_match.url_name %}
 
-<aside class="sidebar-nav-wrapper">
-    <div class="navbar-logo">
-        <a href="/">
-            <img src="{% static "assets/images/logo/doca-logo-web.png" %}" alt="กรมกิจการพลเรือนทหารบก"
-                 class="img-fluid"/>
-        </a>
-    </div>
-    <nav class="sidebar-nav">
-        <ul>
-            <li class="nav-item nav-item-has-children">
-                <a
-                        href="#0"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#ddmenu_1"
-                        aria-controls="ddmenu_1"
-                        aria-expanded="true"
-                        aria-label="Toggle navigation"
-                >
-                    <span class="text">ทะเบียนหนังสือรับ-ส่ง</span>
-                </a>
-                <ul id="ddmenu_1" class="collapse dropdown-nav show">
-                    <li>
-                        <a href="/receive" class="{% if request.path == url_receive %}active{% endif %}"><i class="fa-regular fa-circle-down"></i>ทะเบียนหนังสือรับ</a>
-                    </li>
-                    <li>
-                        <a href="/receive/credential"
-                           class="{% if request.path == url_receive_credential %}active{% endif %}"><i class="fa-solid fa-circle-down"></i></i>ทะเบียนหนังสือรับ
-                            (ลับ)</a>
-                    </li>
-                    <li>
-                        <a href="/send" class="{% if request.path == url_send %}active{% endif %}"><i class="fa-regular fa-circle-up"></i>ทะเบียนหนังสือส่ง</a>
-                    </li>
-                    <li>
-                        <a href="/send/credential"
-                           class="{% if request.path == url_send_credential %}active{% endif %}"><i class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่ง
-                            (ลับ)</a>
-                    </li>
-                </ul>
-            </li>
+    <aside class="sidebar-nav-wrapper">
+        <div class="navbar-logo">
+            <a href="/">
+                <img src="{% static "assets/images/logo/doca-logo-web.png" %}" alt="กรมกิจการพลเรือนทหารบก"
+                     class="img-fluid"/>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="nav-item nav-item-has-children">
+                    <a
+                            href="#0"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ddmenu_1"
+                            aria-controls="ddmenu_1"
+                            aria-expanded="true"
+                            aria-label="Toggle navigation"
+                    >
+                        <span class="text">ทะเบียนหนังสือรับ-ส่ง</span>
+                    </a>
+                    <ul id="ddmenu_1" class="collapse dropdown-nav show">
+                        <li>
+                            <a href="/receive" class="{% if url_name == 'receive' %}active{% endif %}"><i
+                                    class="fa-regular fa-circle-down"></i>ทะเบียนหนังสือรับ</a>
+                        </li>
+                        <li>
+                            <a href="/receive/credential"
+                               class="{% if url_name == 'receive_credential' %}active{% endif %}"><i
+                                    class="fa-solid fa-circle-down"></i></i>ทะเบียนหนังสือรับ
+                                (ลับ)</a>
+                        </li>
+                        <li>
+                            <a href="/send" class="{% if url_name == 'send' %}active{% endif %}"><i
+                                    class="fa-regular fa-circle-up"></i>ทะเบียนหนังสือส่ง</a>
+                        </li>
+                        <li>
+                            <a href="/send/credential"
+                               class="{% if url_name == 'send_credential' %}active{% endif %}"><i
+                                    class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่ง
+                                (ลับ)</a>
+                        </li>
+                    </ul>
+                </li>
 
-            <span class="divider"><hr/></span>
+                <span class="divider"><hr/></span>
 
-            <li class="nav-item nav-item-has-children">
-                <a
-                        href="#1"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#ddmenu_2"
-                        aria-controls="ddmenu_2"
-                        aria-expanded="true"
-                        aria-label="Toggle navigation"
-                >
-                    <span class="text">ทะเบียนหนังสือคำสั่ง</span>
-                </a>
-                <ul id="ddmenu_2" class="collapse dropdown-nav show">
-                    <li>
-                        <a href="/order" class="{% if request.path == url_order %}active{% endif %}"><i class="fa-regular fa-file-text"></i>ทะเบียนหนังสือคำสั่ง</a>
-                    </li>
-                    <li>
-                        <a href="/order/specific"
-                           class="{% if request.path == url_order_specific %}active{% endif %}"><i class="fa-solid fa-file-text"></i>ทะเบียนหนังสือคำสั่งเฉพาะ</a>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
-</aside>
-<div class="overlay"></div>
+                <li class="nav-item nav-item-has-children">
+                    <a
+                            href="#1"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ddmenu_2"
+                            aria-controls="ddmenu_2"
+                            aria-expanded="true"
+                            aria-label="Toggle navigation"
+                    >
+                        <span class="text">ทะเบียนหนังสือคำสั่ง</span>
+                    </a>
+                    <ul id="ddmenu_2" class="collapse dropdown-nav show">
+                        <li>
+                            <a href="/order" class="{% if request.path == url_order %}active{% endif %}"><i
+                                    class="fa-regular fa-file-text"></i>ทะเบียนหนังสือคำสั่ง</a>
+                        </li>
+                        <li>
+                            <a href="/order/specific"
+                               class="{% if request.path == url_order_specific %}active{% endif %}"><i
+                                    class="fa-solid fa-file-text"></i>ทะเบียนหนังสือคำสั่งเฉพาะ</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    <div class="overlay"></div>
+{% endwith %}
 <!-- ======== sidebar-nav end =========== -->

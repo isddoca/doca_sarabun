@@ -3,6 +3,7 @@ from datetime import date, datetime
 
 import pytz
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
@@ -10,7 +11,7 @@ from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 
 from config import settings
 from .forms import DocReceiveModelForm, DocModelForm
-from .models import DocReceive, DocFile
+from .models import DocReceive, DocFile, DocTrace
 
 
 @login_required(login_url='/accounts/login')
@@ -28,6 +29,19 @@ class DocReceiveListView(ListView):
         current_group_id = self.request.user.groups.all()[0].id
         object_list = DocReceive.objects.filter(group_id=current_group_id, doc__doc_date__year=2022,
                                                 doc__credential__id=1).order_by('-receive_no')
+        return object_list
+
+
+@method_decorator(login_required, name='dispatch')
+class DocTraceListView(ListView):
+    model = DocTrace
+    template_name = 'doc_record/trace_index.html'
+    context_object_name = 'page_obj'
+
+    def get_queryset(self):
+        current_group_id = self.request.user.groups.all()[0].id
+        object_list = DocTrace.objects.filter(
+            Q(create_by=self.request.user) | Q(action_to_id=current_group_id))
         return object_list
 
 
@@ -65,6 +79,11 @@ def doc_receive_add(request):
             doc_receive_model.group = user.groups.all()[0]
             doc_receive_model.save()
             doc_receive_form.save_m2m()
+
+            send_to = doc_receive_model.send_to.all()
+            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_to_id=group_id)
+            for unit in send_to:
+                DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit)
 
             return HttpResponseRedirect('/receive')
     else:
@@ -109,7 +128,7 @@ def doc_receive_edit(request, id):
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
-            #ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
+            # ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
             files = request.FILES.getlist('file')
             if len(files) > 0:
                 for f in doc_old_files:
