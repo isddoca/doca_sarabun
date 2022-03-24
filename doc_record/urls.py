@@ -2,7 +2,8 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from config import settings
-from .views import index, DocReceiveListView, doc_receive_add, doc_receive_edit, doc_receive_detail, DocTraceListView
+from .views import index, DocReceiveListView, doc_receive_add, doc_receive_edit, doc_receive_detail, DocTraceListView, \
+    doc_trace_detail
 
 urlpatterns = [
     path('', index, name='receive'),
@@ -11,6 +12,7 @@ urlpatterns = [
     path('receive/<int:id>/edit/', doc_receive_edit, name='receive'),
     path('receive/add', doc_receive_add, name='receive'),
     path('trace', DocTraceListView.as_view(), name='trace'),
+    path('trace/<int:id>/', doc_trace_detail, name='trace'),
 ]
 
 if settings.DEBUG is True:

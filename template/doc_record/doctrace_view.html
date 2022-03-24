@@ -1,0 +1,101 @@
+{% extends 'doc_record/base.html' %}
+{% load static %}
+{% load sass_tags %}
+{% block css %}
+
+    <link rel="stylesheet" type="text/css" href="{% sass_src 'assets/css/timeline.scss' %}"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+
+{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>{% block page_title %} สถานะหนังสือ {% endblock %}</h2>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper mb-30">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">ติดตามหนังสือ</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#0">สถานะหนังสือ</a>
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        <div class="card-style mb-30">
+            <div class="row form-row">
+                <div class="form-group col-sm-1">
+                    <p class="fw-bold">ที่</p>
+                </div>
+                <div class="form-group col-sm-5">
+                    {{ doc_trace.doc.doc_no }}
+                </div>
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">ลงวันที่</p>
+                </div>
+                <div class="form-group col-sm-4">
+                    {{ doc_trace.doc.doc_date_th }}
+                </div>
+            </div>
+            <div class="row form-row">
+                <div class="form-group col-lg-1">
+                    <p class="fw-bold">จาก</p>
+                </div>
+                <div class="form-group col-lg-5">
+                    {{ doc_trace.doc.doc_from }}
+                </div>
+                <div class="form-group col-lg-1">
+                    <p class="fw-bold">ถึง</p>
+                </div>
+                <div class="form-group col-lg-5">
+                    {{ doc_trace.doc.doc_to }}
+                </div>
+            </div>
+
+            <div class="row form-row">
+                <div class="form-group col-lg-1">
+                    <p class="fw-bold">เรื่อง</p>
+                </div>
+                <div class="form-group col-lg-11">
+                    {{ doc_trace.doc.title }}
+                </div>
+            </div>
+
+            <ul class="sessions">
+                {% for trace in trace_status %}
+                    <li class="bullet">
+                        <div class="time">{{ trace.time }}</div>
+                        {% if trace.action_to %}
+                            <p>{{ trace.doc_status.name }} : {{ trace.action_to }}</p>
+                        {% else %}
+                            <p>{{ trace.doc_status.name }} : {{ trace.create_by.groups.all.0.name }}</p>
+                        {% endif %}
+                        <p class="small">ดำเนินการโดย
+                            : {{ trace.create_by.first_name }} {{ trace.create_by.last_name }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+{% endblock %}

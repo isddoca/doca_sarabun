@@ -1,5 +1,6 @@
 import os
 from datetime import date, datetime
+from pydoc import doc
 
 import pytz
 from django.contrib.auth.decorators import login_required
@@ -51,6 +52,14 @@ def doc_receive_detail(request, id):
     doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
     context = {'doc_receive': doc_receive, 'doc_files': doc_old_files}
     return render(request, 'doc_record/docreceive_view.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def doc_trace_detail(request, id):
+    doc_trace = DocTrace.objects.get(id=id)
+    trace_status = DocTrace.objects.filter(doc_id=doc_trace.doc_id)
+    context = {'doc_trace': doc_trace, 'trace_status': trace_status}
+    return render(request, 'doc_record/doctrace_view.html', context)
 
 
 @login_required(login_url='/accounts/login')
