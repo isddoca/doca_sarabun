@@ -90,6 +90,7 @@ class DocTrace(models.Model):
     create_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='create_by', blank=True, null=True,
                                   related_name='trace_create_by')
     doc = models.ForeignKey(Doc, models.DO_NOTHING)
+    done = models.BooleanField(default=False)
     doc_status = models.ForeignKey(DocStatus, on_delete=models.CASCADE, db_column='doc_status')
     note = models.TextField(blank=True, null=True)
 
