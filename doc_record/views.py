@@ -41,7 +41,7 @@ class DocTraceListView(ListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
         object_list = DocTrace.objects.filter(
-            Q(create_by=self.request.user) | Q(action_to_id=current_group_id)).order_by('-time')
+            Q(doc__create_by=self.request.user) | Q(action_to_id=current_group_id)).order_by('-time')
         return object_list
 
 
@@ -189,23 +189,23 @@ def doc_trace_action(request, id):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
     group = user.groups.all()[0]
-    doc_trace = DocTrace.objects.get(id=id)
+    current_doc_trace = DocTrace.objects.get(id=id)
 
     doc_receive_of_group = None
-    if doc_trace.doc_status_id == 3:
-        doc_receive_of_group = DocReceive.objects.get(doc=doc_trace.doc, group=group)
+    if current_doc_trace.doc_status_id == 3:
+        doc_receive_of_group = DocReceive.objects.get(doc=current_doc_trace.doc, group=group)
 
     if request.method == 'POST':
         doc_trace_form = DocTracePendingModelForm(request.POST)
         doc_receive_form = DocReceiveModelForm(request.POST)
         if doc_trace_form.is_valid():
-            doc_trace = doc_trace_form.save(commit=False)
-            doc_trace.done = True
-            doc_trace.save()
+            current_doc_trace.done = True
+            current_doc_trace.save()
+            doc_trace_save = doc_trace_form.save(commit=False)
             if 'reject' in doc_trace_form.data:
-                DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=3,
-                                        action_to=doc_trace.create_by.groups.all()[0],
-                                        create_by=user, time=datetime.now(timezone))
+                DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=3,
+                                        action_to=current_doc_trace.create_by.groups.all()[0],
+                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note)
             elif 'resend' in doc_trace_form.data:
                 doc_receive_model = doc_receive_form.save(commit=False)
                 doc_receive_model.id = doc_receive_of_group.id
@@ -214,27 +214,30 @@ def doc_trace_action(request, id):
                 doc_receive_model.group = doc_receive_of_group.group
                 doc_receive_model.save()
                 doc_receive_form.save_m2m()
-                current_unit = doc_trace.create_by.groups.all()[0]
-                pending_traces = DocTrace.objects.filter(doc=doc_trace.doc, doc_status_id=2, done=False)
+
+                current_unit = current_doc_trace.create_by.groups.all()[0]
+                pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, doc_status_id=2, done=False)
                 exclude_unit = []
+
                 for trace in pending_traces:
                     exclude_unit.append(trace.action_to)
                 send_to = doc_receive_model.send_to.all()
                 for send_unit in send_to:
                     if send_unit != current_unit and send_unit not in exclude_unit:  # exclude current unit
-                        DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=2, create_by=user, action_to=send_unit,
-                                                time=datetime.now(timezone))
+                        DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=2, create_by=user,
+                                                action_to=send_unit,
+                                                time=datetime.now(timezone), note=doc_trace_save.note)
             else:
-                DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=1,
+                DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1,
                                         action_to=user.groups.all()[0],
-                                        create_by=user, time=datetime.now(timezone))
-                DocReceive.objects.create(doc=doc_trace.doc, receive_no=get_docs_no(user, doc_trace.doc.credential), group=group)
+                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note)
+                DocReceive.objects.create(doc=current_doc_trace.doc,
+                                          receive_no=get_docs_no(user, current_doc_trace.doc.credential), group=group)
             return HttpResponseRedirect('/trace/pending')
 
     else:
-        doc_trace_form = DocTracePendingModelForm(instance=doc_trace)
+        doc_trace_form = DocTracePendingModelForm(instance=current_doc_trace)
         doc_receive_form = DocReceiveModelForm(instance=doc_receive_of_group)
 
-
-    context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': doc_trace}
+    context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace}
     return render(request, 'doc_record/doctrace_pending_view.html', context)
