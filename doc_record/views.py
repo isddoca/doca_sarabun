@@ -1,6 +1,5 @@
 import os
 from datetime import date, datetime
-from pydoc import doc
 
 import pytz
 from django.contrib.auth.decorators import login_required
@@ -8,10 +7,10 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView, DetailView, UpdateView, DeleteView
+from django.views.generic import ListView
 
 from config import settings
-from .forms import DocReceiveModelForm, DocModelForm
+from .forms import DocReceiveModelForm, DocModelForm, DocTracePendingModelForm
 from .models import DocReceive, DocFile, DocTrace
 
 
@@ -43,6 +42,19 @@ class DocTraceListView(ListView):
         current_group_id = self.request.user.groups.all()[0].id
         object_list = DocTrace.objects.filter(
             Q(create_by=self.request.user) | Q(action_to_id=current_group_id)).order_by('-time')
+        return object_list
+
+
+@method_decorator(login_required, name='dispatch')
+class DocTracePendingListView(ListView):
+    model = DocTrace
+    template_name = 'doc_record/trace_pending_index.html'
+    context_object_name = 'page_obj'
+
+    def get_queryset(self):
+        current_group_id = self.request.user.groups.all()[0].id
+        object_list = DocTrace.objects.filter(action_to_id=current_group_id, done=False).exclude(
+            doc_status_id=1).exclude(doc_status_id=3).exclude(doc_status_id=4).order_by('-time')
         return object_list
 
 
@@ -175,20 +187,34 @@ def get_docs_no(user, is_secret=False):
     return 1 if len(docs) == 0 else docs.last().receive_no + 1
 
 
-class DocReceiveDetailView(DetailView):
-    model = DocReceive
+@login_required(login_url='/accounts/login')
+def doc_trace_action(request, id):
+    timezone = pytz.timezone('Asia/Bangkok')
+    user = request.user
+    group = user.groups.all()[0]
+    doc_trace = DocTrace.objects.get(id=id)
+    if request.method == 'POST':
+        doc_trace_form = DocTracePendingModelForm(request.POST)
+        if doc_trace_form.is_valid():
+            print(doc_trace_form.data)
+            if 'reject' in doc_trace_form.data:
+                DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=3,
+                                        action_to=doc_trace.create_by.groups.all()[0],
+                                        create_by=user, time=datetime.now(timezone))
+            else:
+                DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=1,
+                                        action_to=user.groups.all()[0],
+                                        create_by=user, time=datetime.now(timezone))
+                DocReceive.objects.create(doc=doc_trace.doc, receive_no=get_docs_no(user, doc_trace.doc.credential), group=group)
+            doc_trace.done = True
+            doc_trace.save()
+            return HttpResponseRedirect('/trace/pending')
 
 
-class DocReceiveUpdateView(UpdateView):
-    model = DocReceive
-    fields = [
-        "receive_no"
-        "doc"
-        "action"
-        "note"
-    ]
 
 
-class DocReceiveDeleteView(DeleteView):
-    model = DocReceive
-    success_url = "/receive"
+    else:
+        doc_trace_form = DocTracePendingModelForm()
+
+    context = {'doc_trace_form': doc_trace_form, 'doc': doc_trace.doc}
+    return render(request, 'doc_record/doctrace_pending_view.html', context)

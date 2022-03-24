@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.forms import ClearableFileInput
 from pythainlp import thai_strftime
 
-from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc
+from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc, DocTrace
 
 URGENT = DocUrgent.objects.all().values_list("id", "name")
 CREDENTIAL = DocCredential.objects.all().values_list("id", "name")
@@ -59,8 +59,8 @@ class DocReceiveModelForm(forms.ModelForm):
     helper.add_input(Submit('submit', 'บันทึก', css_class='btn-primary'))
 
     send_to = forms.ModelMultipleChoiceField(queryset=Group.objects,
-                                            widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
-                                            label="ส่งไปยัง", required=False)
+                                             widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+                                             label="ส่งไปยัง", required=False)
 
     class Meta:
         model = DocReceive
@@ -69,3 +69,12 @@ class DocReceiveModelForm(forms.ModelForm):
         widgets = {'receive_no': forms.TextInput(),
                    'note': forms.TextInput(),
                    'action': forms.TextInput()}
+
+
+class DocTracePendingModelForm(forms.ModelForm):
+
+    class Meta:
+        model = DocTrace
+        fields = ['note']
+        labels = {'note': 'หมายเหตุ'}
+        widgets = {'note': forms.TextInput()}
