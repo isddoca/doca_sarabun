@@ -5,7 +5,8 @@
 
     <link rel="stylesheet" type="text/css" href="{% sass_src 'assets/css/timeline.scss' %}"/>
 
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.bootstrap4.min.css"/>
 
 
 {% endblock %}
@@ -43,13 +44,13 @@
                     <p class="fw-bold">ที่</p>
                 </div>
                 <div class="form-group col-sm-5">
-                    {{ doc.doc_no }}
+                    {{ doc_trace.doc.doc_no }}
                 </div>
-                <div class="form-group col-sm-2">
+                <div class="form-group col-sm-1">
                     <p class="fw-bold">ลงวันที่</p>
                 </div>
-                <div class="form-group col-sm-4">
-                    {{ doc.doc_date_th }}
+                <div class="form-group col-sm-5">
+                    {{ doc_trace.doc.doc_date_th }}
                 </div>
             </div>
             <div class="row form-row">
@@ -57,13 +58,13 @@
                     <p class="fw-bold">จาก</p>
                 </div>
                 <div class="form-group col-lg-5">
-                    {{ doc.doc_from }}
+                    {{ doc_trace.doc.doc_from }}
                 </div>
                 <div class="form-group col-lg-1">
                     <p class="fw-bold">ถึง</p>
                 </div>
                 <div class="form-group col-lg-5">
-                    {{ doc.doc_to }}
+                    {{ doc_trace.doc.doc_to }}
                 </div>
             </div>
 
@@ -72,17 +73,30 @@
                     <p class="fw-bold">เรื่อง</p>
                 </div>
                 <div class="form-group col-lg-11">
-                    {{ doc.title }}
+                    {{ doc_trace.doc.title }}
                 </div>
             </div>
 
             <form action="" method="post">
                 {% csrf_token %}
+
                 <div class="row form-row">
                     {{ doc_trace_form.note | as_crispy_field }}
                 </div>
-
-                <div class="mb-2">
+                {% if doc_trace.doc_status.id == 3 %}
+                    <div class="row form-row">
+                        {{ doc_receive_form.send_to | as_crispy_field }}
+                    </div>
+                    <div class="mb-2">
+                        <input type="submit"
+                               name="resend"
+                               value="แก้ไขหน่วยรับ"
+                               class="btn btn-primary"
+                               id="submit-id-accept"
+                        />
+                    </div>
+                {% else %}
+                    <div class="mb-2">
                     <input type="submit"
                            name="receive"
                            value="รับเอกสาร"
@@ -95,6 +109,7 @@
                            class="btn btn-danger"
                            id="submit-id-reject"
                     />
+                {% endif %}
 
                 </div>
 
@@ -107,4 +122,19 @@
 {% block js %}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
             integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
+    <script>
+        let option = {
+            delimiter: ",",
+            persist: false,
+            create: function (input) {
+                return {
+                    value: input,
+                    text: input,
+                };
+            },
+        }
+        let select = $(".selectmultiple").selectize(option);
+        let selectize = select[0].selectize;
+    </script>
 {% endblock %}

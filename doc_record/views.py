@@ -54,7 +54,7 @@ class DocTracePendingListView(ListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
         object_list = DocTrace.objects.filter(action_to_id=current_group_id, done=False).exclude(
-            doc_status_id=1).exclude(doc_status_id=3).exclude(doc_status_id=4).order_by('-time')
+            doc_status_id=1).order_by('-time')
         return object_list
 
 
@@ -102,14 +102,11 @@ def doc_receive_add(request):
             doc_receive_form.save_m2m()
 
             send_to = doc_receive_model.send_to.all()
-            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_to_id=group_id)
+            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_to_id=group_id,
+                                    time=datetime.now(timezone))
             for unit in send_to:
-                DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit)
-
-            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user)
-            if doc_receive_model.send_to.all():
-                for unit in doc_receive_model.send_to.all():
-                    DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit)
+                DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
+                                        time=datetime.now(timezone))
 
             return HttpResponseRedirect('/receive')
     else:
@@ -193,28 +190,51 @@ def doc_trace_action(request, id):
     user = request.user
     group = user.groups.all()[0]
     doc_trace = DocTrace.objects.get(id=id)
+
+    doc_receive_of_group = None
+    if doc_trace.doc_status_id == 3:
+        doc_receive_of_group = DocReceive.objects.get(doc=doc_trace.doc, group=group)
+
     if request.method == 'POST':
         doc_trace_form = DocTracePendingModelForm(request.POST)
+        doc_receive_form = DocReceiveModelForm(request.POST)
         if doc_trace_form.is_valid():
-            print(doc_trace_form.data)
+            doc_trace = doc_trace_form.save(commit=False)
+            doc_trace.done = True
+            doc_trace.save()
             if 'reject' in doc_trace_form.data:
                 DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=3,
                                         action_to=doc_trace.create_by.groups.all()[0],
                                         create_by=user, time=datetime.now(timezone))
+            elif 'resend' in doc_trace_form.data:
+                doc_receive_model = doc_receive_form.save(commit=False)
+                doc_receive_model.id = doc_receive_of_group.id
+                doc_receive_model.receive_no = doc_receive_of_group.receive_no
+                doc_receive_model.doc = doc_receive_of_group.doc
+                doc_receive_model.group = doc_receive_of_group.group
+                doc_receive_model.save()
+                doc_receive_form.save_m2m()
+                current_unit = doc_trace.create_by.groups.all()[0]
+                pending_traces = DocTrace.objects.filter(doc=doc_trace.doc, doc_status_id=2, done=False)
+                exclude_unit = []
+                for trace in pending_traces:
+                    exclude_unit.append(trace.action_to)
+                send_to = doc_receive_model.send_to.all()
+                for send_unit in send_to:
+                    if send_unit != current_unit and send_unit not in exclude_unit:  # exclude current unit
+                        DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=2, create_by=user, action_to=send_unit,
+                                                time=datetime.now(timezone))
             else:
                 DocTrace.objects.create(doc=doc_trace.doc, doc_status_id=1,
                                         action_to=user.groups.all()[0],
                                         create_by=user, time=datetime.now(timezone))
                 DocReceive.objects.create(doc=doc_trace.doc, receive_no=get_docs_no(user, doc_trace.doc.credential), group=group)
-            doc_trace.done = True
-            doc_trace.save()
             return HttpResponseRedirect('/trace/pending')
 
-
-
-
     else:
-        doc_trace_form = DocTracePendingModelForm()
+        doc_trace_form = DocTracePendingModelForm(instance=doc_trace)
+        doc_receive_form = DocReceiveModelForm(instance=doc_receive_of_group)
 
-    context = {'doc_trace_form': doc_trace_form, 'doc': doc_trace.doc}
+
+    context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': doc_trace}
     return render(request, 'doc_record/doctrace_pending_view.html', context)
