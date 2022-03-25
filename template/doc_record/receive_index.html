@@ -38,24 +38,31 @@
 
         <div class="card-style mb-30">
 
-            <div class="row">
-                <div class="col-auto">
-                    <label for="query_year" class="col-form-label">ปี</label>
+            <form action="" method="get">
+                <div class="row">
+                    <div class="col-auto">
+                        <label for="query_year" class="col-form-label">ปี</label>
+                    </div>
+
+                    <div class="col">
+                        <select class="form-select" aria-label="ปี" name="year">
+                            {% for year in query_year %}
+                                <option value="{{ year|date:'Y' }}"
+                                        {% if request.GET.year == year|date:'Y' %}selected{% endif %}>{{ year|date:'Y'|add:"543" }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">ค้นหา</button>
+                    </div>
+
+                    <div class="col-auto">
+                        <a type="button" class="btn btn-primary" href="add">ลงทะเบียนรับหนังสือ</a>
+                    </div>
                 </div>
-                <div class="col">
-                    <select class="form-select" aria-label="ปี" id="query_year">
-                        <option value="2565">2565</option>
-                        <option value="2564">2564</option>
-                        <option value="2563">2563</option>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary">ค้นหา</button>
-                </div>
-                <div class="col-auto">
-                    <a type="button" class="btn btn-primary" href="add">ลงทะเบียนรับหนังสือ</a>
-                </div>
-            </div>
+            </form>
+
 
             <div class="table-responsive mt-3">
                 <table id="datatable" class="table table-sm">

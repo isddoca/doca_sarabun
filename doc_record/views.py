@@ -8,10 +8,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from django_filters.views import FilterView
 
 from config import settings
 from .forms import DocReceiveModelForm, DocModelForm, DocTracePendingModelForm
-from .models import DocReceive, DocFile, DocTrace
+from .models import DocReceive, DocFile, DocTrace, Doc
 
 
 @login_required(login_url='/accounts/login')
@@ -20,16 +21,23 @@ def index(request):
 
 
 @method_decorator(login_required, name='dispatch')
-class DocReceiveListView(ListView):
+class DocReceiveListView(FilterView):
     model = DocReceive
     template_name = 'doc_record/receive_index.html'
     context_object_name = 'page_obj'
 
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        object_list = DocReceive.objects.filter(group_id=current_group_id, doc__doc_date__year=2022,
-                                                doc__credential__id=1).order_by('-receive_no')
-        return object_list
+        search = self.request.GET.get('year', datetime.now().year)
+        print(search)
+        return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
+                                         doc__credential__id=1).order_by('-receive_no')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(DocReceiveListView, self).get_context_data(**kwargs)
+        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct().order_by('-create_time')
+        print(context['query_year'])
+        return context
 
 
 @method_decorator(login_required, name='dispatch')
