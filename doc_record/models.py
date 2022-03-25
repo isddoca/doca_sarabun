@@ -66,7 +66,8 @@ class DocCredential(models.Model):
 class DocSend(models.Model):
     send_no = models.IntegerField(blank=True, null=True)
     doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True, related_name='send_group')
+    send_to = models.ManyToManyField(Group, blank=True)
     action = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
 
@@ -110,7 +111,7 @@ class DocTrace(models.Model):
 class DocReceive(models.Model):
     receive_no = models.IntegerField(blank=True, null=True)
     doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True, related_name='current_group')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True, related_name='receive_group')
     send_to = models.ManyToManyField(Group, blank=True)
     action = models.TextField(blank=True, null=True)
     note = models.TextField(blank=True, null=True)
