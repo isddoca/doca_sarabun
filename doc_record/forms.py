@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.forms import ClearableFileInput
 from pythainlp import thai_strftime
 
-from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc, DocTrace
+from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc, DocTrace, DocSend
 
 URGENT = DocUrgent.objects.all().values_list("id", "name")
 CREDENTIAL = DocCredential.objects.all().values_list("id", "name")
@@ -75,8 +75,17 @@ class DocReceiveModelForm(forms.ModelForm):
                    'action': forms.TextInput()}
 
 
-class DocTracePendingModelForm(forms.ModelForm):
+class DocSendModelForm(DocReceiveModelForm):
+    class Meta:
+        model = DocSend
+        fields = ['send_no', 'send_to', 'action', 'note']
+        labels = {'send_no': 'เลขส่ง', 'action': 'การปฏิบัติ', 'note': 'หมายเหตุ'}
+        widgets = {'send_no': forms.TextInput(),
+                   'note': forms.TextInput(),
+                   'action': forms.TextInput()}
 
+
+class DocTracePendingModelForm(forms.ModelForm):
     class Meta:
         model = DocTrace
         fields = ['note']
