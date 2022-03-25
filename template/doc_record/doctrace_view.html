@@ -82,12 +82,11 @@
             <ul class="sessions">
                 {% for trace in trace_status %}
                     <li class="bullet">
-                        <div class="time">{{ trace.time }}</div>
-                        {% if trace.action_to %}
-                            <p class="{% if trace.doc_status_id == 1 %}text-success{% elif trace.doc_status_id == 3 %}text-danger{% else %}text-success{% endif %}">{{ trace.doc_status.name }}
-                                : {{ trace.action_to }}</p>
+                        <div class="time">{{ trace.time_th }}</div>
+                        {% if trace.action_from == trace.action_to %}
+                            <p>{{ trace.action_from }} รับเอกสารเข้าระบบ
                         {% else %}
-                            <p>{{ trace.doc_status.name }} : {{ trace.create_by.groups.all.0.name }}</p>
+                            <p>{{ trace.action_from }} {{ trace.doc_status.name }}ไปยัง {{ trace.action_to }}</p>
                         {% endif %}
                         <p class="small">ดำเนินการโดย
                             : {{ trace.create_by.first_name }} {{ trace.create_by.last_name }}</p>

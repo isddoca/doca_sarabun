@@ -82,7 +82,7 @@ def doc_receive_detail(request, id):
 @login_required(login_url='/accounts/login')
 def doc_trace_detail(request, id):
     doc_trace = DocTrace.objects.get(id=id)
-    trace_status = DocTrace.objects.filter(doc_id=doc_trace.doc_id)
+    trace_status = DocTrace.objects.filter(doc_id=doc_trace.doc_id).order_by('time')
     context = {'doc_trace': doc_trace, 'trace_status': trace_status}
     return render(request, 'doc_record/doctrace_view.html', context)
 
@@ -118,11 +118,11 @@ def doc_receive_add(request):
             doc_receive_form.save_m2m()
 
             send_to = doc_receive_model.send_to.all()
-            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_to_id=group_id,
-                                    time=datetime.now(timezone))
+            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_from_id=group_id, done=True,
+                                    action_to_id=group_id, time=datetime.now(timezone))
             for unit in send_to:
                 DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
-                                        time=datetime.now(timezone))
+                                        action_from_id=group_id, time=datetime.now(timezone))
 
             if 'credential' in request.path:
                 return HttpResponseRedirect('/receive/credential')
@@ -150,6 +150,7 @@ def generate_doc_id(group_id):
 def doc_receive_edit(request, id):
     doc_receive = DocReceive.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
+    current_group = request.user.groups.all()[0]
     doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
     if request.method == 'POST':
         print("POST")
@@ -174,7 +175,7 @@ def doc_receive_edit(request, id):
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.id = doc_receive.id
             doc_receive_model.doc = doc_model
-            doc_receive_model.group = user.groups.all()[0]
+            doc_receive_model.group = current_group
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
@@ -187,6 +188,15 @@ def doc_receive_edit(request, id):
 
                 for f in files:
                     DocFile.objects.create(file=f, doc=doc_model)
+
+            send_to = doc_receive_model.send_to.all()
+            DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=1, create_by=user,
+                                              action_to=current_group, action_from=current_group, done=True,
+                                              defaults={'time': datetime.now(timezone)})
+            for unit in send_to:
+                DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
+                                                  action_from=current_group, action_to=unit,
+                                                  defaults={'time': datetime.now(timezone)})
 
             if 'credential' in request.path:
                 return HttpResponseRedirect('/receive/credential')
@@ -206,20 +216,20 @@ def doc_receive_edit(request, id):
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files}
     return render(request, 'doc_record/docreceive_form.html', context)
 
+
 @login_required(login_url='/accounts/login')
 def doc_receive_delete(request, id):
     if request.method == "POST":
         doc_receive = get_object_or_404(DocReceive, id=id)
         units = doc_receive.send_to.all()
         for unit in units:
-            doc_trace = DocTrace.objects.filter(create_by=request.user, doc=doc_receive.doc)
+            doc_trace = DocTrace.objects.filter(action_to=unit, doc=doc_receive.doc)
             doc_trace.delete()
         doc_receive.delete()
     if 'credential' in request.path:
         return HttpResponseRedirect('/receive/credential')
     else:
         return HttpResponseRedirect('/receive')
-
 
 
 def get_docs_no(user, is_secret=False):
@@ -246,40 +256,46 @@ def doc_trace_action(request, id):
 
     if request.method == 'POST':
         doc_trace_form = DocTracePendingModelForm(request.POST)
-        doc_receive_form = DocReceiveModelForm(request.POST)
         if doc_trace_form.is_valid():
             current_doc_trace.done = True
             current_doc_trace.save()
             doc_trace_save = doc_trace_form.save(commit=False)
             if 'reject' in doc_trace_form.data:
                 DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=3,
+                                        action_from=group,
                                         action_to=current_doc_trace.create_by.groups.all()[0],
                                         create_by=user, time=datetime.now(timezone), note=doc_trace_save.note)
             elif 'resend' in doc_trace_form.data:
+                doc_receive_form = DocReceiveModelForm(request.POST)
                 doc_receive_model = doc_receive_form.save(commit=False)
                 doc_receive_model.id = doc_receive_of_group.id
                 doc_receive_model.receive_no = doc_receive_of_group.receive_no
                 doc_receive_model.doc = doc_receive_of_group.doc
                 doc_receive_model.group = doc_receive_of_group.group
+                doc_receive_model.note = doc_receive_of_group.note
                 doc_receive_model.save()
                 doc_receive_form.save_m2m()
 
                 current_unit = current_doc_trace.create_by.groups.all()[0]
-                pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, doc_status_id=2, done=False)
-                exclude_unit = []
+                pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=False).exclude(doc_status_id__gt=1)
 
+                exclude_unit = []
                 for trace in pending_traces:
                     exclude_unit.append(trace.action_to)
+
                 send_to = doc_receive_model.send_to.all()
                 for send_unit in send_to:
                     if send_unit != current_unit and send_unit not in exclude_unit:  # exclude current unit
-                        DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=2, create_by=user,
-                                                action_to=send_unit,
-                                                time=datetime.now(timezone), note=doc_trace_save.note)
+                        try:
+                            DocTrace.objects.get(doc=current_doc_trace.doc, doc_status_id=2, action_from=group,
+                                                 action_to=send_unit, done=True)
+                        except DocTrace.DoesNotExist:
+                            DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=2, create_by=user,
+                                                    action_to=send_unit, action_from=group,
+                                                    time=datetime.now(timezone), note=doc_trace_save.note)
             else:
-                DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1,
-                                        action_to=user.groups.all()[0],
-                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note)
+                DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1, action_to=group, action_from=group,
+                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note, done=True)
                 DocReceive.objects.create(doc=current_doc_trace.doc,
                                           receive_no=get_docs_no(user, current_doc_trace.doc.credential), group=group)
             return HttpResponseRedirect('/trace/pending')

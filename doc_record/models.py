@@ -85,6 +85,8 @@ class DocStatus(models.Model):
 
 class DocTrace(models.Model):
     time = models.DateTimeField(blank=True, null=True)
+    action_from = models.ForeignKey(Group, on_delete=models.CASCADE, db_column='action_from', blank=True, null=True,
+                                    related_name='trace_action_from')
     action_to = models.ForeignKey(Group, on_delete=models.CASCADE, db_column='action_to', blank=True, null=True,
                                   related_name='trace_action_to')
     create_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='create_by', blank=True, null=True,
@@ -100,6 +102,9 @@ class DocTrace(models.Model):
 
     def __str__(self):
         return self.action_to.name
+
+    def time_th(self):
+        return thai_strftime(self.time, "%d %b %Y, %H:%M")
 
 
 class DocReceive(models.Model):
