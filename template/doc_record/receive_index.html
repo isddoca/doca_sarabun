@@ -58,7 +58,8 @@
                     </div>
 
                     <div class="col-auto">
-                        <a type="button" class="btn btn-primary" href="add">ลงทะเบียนรับหนังสือ</a>
+                        <a type="button" class="btn btn-primary"
+                           href="{% if 'credential' in request.path %}credential/add{% else %}add{% endif %}">ลงทะเบียนรับหนังสือ</a>
                     </div>
                 </div>
             </form>
@@ -98,7 +99,8 @@
                             <td class="text-center">
                                 <div class="row">
                                     <div class="col">
-                                        <a href="{{ data.id }}/edit" class="btn btn-success m-1"><i
+
+                                        <a href="{% if 'credential' in request.path %}credential/{{ data.id }}/edit{% else %}{{ data.id }}/edit{% endif %}" class="btn btn-success m-1"><i
                                                 class="fas fa-pencil-alt"></i></a>
                                         <a href="" class="btn btn-danger m-1"><i class="fas fa-trash-alt"></i></a>
                                     </div>

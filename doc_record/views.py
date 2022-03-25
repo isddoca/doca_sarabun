@@ -8,10 +8,9 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
-from django_filters.views import FilterView
 
 from config import settings
-from .forms import DocReceiveModelForm, DocModelForm, DocTracePendingModelForm
+from .forms import DocReceiveModelForm, DocModelForm, DocTracePendingModelForm, DocCredentialModelForm
 from .models import DocReceive, DocFile, DocTrace, Doc
 
 
@@ -21,7 +20,7 @@ def index(request):
 
 
 @method_decorator(login_required, name='dispatch')
-class DocReceiveListView(FilterView):
+class DocReceiveListView(ListView):
     model = DocReceive
     template_name = 'doc_record/receive_index.html'
     context_object_name = 'page_obj'
@@ -29,15 +28,22 @@ class DocReceiveListView(FilterView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
         search = self.request.GET.get('year', datetime.now().year)
-        print(search)
         return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
                                          doc__credential__id=1).order_by('-receive_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocReceiveListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct().order_by('-create_time')
-        print(context['query_year'])
         return context
+
+
+@method_decorator(login_required, name='dispatch')
+class DocReceiveCredentialListView(DocReceiveListView):
+    def get_queryset(self):
+        current_group_id = self.request.user.groups.all()[0].id
+        search = self.request.GET.get('year', datetime.now().year)
+        return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
+                                         doc__credential__id__gt=1).order_by('-receive_no')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -54,10 +60,8 @@ class DocTraceListView(ListView):
 
 
 @method_decorator(login_required, name='dispatch')
-class DocTracePendingListView(ListView):
-    model = DocTrace
+class DocTracePendingListView(DocTraceListView):
     template_name = 'doc_record/trace_pending_index.html'
-    context_object_name = 'page_obj'
 
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
@@ -88,7 +92,10 @@ def doc_receive_add(request):
     user = request.user
     group_id = user.groups.all()[0].id
     if request.method == 'POST':
-        doc_form = DocModelForm(request.POST, request.FILES)
+        if 'credential' in request.path:
+            doc_form = DocCredentialModelForm(request.POST, request.FILES)
+        else:
+            doc_form = DocModelForm(request.POST, request.FILES)
         doc_receive_form = DocReceiveModelForm(request.POST)
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
@@ -116,10 +123,17 @@ def doc_receive_add(request):
                 DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
                                         time=datetime.now(timezone))
 
-            return HttpResponseRedirect('/receive')
+            if 'credential' in request.path:
+                return HttpResponseRedirect('/receive/credential')
+            else:
+                return HttpResponseRedirect('/receive')
     else:
-        doc_form = DocModelForm(initial={'id': generate_doc_id(group_id)})
-        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user)})
+        if 'credential' in request.path:
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(group_id)})
+            doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=True)})
+        else:
+            doc_form = DocModelForm(initial={'id': generate_doc_id(group_id)})
+            doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=False)})
 
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form}
     return render(request, 'doc_record/docreceive_form.html', context)
@@ -139,7 +153,11 @@ def doc_receive_edit(request, id):
     if request.method == 'POST':
         print("POST")
         user = request.user
-        doc_form = DocModelForm(request.POST, request.FILES)
+
+        if 'credential' in request.path:
+            doc_form = DocCredentialModelForm(request.POST, request.FILES)
+        else:
+            doc_form = DocModelForm(request.POST, request.FILES)
         doc_receive_form = DocReceiveModelForm(request.POST)
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
@@ -169,12 +187,19 @@ def doc_receive_edit(request, id):
                 for f in files:
                     DocFile.objects.create(file=f, doc=doc_model)
 
-            return HttpResponseRedirect('/receive')
+            if 'credential' in request.path:
+                return HttpResponseRedirect('/receive/credential')
+            else:
+                return HttpResponseRedirect('/receive')
     else:
         tmp_doc_date = doc_receive.doc.doc_date
         doc_receive.doc.doc_date = tmp_doc_date.replace(year=2565)
-        doc_form = DocModelForm(instance=doc_receive.doc)
-        doc_receive_form = DocReceiveModelForm(instance=doc_receive)
+        if 'credential' in request.path:
+            doc_form = DocCredentialModelForm(instance=doc_receive.doc)
+            doc_receive_form = DocReceiveModelForm(instance=doc_receive)
+        else:
+            doc_form = DocModelForm(instance=doc_receive.doc)
+            doc_receive_form = DocReceiveModelForm(instance=doc_receive)
 
     print(doc_old_files)
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files}

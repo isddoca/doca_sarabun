@@ -41,7 +41,7 @@ class DocModelForm(forms.ModelForm):
                                                              'data-date-language': "th-th"}))
 
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน')
-    credential = forms.ModelChoiceField(queryset=DocCredential.objects, empty_label=None, label='ชั้นความลับ')
+    credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id=1), empty_label=None, label='ชั้นความลับ')
     file = forms.FileField(widget=ClearableFileInput(attrs={'multiple': True}), required=False, label='ไฟล์เอกสาร')
 
     class Meta:
@@ -52,6 +52,10 @@ class DocModelForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(),
         }
+
+
+class DocCredentialModelForm(DocModelForm):
+    credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id__gt=1), empty_label=None, label='ชั้นความลับ')
 
 
 class DocReceiveModelForm(forms.ModelForm):
