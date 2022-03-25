@@ -80,8 +80,6 @@ def doc_send_add(request):
             doc_send_form.save_m2m()
 
             send_to = doc_send_model.send_to.all()
-            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_from_id=group_id, done=True,
-                                    action_to_id=group_id, time=datetime.now(timezone))
             for unit in send_to:
                 DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
                                         action_from_id=group_id, time=datetime.now(timezone))
@@ -152,9 +150,6 @@ def doc_send_edit(request, id):
                     DocFile.objects.create(file=f, doc=doc_model)
 
             send_to = doc_send_model.send_to.all()
-            DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=1, create_by=user,
-                                              action_to=current_group, action_from=current_group, done=True,
-                                              defaults={'time': datetime.now(timezone)})
             for unit in send_to:
                 DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
                                                   action_from=current_group, action_to=unit,
