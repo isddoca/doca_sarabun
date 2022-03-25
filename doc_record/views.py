@@ -33,7 +33,8 @@ class DocReceiveListView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocReceiveListView, self).get_context_data(**kwargs)
-        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct().order_by('-create_time')
+        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        print(context['query_year'])
         return context
 
 
