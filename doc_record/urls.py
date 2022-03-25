@@ -2,23 +2,34 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from config import settings
-from .views import index, DocReceiveListView, doc_receive_add, doc_receive_edit, doc_receive_detail, DocTraceListView, \
-    doc_trace_detail, DocTracePendingListView, doc_trace_action, DocReceiveCredentialListView, doc_receive_delete
+from .views import base
+from .views import receive
+from .views import send
+from .views import trace
+
 
 urlpatterns = [
-    path('', index, name='receive'),
-    path('receive/', DocReceiveListView.as_view(), name='receive'),
-    path('receive/<int:id>/', doc_receive_detail, name='receive'),
-    path('receive/<int:id>/edit/', doc_receive_edit, name='receive'),
-    path('receive/<int:id>/delete/', doc_receive_delete, name='receive_delete'),
-    path('receive/add', doc_receive_add, name='receive'),
-    path('receive/credential', DocReceiveCredentialListView.as_view(), name='receive_credential'),
-    path('receive/credential/add', doc_receive_add, name='receive_credential'),
-    path('receive/credential/<int:id>/edit/', doc_receive_edit, name='receive_credential'),
-    path('trace', DocTraceListView.as_view(), name='trace'),
-    path('trace/<int:id>/', doc_trace_detail, name='trace'),
-    path('trace/pending/', DocTracePendingListView.as_view(), name='trace_pending'),
-    path('trace/pending/<int:id>', doc_trace_action, name='trace_pending'),
+    path('', base.index, name='receive'),
+    path('receive/', receive.DocReceiveListView.as_view(), name='receive'),
+    path('receive/<int:id>/', receive.doc_receive_detail, name='receive'),
+    path('receive/<int:id>/edit/', receive.doc_receive_edit, name='receive'),
+    path('receive/<int:id>/delete/', receive.doc_receive_delete, name='receive_delete'),
+    path('receive/add', receive.doc_receive_add, name='receive'),
+    path('receive/credential', receive.DocReceiveCredentialListView.as_view(), name='receive_credential'),
+    path('receive/credential/add', receive.doc_receive_add, name='receive_credential'),
+    path('receive/credential/<int:id>/edit/', receive.doc_receive_edit, name='receive_credential'),
+    path('send/', send.DocSendListView.as_view(), name='send'),
+    path('send/<int:id>/', send.doc_send_detail, name='send'),
+    path('send/<int:id>/edit/', send.doc_send_edit, name='send'),
+    path('send/<int:id>/delete/', send.doc_send_delete, name='send_delete'),
+    path('send/add', send.doc_send_add, name='send'),
+    path('send/credential', send.DocSendCredentialListView.as_view(), name='send_credential'),
+    path('send/credential/add', send.doc_send_add, name='send_credential'),
+    path('send/credential/<int:id>/edit/', send.doc_send_edit, name='send_credential'),
+    path('trace', trace.DocTraceListView.as_view(), name='trace'),
+    path('trace/<int:id>/', trace.doc_trace_detail, name='trace'),
+    path('trace/pending/', trace.DocTracePendingListView.as_view(), name='trace_pending'),
+    path('trace/pending/<int:id>', trace.doc_trace_action, name='trace_pending'),
 
 ]
 
