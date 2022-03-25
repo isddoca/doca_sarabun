@@ -5,7 +5,7 @@ import pytz
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
@@ -205,6 +205,21 @@ def doc_receive_edit(request, id):
     print(doc_old_files)
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files}
     return render(request, 'doc_record/docreceive_form.html', context)
+
+@login_required(login_url='/accounts/login')
+def doc_receive_delete(request, id):
+    if request.method == "POST":
+        doc_receive = get_object_or_404(DocReceive, id=id)
+        units = doc_receive.send_to.all()
+        for unit in units:
+            doc_trace = DocTrace.objects.filter(create_by=request.user, doc=doc_receive.doc)
+            doc_trace.delete()
+        doc_receive.delete()
+    if 'credential' in request.path:
+        return HttpResponseRedirect('/receive/credential')
+    else:
+        return HttpResponseRedirect('/receive')
+
 
 
 def get_docs_no(user, is_secret=False):

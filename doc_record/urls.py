@@ -3,13 +3,14 @@ from django.urls import path
 
 from config import settings
 from .views import index, DocReceiveListView, doc_receive_add, doc_receive_edit, doc_receive_detail, DocTraceListView, \
-    doc_trace_detail, DocTracePendingListView, doc_trace_action, DocReceiveCredentialListView
+    doc_trace_detail, DocTracePendingListView, doc_trace_action, DocReceiveCredentialListView, doc_receive_delete
 
 urlpatterns = [
     path('', index, name='receive'),
     path('receive/', DocReceiveListView.as_view(), name='receive'),
     path('receive/<int:id>/', doc_receive_detail, name='receive'),
     path('receive/<int:id>/edit/', doc_receive_edit, name='receive'),
+    path('receive/<int:id>/delete/', doc_receive_delete, name='receive_delete'),
     path('receive/add', doc_receive_add, name='receive'),
     path('receive/credential', DocReceiveCredentialListView.as_view(), name='receive_credential'),
     path('receive/credential/add', doc_receive_add, name='receive_credential'),
