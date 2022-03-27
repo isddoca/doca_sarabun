@@ -13,12 +13,6 @@
                             <i class="lni lni-chevron-left me-2"></i> เมนู
                         </button>
                     </div>
-                    <div class="header-search d-none d-md-flex">
-                        <form action="#">
-                            <input type="text" placeholder="Search..."/>
-                            <button><i class="lni lni-search-alt"></i></button>
-                        </form>
-                    </div>
                 </div>
             </div>
             <div class="col-lg-7 col-md-7 col-6">
@@ -33,48 +27,28 @@
                                 aria-expanded="false"
                         >
                             <i class="lni lni-envelope"></i>
-                            <span>3</span>
+                            {% if pending_docs %}
+                                <span>{{ pending_docs|length }}</span>
+                            {% endif %}
                         </button>
                         <ul
                                 class="dropdown-menu dropdown-menu-end"
                                 aria-labelledby="message"
                         >
-                            <li>
-                                <a href="#0">
-                                    <div class="image">
-                                        <img src="assets/images/lead/lead-5.png" alt=""/>
-                                    </div>
-                                    <div class="content">
-                                        <h6>Jacob Jones</h6>
-                                        <p>Hey!I can across your profile and ...</p>
-                                        <span>10 mins ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#0">
-                                    <div class="image">
-                                        <img src="assets/images/lead/lead-3.png" alt=""/>
-                                    </div>
-                                    <div class="content">
-                                        <h6>John Doe</h6>
-                                        <p>Would you mind please checking out</p>
-                                        <span>12 mins ago</span>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#0">
-                                    <div class="image">
-                                        <img src="assets/images/lead/lead-2.png" alt=""/>
-                                    </div>
-                                    <div class="content">
-                                        <h6>Anee Lee</h6>
-                                        <p>Hey! are you available for freelance?</p>
-                                        <span>1h ago</span>
-                                    </div>
-                                </a>
-                            </li>
+                            {% for doc in pending_docs %}
+                                <li>
+                                    <a href="/trace/pending/{{ doc.id }}">
+                                        <div class="image">
+                                            <img src="assets/images/lead/lead-5.png" alt=""/>
+                                        </div>
+                                        <div class="content">
+                                            <h6>{{ doc.action_from }}</h6>
+                                            <p>{{ doc.action_from }} {{ doc.doc_status.name }}ไปยัง {{ doc.action_to }}</p>
+                                            <span>{{ doc.time_th }}</span>
+                                        </div>
+                                    </a>
+                                </li>
+                            {% endfor %}
                         </ul>
                     </div>
                     <!-- message end -->
