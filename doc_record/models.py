@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from django.contrib.auth.models import User, Group
@@ -106,7 +106,7 @@ class DocTrace(models.Model):
         return self.action_to.name
 
     def time_th(self):
-        return thai_strftime(self.time, "%d %b %Y, %H:%M")
+        return thai_strftime(self.time + timedelta(hours=7), "%d %b %Y, %H:%M")
 
 
 class DocReceive(models.Model):
