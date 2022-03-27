@@ -11,6 +11,7 @@ from django.views.generic import ListView
 from config import settings
 from doc_record.forms import DocModelForm, DocCredentialModelForm, DocSendModelForm
 from doc_record.models import DocFile, DocTrace, Doc, DocSend
+from doc_record.views.base import generate_doc_id
 
 
 @method_decorator(login_required, name='dispatch')
@@ -63,7 +64,7 @@ def doc_send_add(request):
 
         if doc_form.is_valid() and doc_send_form.is_valid():
             doc_model = doc_form.save(commit=False)
-            doc_model.id = generate_doc_id(group_id)
+            doc_model.id = generate_doc_id()
             doc_model.active = 1
             doc_model.create_time = datetime.now(timezone)
             doc_model.create_by = user
@@ -90,20 +91,14 @@ def doc_send_add(request):
                 return HttpResponseRedirect('/send')
     else:
         if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(group_id)})
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
             doc_send_form = DocSendModelForm(initial={'send_no': get_docs_no(request.user, is_secret=True)})
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id(group_id)})
+            doc_form = DocModelForm(initial={'id': generate_doc_id()})
             doc_send_form = DocSendModelForm(initial={'send_no': get_docs_no(request.user, is_secret=False)})
 
     context = {'doc_form': doc_form, 'doc_send_form': doc_send_form}
     return render(request, 'doc_record/docsend_form.html', context)
-
-
-def generate_doc_id(group_id):
-    row_count = DocSend.objects.filter(doc__doc_date__year=date.today().year).count() + 1
-    doc_id = "{year}-{no}".format(year=date.today().year, no=f'{row_count:06}')
-    return doc_id
 
 
 @login_required(login_url='/accounts/login')

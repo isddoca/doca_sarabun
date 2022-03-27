@@ -11,6 +11,7 @@ from django.views.generic import ListView
 from config import settings
 from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm
 from doc_record.models import DocReceive, DocFile, DocTrace, Doc
+from doc_record.views.base import generate_doc_id
 
 
 @method_decorator(login_required, name='dispatch')
@@ -63,7 +64,7 @@ def doc_receive_add(request):
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
             doc_model = doc_form.save(commit=False)
-            doc_model.id = generate_doc_id(group_id)
+            doc_model.id = generate_doc_id()
             doc_model.active = 1
             doc_model.create_time = datetime.now(timezone)
             doc_model.create_by = user
@@ -92,20 +93,14 @@ def doc_receive_add(request):
                 return HttpResponseRedirect('/receive')
     else:
         if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(group_id)})
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
             doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=True)})
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id(group_id)})
+            doc_form = DocModelForm(initial={'id': generate_doc_id()})
             doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=False)})
 
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form}
     return render(request, 'doc_record/docreceive_form.html', context)
-
-
-def generate_doc_id(group_id):
-    row_count = DocReceive.objects.filter(doc__doc_date__year=date.today().year).count() + 1
-    doc_id = "{year}-{no}".format(year=date.today().year, no=f'{row_count:06}')
-    return doc_id
 
 
 @login_required(login_url='/accounts/login')
