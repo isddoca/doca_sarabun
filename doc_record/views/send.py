@@ -107,9 +107,15 @@ def doc_send_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
     group = user.groups.all()[0]
+
+    parent_nav_title = "ทะเบียนหนังสือส่ง"
+    parent_nav_path = "/send"
+    title = "ลงทะเบียนส่งหนังสือ"
+
     is_sent_outside = "out" in request.path
+    is_credential = 'credential' in request.path
     if request.method == 'POST':
-        if 'credential' in request.path:
+        if is_credential:
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
@@ -134,7 +140,7 @@ def doc_send_add(request):
             doc_send_form.save_m2m()
 
             if is_sent_outside:
-                if 'credential' in request.path:
+                if is_credential:
                     return HttpResponseRedirect('/send/out/credential')
                 else:
                     return HttpResponseRedirect('/send/out')
@@ -143,29 +149,34 @@ def doc_send_add(request):
                 for unit in send_to:
                     DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
                                             action_from=group, time=datetime.now(timezone))
-                if 'credential' in request.path:
+                if is_credential:
                     return HttpResponseRedirect('/send/credential')
                 else:
                     return HttpResponseRedirect('/send')
 
     else:
-        doca_group = Group.objects.get(id=1)
-        if 'credential' in request.path:
-            send_no = get_send_no(request.user, is_secret=True, is_outside=is_sent_outside)
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(),
-                                                       'doc_no': get_doc_no(doca_group, send_no) if is_sent_outside else get_doc_no(
-                                                           group, send_no)})
-            doc_send_form = DocSendModelForm(
-                initial={'send_no': send_no})
+        send_no = get_send_no(request.user, is_secret=is_credential, is_outside=is_sent_outside)
+        doc_no = get_doc_no(group, is_outside=is_sent_outside, send_no=send_no)
+        doc_send_form = DocSendModelForm(initial={'send_no': send_no})
+        if is_credential:
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
+            if is_sent_outside:
+                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
+                parent_nav_path = "/send/credential/out"
+                title = "ลงทะเบียนส่งหนังสือภายนอกหน่วย (ลับ)"
+            else:
+                parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
+                parent_nav_path = "/send/credential"
+                title = "ลงทะเบียนส่งหนังสือ (ลับ)"
         else:
-            send_no = get_send_no(request.user, is_secret=False, is_outside=is_sent_outside)
-            doc_form = DocModelForm(initial={'id': generate_doc_id(),
-                                             'doc_no': get_doc_no(doca_group, send_no) if is_sent_outside else get_doc_no(group,
-                                                                                                              send_no)})
-            doc_send_form = DocSendModelForm(
-                initial={'send_no': send_no})
+            doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
+            if is_sent_outside:
+                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
+                parent_nav_path = "/send/credential/out"
+                title = "ลงทะเบียนส่งหนังสือภายนอกหน่วย"
 
-    context = {'doc_form': doc_form, 'doc_send_form': doc_send_form}
+    context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'title': title,
+               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docsend_out_form.html' if is_sent_outside else 'doc_record/docsend_form.html',
                   context)
 
@@ -175,13 +186,19 @@ def doc_send_edit(request, id):
     doc_send = DocSend.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
     current_group = request.user.groups.all()[0]
+
+    parent_nav_title = "ทะเบียนหนังสือส่ง"
+    parent_nav_path = "/send"
+    title = "แก้ไขทะเบียนส่งหนังสือ"
+
     is_sent_outside = "out" in request.path
+    is_credential = 'credential' in request.path
+
     doc_old_files = DocFile.objects.filter(doc=doc_send.doc)
     if request.method == 'POST':
-        print("POST")
         user = request.user
 
-        if 'credential' in request.path:
+        if is_credential:
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
@@ -221,26 +238,39 @@ def doc_send_edit(request, id):
                                                   defaults={'time': datetime.now(timezone)})
 
             if is_sent_outside:
-                if 'credential' in request.path:
+                if is_credential:
                     return HttpResponseRedirect('/send/out/credential')
                 else:
                     return HttpResponseRedirect('/send/out')
             else:
-                if 'credential' in request.path:
+                if is_credential:
                     return HttpResponseRedirect('/send/credential')
                 else:
                     return HttpResponseRedirect('/send')
     else:
         tmp_doc_date = doc_send.doc.doc_date
         doc_send.doc.doc_date = tmp_doc_date.replace(year=2565)
-        if 'credential' in request.path:
+        if is_credential:
+            if is_sent_outside:
+                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
+                parent_nav_path = "/send/credential/out"
+                title = "แก้ไขทะเบียนส่งหนังสือภายนอกหน่วย (ลับ)"
+            else:
+                parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
+                parent_nav_path = "/send/credential"
+                title = "แก้ไขทะเบียนส่งหนังสือ (ลับ)"
             doc_form = DocCredentialModelForm(instance=doc_send.doc)
             doc_send_form = DocSendModelForm(instance=doc_send)
         else:
+            if is_sent_outside:
+                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
+                parent_nav_path = "/send/out"
+                title = "แก้ไขทะเบียนส่งหนังสือภายนอกหน่วย"
             doc_form = DocModelForm(instance=doc_send.doc)
             doc_send_form = DocSendModelForm(instance=doc_send)
 
-    context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'doc_files': doc_old_files}
+    context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'doc_files': doc_old_files, 'title': title,
+               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docsend_out_form.html' if is_sent_outside else 'doc_record/docsend_form.html',
                   context)
 
@@ -274,5 +304,6 @@ def get_send_no(user, is_secret=False, is_outside=False):
     return 1 if len(docs) == 0 else docs.last().send_no + 1
 
 
-def get_doc_no(group=None, send_no=-1):
+def get_doc_no(group, is_outside=False, send_no=-1):
+    group = Group.objects.get(id=1) if is_outside else group  # doca_group
     return 'กห ' + group.unit.unit_id + '/' + str(send_no)
