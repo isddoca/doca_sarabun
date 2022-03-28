@@ -77,6 +77,19 @@ class DocSend(models.Model):
         db_table = 'doc_send'
 
 
+class DocOrder(models.Model):
+    order_no = models.IntegerField(blank=True, null=True)
+    doc = models.ForeignKey(Doc, on_delete=models.CASCADE, blank=True, null=True)
+    specific = models.BooleanField(default=False)
+    issue_by = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True, related_name='issue_group')
+    action = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'doc_order'
+
+
 class DocStatus(models.Model):
     name = models.TextField(blank=True, null=True)
 
