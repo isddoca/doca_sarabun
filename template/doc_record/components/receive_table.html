@@ -1,0 +1,75 @@
+            <div class="table-responsive mt-3">
+                <table id="datatable" class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th>เลขส่ง</th>
+                        <th>ที่</th>
+                        <th>ลงวันที่</th>
+                        <th>จาก</th>
+                        <th>ถึง</th>
+                        <th>เรื่อง</th>
+                        <th>การปฏิบัติ</th>
+                        <th>เครื่องมือ</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for data in page_obj %}
+                        <tr>
+                            <td class="small">{{ data.receive_no }}</td>
+                            <td class="small"><a href="{{ data.id }}">{{ data.doc.doc_no }}</a></td>
+                            <td class="small">
+                                {{ data.doc.doc_date_th }}
+                            </td>
+                            <td class="small">{{ data.doc.doc_from }}</td>
+                            <td class="small">{{ data.doc.doc_to }}</td>
+                            <td class="small">{{ data.doc.title }}</td>
+                            <td class="small">
+                                {% for send_unit in data.send_to.all %}
+                                    {{ receive_unit.name }}<br>
+                                {% endfor %}
+                            </td>
+                            <td class="text-center">
+                                <div class="row">
+                                    <div class="col">
+
+                                        <a href="{{ edit_path }}{{ data.id }}/edit" class="btn btn-success m-1"><i
+                                                class="fas fa-pencil-alt"></i></a>
+                                        <button type="button" class="btn btn-danger m-1" data-bs-toggle="modal"
+                                                data-bs-target="#delete-{{ data.id }}"><i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+
+                        <div class="modal fade" id="delete-{{ data.id }}" data-bs-backdrop="static"
+                             data-bs-keyboard="false"
+                             tabindex="-1"
+                             aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="staticBackdropLabel">ลบข้อมูล</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ต้องการลบหนังสือเรื่อง {{ data.doc.title }} หรือไม่
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก
+                                        </button>
+                                        <form action="{% url 'receive_delete' id=data.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <button class="btn btn-danger">ลบ {{ id }}</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>

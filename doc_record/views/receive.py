@@ -29,7 +29,9 @@ class DocReceiveListView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocReceiveListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        print(context['query_year'])
+        context['title'] = "ทะเบียนหนังสือรับ"
+        context['add_button'] = "ลงทะเบียนรับหนังสือ"
+        context['add_path'] = "add"
         return context
 
 
@@ -40,7 +42,13 @@ class DocReceiveCredentialListView(DocReceiveListView):
         search = self.request.GET.get('year', datetime.now().year)
         return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
                                          doc__credential__id__gt=1).order_by('-receive_no')
-
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(DocReceiveListView, self).get_context_data(**kwargs)
+        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['title'] = "ทะเบียนหนังสือรับ (ลับ)"
+        context['add_button'] = "ลงทะเบียนรับหนังสือ (ลับ)"
+        context['add_path'] = "credential/add"
+        return context
 
 @login_required(login_url='/accounts/login')
 def doc_receive_detail(request, id):
