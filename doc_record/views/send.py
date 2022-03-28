@@ -49,8 +49,8 @@ class DocSendOutListView(DocSendListView):
         doca_group = Group.objects.get(id=1)
         current_group_id = self.request.user.groups.all()[0].id
         search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                      doc__create_by__groups=doca_group,
+        return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
+                                      doc__create_by__groups=current_group_id,
                                       doc__credential__id=1).order_by('-send_no')
 
 
@@ -60,8 +60,8 @@ class DocSendCredentialOutListView(DocSendListView):
         doca_group = Group.objects.get(id=1)
         current_group_id = self.request.user.groups.all()[0].id
         search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                      doc__create_by__groups=doca_group,
+        return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
+                                      doc__create_by__groups=current_group_id,
                                       doc__credential__id__gt=1).order_by('-send_no')
 
 
@@ -120,23 +120,24 @@ def doc_send_add(request):
                     return HttpResponseRedirect('/send')
 
     else:
-        send_no = get_docs_no(request.user, is_secret=True, is_outside=is_sent_outside)
+        send_no = get_send_no(request.user, is_secret=True, is_outside=is_sent_outside)
+        doca_group = Group.objects.get(id=1)
         if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(group, send_no)})
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(),
+                                                       'doc_no': get_doc_no(doca_group, send_no) if is_sent_outside else get_doc_no(
+                                                           group, send_no)})
             doc_send_form = DocSendModelForm(
                 initial={'send_no': send_no})
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(group, send_no)})
+            doc_form = DocModelForm(initial={'id': generate_doc_id(),
+                                             'doc_no': get_doc_no(doca_group, send_no) if is_sent_outside else get_doc_no(group,
+                                                                                                              send_no)})
             doc_send_form = DocSendModelForm(
                 initial={'send_no': send_no})
 
     context = {'doc_form': doc_form, 'doc_send_form': doc_send_form}
     return render(request, 'doc_record/docsend_out_form.html' if is_sent_outside else 'doc_record/docsend_form.html',
                   context)
-
-
-def get_doc_no(group, send_no):
-    return 'กห ' + group.unit.unit_id + '/' + str(send_no)
 
 
 @login_required(login_url='/accounts/login')
@@ -229,9 +230,10 @@ def doc_send_delete(request, id):
         return HttpResponseRedirect('/send')
 
 
-def get_docs_no(user, is_secret=False, is_outside=False):
+def get_send_no(user, is_secret=False, is_outside=False):
     # DOCA is id 1
     current_group_id = 1 if is_outside else user.groups.all()[0].id
+
     if is_secret:
         docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id__gt=1,
                                       doc__create_time__year=datetime.now().year)
@@ -239,3 +241,7 @@ def get_docs_no(user, is_secret=False, is_outside=False):
         docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id=1,
                                       doc__create_time__year=datetime.now().year)
     return 1 if len(docs) == 0 else docs.last().send_no + 1
+
+
+def get_doc_no(group=None, send_no=-1):
+    return 'กห ' + group.unit.unit_id + '/' + str(send_no)
