@@ -48,6 +48,7 @@ class DocReceiveCredentialListView(DocReceiveListView):
         context['title'] = "ทะเบียนหนังสือรับ (ลับ)"
         context['add_button'] = "ลงทะเบียนรับหนังสือ (ลับ)"
         context['add_path'] = "credential/add"
+        context['edit_path'] = "credential/"
         return context
 
 @login_required(login_url='/accounts/login')
