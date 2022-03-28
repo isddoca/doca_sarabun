@@ -30,7 +30,9 @@ class DocSendListView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        print(context['query_year'])
+        context['title'] = "ทะเบียนหนังสือส่ง"
+        context['add_button'] = "ลงทะเบียนส่งหนังสือ"
+        context['add_path'] = "add"
         return context
 
 
@@ -41,6 +43,15 @@ class DocSendCredentialListView(DocSendListView):
         search = self.request.GET.get('year', datetime.now().year)
         return DocSend.objects.filter(group_id=current_group_id, doc__create_time__year=search,
                                       doc__credential__id__gt=1).order_by('-send_no')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(DocSendListView, self).get_context_data(**kwargs)
+        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['title'] = "ทะเบียนหนังสือส่ง (ลับ)"
+        context['add_button'] = "ลงทะเบียนส่งหนังสือ (ลับ)"
+        context['add_path'] = "credential/add"
+        context['edit_path'] = "credential/"
+        return context
 
 
 @method_decorator(login_required, name='dispatch')
@@ -53,6 +64,15 @@ class DocSendOutListView(DocSendListView):
                                       doc__create_by__groups=current_group_id,
                                       doc__credential__id=1).order_by('-send_no')
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(DocSendListView, self).get_context_data(**kwargs)
+        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['title'] = "ทะเบียนหนังสือนอกหน่วย"
+        context['add_button'] = "ลงทะเบียนส่งหนังสือนอกหน่วย"
+        context['add_path'] = "out/add"
+        context['edit_path'] = "out/"
+        return context
+
 
 @method_decorator(login_required, name='dispatch')
 class DocSendCredentialOutListView(DocSendListView):
@@ -63,6 +83,15 @@ class DocSendCredentialOutListView(DocSendListView):
         return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
                                       doc__create_by__groups=current_group_id,
                                       doc__credential__id__gt=1).order_by('-send_no')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(DocSendListView, self).get_context_data(**kwargs)
+        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['title'] = "ทะเบียนหนังสือนอกหน่วย (ลับ)"
+        context['add_button'] = "ลงทะเบียนส่งหนังสือนอกหน่วย (ลับ)"
+        context['add_path'] = "credential/add"
+        context['edit_path'] = "credential/"
+        return context
 
 
 @login_required(login_url='/accounts/login')
@@ -120,15 +149,16 @@ def doc_send_add(request):
                     return HttpResponseRedirect('/send')
 
     else:
-        send_no = get_send_no(request.user, is_secret=True, is_outside=is_sent_outside)
         doca_group = Group.objects.get(id=1)
         if 'credential' in request.path:
+            send_no = get_send_no(request.user, is_secret=True, is_outside=is_sent_outside)
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(),
                                                        'doc_no': get_doc_no(doca_group, send_no) if is_sent_outside else get_doc_no(
                                                            group, send_no)})
             doc_send_form = DocSendModelForm(
                 initial={'send_no': send_no})
         else:
+            send_no = get_send_no(request.user, is_secret=False, is_outside=is_sent_outside)
             doc_form = DocModelForm(initial={'id': generate_doc_id(),
                                              'doc_no': get_doc_no(doca_group, send_no) if is_sent_outside else get_doc_no(group,
                                                                                                               send_no)})
@@ -240,6 +270,7 @@ def get_send_no(user, is_secret=False, is_outside=False):
     else:
         docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id=1,
                                       doc__create_time__year=datetime.now().year)
+        print(datetime.now().year)
     return 1 if len(docs) == 0 else docs.last().send_no + 1
 
 

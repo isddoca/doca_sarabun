@@ -10,7 +10,7 @@
         <div class="title-wrapper pt-30">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h2>{% block page_title %} ทะเบียนหนังสือส่ง {% endblock %}</h2>
+                    <h2>{% block page_title %} {{ title }} {% endblock %}</h2>
                 </div>
                 <!-- end col -->
                 <div class="col-md-6">
@@ -21,7 +21,7 @@
                                     <a href="#0">ทะเบียนหนังสือรับ-ส่ง</a>
                                 </li>
                                 <li class="breadcrumb-item active" aria-current="page">
-                                    ทะเบียนหนังสือส่ง
+                                    {{ title }}
                                 </li>
                             </ol>
                         </nav>
@@ -54,111 +54,19 @@
 
                     <div class="col-auto">
                         <a type="button" class="btn btn-primary"
-                           href="{% if 'credential' in request.path %}credential/add{% else %}add{% endif %}">ลงทะเบียนส่งหนังสือ</a>
+                           href="{{ add_path }}">{{ add_button }}</a>
                     </div>
                 </div>
             </form>
 
+            {% include "doc_record/components/send_table.html" %}
 
-            <div class="table-responsive mt-3">
-                <table id="datatable" class="table table-sm">
-                    <thead>
-                    <tr>
-                        <th>เลขส่ง</th>
-                        <th>ที่</th>
-                        <th>ลงวันที่</th>
-                        <th>จาก</th>
-                        <th>ถึง</th>
-                        <th>เรื่อง</th>
-                        <th>การปฏิบัติ</th>
-                        <th>เครื่องมือ</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {% for data in page_obj %}
-                        <tr>
-                            <td class="small">{{ data.send_no }}</td>
-                            <td class="small"><a href="{{ data.id }}">{{ data.doc.doc_no }}</a></td>
-                            <td class="small">
-                                {{ data.doc.doc_date_th }}
-                            </td>
-                            <td class="small">{{ data.doc.doc_from }}</td>
-                            <td class="small">{{ data.doc.doc_to }}</td>
-                            <td class="small">{{ data.doc.title }}</td>
-                            <td class="small">
-                                {% for send_unit in data.send_to.all %}
-                                    {{ send_unit.name }}<br>
-                                {% endfor %}
-                            </td>
-                            <td class="text-center">
-                                <div class="row">
-                                    <div class="col">
-
-                                        <a href="{% if 'credential' in request.path %}credential/{{ data.id }}/edit
-                                            {% else %}{{ data.id }}/edit{% endif %}" class="btn btn-success m-1"><i
-                                                class="fas fa-pencil-alt"></i></a>
-                                        <button type="button" class="btn btn-danger m-1" data-bs-toggle="modal"
-                                                data-bs-target="#delete-{{ data.id }}"><i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-
-
-                        <div class="modal fade" id="delete-{{ data.id }}" data-bs-backdrop="static"
-                             data-bs-keyboard="false"
-                             tabindex="-1"
-                             aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="staticBackdropLabel">ลบข้อมูล</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        ต้องการลบหนังสือเรื่อง {{ data.doc.title }} หรือไม่
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก
-                                        </button>
-                                        <form action="{% url 'send_delete' id=data.id %}" method="POST">
-                                            {% csrf_token %}
-                                            <button class="btn btn-danger">ลบ {{ id }}</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 
 {% endblock %}
 {% block js %}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.js"></script>
-
-
-    <script>
-        $(document).ready(function () {
-            $("#datatable").DataTable({
-                paging: true,
-                ordering: false,
-                info: true,
-                "pageLength": 50,
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/th.json'
-                }
-            });
-        });
-    </script>
+    {% include "doc_record/scripts/table_script.html" %}
 {% endblock %}
 
 

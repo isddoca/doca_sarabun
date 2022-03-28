@@ -1,0 +1,18 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.js"></script>
+
+
+<script>
+    $(document).ready(function () {
+        $("#datatable").DataTable({
+            paging: true,
+            ordering: false,
+            info: true,
+            "pageLength": 50,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/th.json'
+            }
+        });
+    });
+</script>
