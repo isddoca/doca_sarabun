@@ -111,6 +111,7 @@ def doc_receive_add(request):
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
             doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=True)})
             title = "ลงทะเบียนรับหนังสือ (ลับ)"
+            parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
             parent_nav_path = "/receive/credential"
         else:
             doc_form = DocModelForm(initial={'id': generate_doc_id()})
@@ -127,6 +128,9 @@ def doc_receive_edit(request, id):
     doc_receive = DocReceive.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
     current_group = request.user.groups.all()[0]
+    parent_nav_title = "ทะเบียนหนังสือรับ"
+    parent_nav_path = "/receive"
+    title = "แก้ไขทะเบียนรับหนังสือ"
     doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
     if request.method == 'POST':
         print("POST")
@@ -184,12 +188,17 @@ def doc_receive_edit(request, id):
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(instance=doc_receive.doc)
             doc_receive_form = DocReceiveModelForm(instance=doc_receive)
+            title = "แก้ไขทะเบียนรับหนังสือ (ลับ)"
+            parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
+            parent_nav_path = "/receive/credential"
         else:
             doc_form = DocModelForm(instance=doc_receive.doc)
             doc_receive_form = DocReceiveModelForm(instance=doc_receive)
+            parent_nav_path = "/receive"
 
     print(doc_old_files)
-    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files}
+    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files, 'title': title,
+               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
 
 
