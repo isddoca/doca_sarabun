@@ -77,7 +77,7 @@ def doc_send_detail(request, id):
 def doc_send_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
-    group_id = user.groups.all()[0].id
+    group = user.groups.all()[0]
     is_sent_outside = "out" in request.path
     if request.method == 'POST':
         if 'credential' in request.path:
@@ -113,25 +113,30 @@ def doc_send_add(request):
                 send_to = doc_send_model.send_to.all()
                 for unit in send_to:
                     DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
-                                            action_from_id=group_id, time=datetime.now(timezone))
+                                            action_from=group, time=datetime.now(timezone))
                 if 'credential' in request.path:
                     return HttpResponseRedirect('/send/credential')
                 else:
                     return HttpResponseRedirect('/send')
 
     else:
+        send_no = get_docs_no(request.user, is_secret=True, is_outside=is_sent_outside)
         if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(group, send_no)})
             doc_send_form = DocSendModelForm(
-                initial={'send_no': get_docs_no(request.user, is_secret=True, is_outside=is_sent_outside)})
+                initial={'send_no': send_no})
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id()})
+            doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(group, send_no)})
             doc_send_form = DocSendModelForm(
-                initial={'send_no': get_docs_no(request.user, is_secret=False, is_outside=is_sent_outside)})
+                initial={'send_no': send_no})
 
     context = {'doc_form': doc_form, 'doc_send_form': doc_send_form}
     return render(request, 'doc_record/docsend_out_form.html' if is_sent_outside else 'doc_record/docsend_form.html',
                   context)
+
+
+def get_doc_no(group, send_no):
+    return 'กห ' + group.unit.unit_id + '/' + str(send_no)
 
 
 @login_required(login_url='/accounts/login')
