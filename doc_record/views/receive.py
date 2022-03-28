@@ -1,5 +1,5 @@
 import os
-from datetime import date, datetime
+from datetime import datetime
 
 import pytz
 from django.contrib.auth.decorators import login_required
@@ -42,6 +42,7 @@ class DocReceiveCredentialListView(DocReceiveListView):
         search = self.request.GET.get('year', datetime.now().year)
         return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
                                          doc__credential__id__gt=1).order_by('-receive_no')
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocReceiveListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
@@ -50,6 +51,7 @@ class DocReceiveCredentialListView(DocReceiveListView):
         context['add_path'] = "credential/add"
         context['edit_path'] = "credential/"
         return context
+
 
 @login_required(login_url='/accounts/login')
 def doc_receive_detail(request, id):
@@ -64,11 +66,15 @@ def doc_receive_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
     group_id = user.groups.all()[0].id
+    parent_nav_title = "ทะเบียนหนังสือรับ"
+    parent_nav_path = "/receive"
+    title = "ลงทะเบียนรับหนังสือ"
     if request.method == 'POST':
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
+
         doc_receive_form = DocReceiveModelForm(request.POST)
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
@@ -104,11 +110,15 @@ def doc_receive_add(request):
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
             doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=True)})
+            title = "ลงทะเบียนรับหนังสือ (ลับ)"
+            parent_nav_path = "/receive/credential"
         else:
             doc_form = DocModelForm(initial={'id': generate_doc_id()})
             doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=False)})
+            parent_nav_path = "/receive"
 
-    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form}
+    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
+               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
 
 
@@ -207,4 +217,3 @@ def get_docs_no(user, is_secret=False):
         docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id=1,
                                          doc__create_time__year=datetime.now().year)
     return 1 if len(docs) == 0 else docs.last().receive_no + 1
-
