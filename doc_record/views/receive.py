@@ -55,9 +55,22 @@ class DocReceiveCredentialListView(DocReceiveListView):
 
 @login_required(login_url='/accounts/login')
 def doc_receive_detail(request, id):
+
+    is_specific = 'credential' in request.path
+
+    if is_specific:
+        title = "รายละเอียดหนังสือ (ลับ)"
+        parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
+        parent_nav_path = "/receive/credential"
+    else:
+        title = "รายละเอียดหนังสือ"
+        parent_nav_title = "ทะเบียนหนังสือรับ "
+        parent_nav_path = "/receive"
+
     doc_receive = DocReceive.objects.get(id=id)
     doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
-    context = {'doc_receive': doc_receive, 'doc_files': doc_old_files}
+    context = {'doc_receive': doc_receive, 'doc_files': doc_old_files, 'title': title,
+               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_view.html', context)
 
 
