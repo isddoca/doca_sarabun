@@ -220,10 +220,15 @@ def doc_receive_delete(request, id):
     if request.method == "POST":
         doc_receive = get_object_or_404(DocReceive, id=id)
         units = doc_receive.send_to.all()
+        user = request.user
+        my_doc_trace = DocTrace.objects.filter(create_by=user, doc=doc_receive.doc)
+        my_doc_trace.delete()
         for unit in units:
             doc_trace = DocTrace.objects.filter(action_to=unit, doc=doc_receive.doc)
             doc_trace.delete()
         doc_receive.delete()
+        doc = doc_receive.doc
+        doc.delete()
     if 'credential' in request.path:
         return HttpResponseRedirect('/receive/credential')
     else:
