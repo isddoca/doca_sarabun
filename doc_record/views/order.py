@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from config import settings
-from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm, DocOrderModelForm
+from doc_record.forms import DocModelForm, DocOrderModelForm
 from doc_record.models import DocFile, Doc, DocOrder
 from doc_record.views.base import generate_doc_id
 
@@ -27,7 +27,7 @@ class DocOrderListView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        context['title'] = "หนังสือคำสั่ง"
+        context['title'] = "คำสั่ง"
         context['add_button'] = "ลงทะเบียนคำสั่ง"
         context['add_path'] = "add"
         return context
@@ -42,7 +42,7 @@ class DocOrderSpecificListView(DocOrderListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderSpecificListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        context['title'] = "หนังสือคำสั่ง (เฉพาะ)"
+        context['title'] = "คำสั่ง (เฉพาะ)"
         context['add_button'] = "ลงทะเบียนคำสั่ง (เฉพาะ)"
         context['add_path'] = "specific/add"
         context['edit_path'] = "specific/"
@@ -51,9 +51,21 @@ class DocOrderSpecificListView(DocOrderListView):
 
 @login_required(login_url='/accounts/login')
 def doc_order_detail(request, id):
+    is_specific = 'specific' in request.path
+
+    if is_specific:
+        title = "รายละเอียดคำสั่ง (เฉพาะ)"
+        parent_nav_title = "ทะเบียนคำสั่ง (เฉพาะ)"
+        parent_nav_path = "/order/specific"
+    else:
+        title = "รายละเอียดคำสั่ง"
+        parent_nav_title = "ทะเบียนคำสั่ง "
+        parent_nav_path = "/order"
+
     doc_order = DocOrder.objects.get(id=id)
     doc_old_files = DocFile.objects.filter(doc=doc_order.doc)
-    context = {'doc_order': doc_order, 'doc_files': doc_old_files}
+    context = {'doc_order': doc_order, 'doc_files': doc_old_files, 'title': title,
+               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docorder_view.html', context)
 
 

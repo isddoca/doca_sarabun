@@ -1,0 +1,137 @@
+{% extends 'doc_record/base.html' %}
+{% load static %}
+{% block css %}
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/thdatepicker/css/datepicker.css' %}"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.bootstrap4.min.css"/>
+{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>{% block page_title %} {{ title }} {% endblock %}</h2>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper mb-30">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">ทะเบียนหนังสือคำสั่ง</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="{{ parent_nav_path }}">{{ parent_nav_title }}</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    {{ title }}
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        <div class="card-style mb-30">
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">เลขรับ</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    {{ doc_order.order_no }}
+                </div>
+            </div>
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">ที่</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    {{ doc_order.doc.doc_no }}
+                </div>
+            </div>
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">ลงวันที่</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    {{ doc_order.doc.doc_date_th }}
+                </div>
+            </div>
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">เรื่อง</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    {{ doc_order.doc.title }}
+                </div>
+            </div>
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">ออกโดย</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    {{ doc_order.issue_by }}
+                </div>
+            </div>
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">การปฏิบัติ</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    {% if doc_order.action %}
+                        {{ doc_order.action }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">หมายเหตุ</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    {% if doc_order.note %}
+                        {{ doc_order.note }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row form-row mb-3">
+                <div class="form-group col-sm-2">
+                    <p class="fw-bold">ไฟล์เอกสาร</p>
+                </div>
+                <div class="form-group col-sm-10">
+                    <ul>
+                        {% if doc_files %}
+                            {% for doc_file in doc_files %}
+                                <li>
+                                    <a href="{{ MEDIA_URL }}{{ doc_file.file.url }}">{{ doc_file.filename }}</a>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+{% endblock %}
