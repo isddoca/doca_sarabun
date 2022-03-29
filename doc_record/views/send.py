@@ -96,9 +96,30 @@ class DocSendCredentialOutListView(DocSendListView):
 
 @login_required(login_url='/accounts/login')
 def doc_send_detail(request, id):
+    title = "รายละเอียดหนังสือ"
+
+    is_sent_outside = "out" in request.path
+    is_credential = 'credential' in request.path
+
+    if is_credential:
+        if is_sent_outside:
+            parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
+            parent_nav_path = "/send/credential/out"
+        else:
+            parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
+            parent_nav_path = "/send/credential"
+    else:
+        if is_sent_outside:
+            parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
+            parent_nav_path = "/send/credential/out"
+        else:
+            parent_nav_title = "ทะเบียนหนังสือส่ง"
+            parent_nav_path = "/send"
+
     doc_send = DocSend.objects.get(id=id)
     doc_old_files = DocFile.objects.filter(doc=doc_send.doc)
-    context = {'doc_send': doc_send, 'doc_files': doc_old_files}
+    context = {'doc_send': doc_send, 'doc_files': doc_old_files, 'title': title,
+               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docsend_view.html', context)
 
 
