@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.forms import ClearableFileInput
 from pythainlp import thai_strftime
 
-from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc, DocTrace, DocSend
+from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc, DocTrace, DocSend, DocOrder
 
 URGENT = DocUrgent.objects.all().values_list("id", "name")
 CREDENTIAL = DocCredential.objects.all().values_list("id", "name")
@@ -40,8 +40,9 @@ class DocModelForm(forms.ModelForm):
                                widget=forms.DateInput(attrs={'class': 'form-control', 'data-provide': "datepicker",
                                                              'data-date-language': "th-th"}))
 
-    urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน')
-    credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id=1), empty_label=None, label='ชั้นความลับ')
+    urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน', required=False)
+    credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id=1), empty_label=None,
+                                        label='ชั้นความลับ', required=False)
     file = forms.FileField(widget=ClearableFileInput(attrs={'multiple': True}), required=False, label='ไฟล์เอกสาร')
 
     class Meta:
@@ -55,7 +56,8 @@ class DocModelForm(forms.ModelForm):
 
 
 class DocCredentialModelForm(DocModelForm):
-    credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id__gt=1), empty_label=None, label='ชั้นความลับ')
+    credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id__gt=1), empty_label=None,
+                                        label='ชั้นความลับ')
 
 
 class DocReceiveModelForm(forms.ModelForm):
@@ -81,6 +83,16 @@ class DocSendModelForm(DocReceiveModelForm):
         fields = ['send_no', 'send_to', 'action', 'note']
         labels = {'send_no': 'เลขส่ง', 'action': 'การปฏิบัติ', 'note': 'หมายเหตุ'}
         widgets = {'send_no': forms.TextInput(),
+                   'note': forms.TextInput(),
+                   'action': forms.TextInput()}
+
+
+class DocOrderModelForm(forms.ModelForm):
+    class Meta:
+        model = DocOrder
+        fields = ['order_no', 'action', 'note']
+        labels = {'order_no': 'เลขคำสั่ง', 'action': 'การปฏิบัติ', 'note': 'หมายเหตุ'}
+        widgets = {'order_no': forms.TextInput(),
                    'note': forms.TextInput(),
                    'action': forms.TextInput()}
 

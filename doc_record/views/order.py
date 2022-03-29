@@ -9,75 +9,71 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 
 from config import settings
-from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm
-from doc_record.models import DocReceive, DocFile, DocTrace, Doc
+from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm, DocOrderModelForm
+from doc_record.models import DocFile, Doc, DocOrder
 from doc_record.views.base import generate_doc_id
 
 
 @method_decorator(login_required, name='dispatch')
 class DocOrderListView(ListView):
-    model = DocReceive
-    template_name = 'doc_record/receive_index.html'
+    model = DocOrder
+    template_name = 'doc_record/order_index.html'
     context_object_name = 'page_obj'
 
     def get_queryset(self):
-        current_group_id = self.request.user.groups.all()[0].id
         search = self.request.GET.get('year', datetime.now().year)
-        return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                         doc__credential__id=1).order_by('-receive_no')
+        return DocOrder.objects.filter(doc__create_time__year=search, specific=False).order_by('-order_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(DocReceiveListView, self).get_context_data(**kwargs)
+        context = super(DocOrderListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        context['title'] = "ทะเบียนหนังสือรับ"
-        context['add_button'] = "ลงทะเบียนรับหนังสือ"
+        context['title'] = "หนังสือคำสั่ง"
+        context['add_button'] = "ลงทะเบียนคำสั่ง"
         context['add_path'] = "add"
         return context
 
 
 @method_decorator(login_required, name='dispatch')
-class DocReceiveCredentialListView(DocReceiveListView):
+class DocOrderSpecificListView(DocOrderListView):
     def get_queryset(self):
-        current_group_id = self.request.user.groups.all()[0].id
         search = self.request.GET.get('year', datetime.now().year)
-        return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                         doc__credential__id__gt=1).order_by('-receive_no')
+        return DocOrder.objects.filter(doc__create_time__year=search, specific=True).order_by('-order_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(DocReceiveListView, self).get_context_data(**kwargs)
+        context = super(DocOrderSpecificListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        context['title'] = "ทะเบียนหนังสือรับ (ลับ)"
-        context['add_button'] = "ลงทะเบียนรับหนังสือ (ลับ)"
-        context['add_path'] = "credential/add"
-        context['edit_path'] = "credential/"
+        context['title'] = "หนังสือคำสั่ง (เฉพาะ)"
+        context['add_button'] = "ลงทะเบียนคำสั่ง (เฉพาะ)"
+        context['add_path'] = "specific/add"
+        context['edit_path'] = "specific/"
         return context
 
 
 @login_required(login_url='/accounts/login')
-def doc_receive_detail(request, id):
-    doc_receive = DocReceive.objects.get(id=id)
-    doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
-    context = {'doc_receive': doc_receive, 'doc_files': doc_old_files}
-    return render(request, 'doc_record/docreceive_view.html', context)
+def doc_order_detail(request, id):
+    doc_order = DocOrder.objects.get(id=id)
+    doc_old_files = DocFile.objects.filter(doc=doc_order.doc)
+    context = {'doc_order': doc_order, 'doc_files': doc_old_files}
+    return render(request, 'doc_record/docorder_view.html', context)
 
 
 @login_required(login_url='/accounts/login')
-def doc_receive_add(request):
+def doc_order_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
-    group_id = user.groups.all()[0].id
-    parent_nav_title = "ทะเบียนหนังสือรับ"
-    parent_nav_path = "/receive"
-    title = "ลงทะเบียนรับหนังสือ"
+
+    is_specific = 'specific' in request.path
+
+    parent_nav_title = "ทะเบียนคำสั่ง"
+    parent_nav_path = "/order"
+    title = "ลงทะเบียนคำสั่ง"
     if request.method == 'POST':
-        if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(request.POST, request.FILES)
-        else:
-            doc_form = DocModelForm(request.POST, request.FILES)
-
-        doc_receive_form = DocReceiveModelForm(request.POST)
-
-        if doc_form.is_valid() and doc_receive_form.is_valid():
+        doc_form = DocModelForm(request.POST, request.FILES)
+        doc_order_form = DocOrderModelForm(request.POST)
+        print("44444")
+        print(doc_form.errors)
+        print(doc_order_form.is_valid())
+        if doc_form.is_valid() and doc_order_form.is_valid():
             doc_model = doc_form.save(commit=False)
             doc_model.id = generate_doc_id()
             doc_model.active = 1
@@ -89,75 +85,67 @@ def doc_receive_add(request):
             for f in req_files:
                 DocFile.objects.create(file=f, doc=doc_model)
 
-            doc_receive_model = doc_receive_form.save(commit=False)
-            doc_receive_model.doc = doc_model
-            doc_receive_model.group = user.groups.all()[0]
-            doc_receive_model.save()
-            doc_receive_form.save_m2m()
+            doc_order = doc_order_form.save(commit=False)
+            doc_order.doc = doc_model
+            doc_order.specific = is_specific
+            doc_order.issue_by = user.groups.all()[0]
+            doc_order.save()
 
-            send_to = doc_receive_model.send_to.all()
-            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_from_id=group_id, done=True,
-                                    action_to_id=group_id, time=datetime.now(timezone))
-            for unit in send_to:
-                DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
-                                        action_from_id=group_id, time=datetime.now(timezone))
-
-            if 'credential' in request.path:
-                return HttpResponseRedirect('/receive/credential')
+            if 'specific' in request.path:
+                return HttpResponseRedirect('/order/specific')
             else:
-                return HttpResponseRedirect('/receive')
+                return HttpResponseRedirect('/order')
     else:
-        if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
-            doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=True)})
-            title = "ลงทะเบียนรับหนังสือ (ลับ)"
-            parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
-            parent_nav_path = "/receive/credential"
+        doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(is_specific)})
+        doc_order_form = DocOrderModelForm(
+            initial={'order_no': get_order_no(is_specific)})
+        if is_specific:
+            title = "ลงทะเบียนคำสั่ง (เฉพาะ)"
+            parent_nav_title = "ทะเบียนคำสั่ง (เฉพาะ)"
+            parent_nav_path = "/order/specific"
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id()})
-            doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=False)})
-            parent_nav_path = "/receive"
+            parent_nav_path = "/order"
 
-    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
+    context = {'doc_form': doc_form, 'doc_order_form': doc_order_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
-    return render(request, 'doc_record/docreceive_form.html', context)
+    return render(request, 'doc_record/docorder_form.html', context)
 
 
 @login_required(login_url='/accounts/login')
-def doc_receive_edit(request, id):
-    doc_receive = DocReceive.objects.get(id=id)
+def doc_order_edit(request, id):
+    doc_order = DocOrder.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
-    current_group = request.user.groups.all()[0]
-    parent_nav_title = "ทะเบียนหนังสือรับ"
-    parent_nav_path = "/receive"
-    title = "แก้ไขทะเบียนรับหนังสือ"
-    doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
+
+    is_specific = 'specific' in request.path
+
+    parent_nav_title = "ทะเบียนคำสั่ง"
+    parent_nav_path = "/order"
+    title = "ลงทะเบียนคำสั่ง"
+
+    doc_old_files = DocFile.objects.filter(doc=doc_order.doc)
     if request.method == 'POST':
         print("POST")
         user = request.user
 
-        if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(request.POST, request.FILES)
-        else:
-            doc_form = DocModelForm(request.POST, request.FILES)
-        doc_receive_form = DocReceiveModelForm(request.POST)
+        doc_form = DocModelForm(request.POST, request.FILES)
+        doc_order_form = DocOrderModelForm(request.POST)
 
-        if doc_form.is_valid() and doc_receive_form.is_valid():
-            doc_model = doc_form.save(commit=False)
-            doc_model.id = doc_receive.doc.id
-            doc_model.active = 1
-            doc_model.update_time = datetime.now(timezone)
-            doc_model.update_by = user
-            doc_model.create_time = doc_receive.doc.create_time
-            doc_model.create_by = doc_receive.doc.create_by
-            doc_model.save()
+        if doc_form.is_valid() and doc_order_form.is_valid():
+            doc = doc_form.save(commit=False)
+            doc.id = doc_order.doc.id
+            doc.active = 1
+            doc.update_time = datetime.now(timezone)
+            doc.update_by = user
+            doc.create_time = doc_order.doc.create_time
+            doc.create_by = doc_order.doc.create_by
+            doc.save()
 
-            doc_receive_model = doc_receive_form.save(commit=False)
-            doc_receive_model.id = doc_receive.id
-            doc_receive_model.doc = doc_model
-            doc_receive_model.group = current_group
-            doc_receive_model.save()
-            doc_receive_form.save_m2m()
+            upd_doc_order = doc_order_form.save(commit=False)
+            upd_doc_order.id = doc_order.id
+            upd_doc_order.doc = doc
+            upd_doc_order.specific = is_specific
+            upd_doc_order.issue_by = user.groups.all()[0]
+            upd_doc_order.save()
 
             # ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
             files = request.FILES.getlist('file')
@@ -167,62 +155,43 @@ def doc_receive_edit(request, id):
                     f.delete()
 
                 for f in files:
-                    DocFile.objects.create(file=f, doc=doc_model)
+                    DocFile.objects.create(file=f, doc=doc)
 
-            send_to = doc_receive_model.send_to.all()
-            DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=1, create_by=user,
-                                              action_to=current_group, action_from=current_group, done=True,
-                                              defaults={'time': datetime.now(timezone)})
-            for unit in send_to:
-                DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
-                                                  action_from=current_group, action_to=unit,
-                                                  defaults={'time': datetime.now(timezone)})
-
-            if 'credential' in request.path:
-                return HttpResponseRedirect('/receive/credential')
+            if is_specific:
+                return HttpResponseRedirect('/order/specific')
             else:
-                return HttpResponseRedirect('/receive')
+                return HttpResponseRedirect('/order')
     else:
-        tmp_doc_date = doc_receive.doc.doc_date
-        doc_receive.doc.doc_date = tmp_doc_date.replace(year=2565)
-        if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(instance=doc_receive.doc)
-            doc_receive_form = DocReceiveModelForm(instance=doc_receive)
-            title = "แก้ไขทะเบียนรับหนังสือ (ลับ)"
-            parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
-            parent_nav_path = "/receive/credential"
-        else:
-            doc_form = DocModelForm(instance=doc_receive.doc)
-            doc_receive_form = DocReceiveModelForm(instance=doc_receive)
-            parent_nav_path = "/receive"
+        tmp_doc_date = doc_order.doc.doc_date
+        doc_order.doc.doc_date = tmp_doc_date.replace(year=2565)
+        doc_form = DocModelForm(instance=doc_order.doc)
+        doc_order_form = DocOrderModelForm(instance=doc_order)
+        if is_specific:
+            title = "ลงทะเบียนคำสั่ง (เฉพาะ)"
+            parent_nav_title = "ทะเบียนคำสั่ง (เฉพาะ)"
+            parent_nav_path = "/order/specific"
 
-    print(doc_old_files)
-    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files, 'title': title,
+    context = {'doc_form': doc_form, 'doc_order_form': doc_order_form, 'doc_files': doc_old_files, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
-    return render(request, 'doc_record/docreceive_form.html', context)
+    return render(request, 'doc_record/docorder_form.html', context)
 
 
 @login_required(login_url='/accounts/login')
-def doc_receive_delete(request, id):
+def doc_order_delete(request, id):
+    is_specific = 'specific' in request.path
     if request.method == "POST":
-        doc_receive = get_object_or_404(DocReceive, id=id)
-        units = doc_receive.send_to.all()
-        for unit in units:
-            doc_trace = DocTrace.objects.filter(action_to=unit, doc=doc_receive.doc)
-            doc_trace.delete()
-        doc_receive.delete()
-    if 'credential' in request.path:
-        return HttpResponseRedirect('/receive/credential')
+        doc_order = get_object_or_404(DocOrder, id=id)
+        doc_order.delete()
+    if is_specific:
+        return HttpResponseRedirect('/order/specific')
     else:
-        return HttpResponseRedirect('/receive')
+        return HttpResponseRedirect('/order')
 
 
-def get_docs_no(user, is_secret=False):
-    current_group_id = user.groups.all()[0].id
-    if is_secret:
-        docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id__gt=1,
-                                         doc__create_time__year=datetime.now().year)
-    else:
-        docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id=1,
-                                         doc__create_time__year=datetime.now().year)
-    return 1 if len(docs) == 0 else docs.last().receive_no + 1
+def get_order_no(is_specific=False):
+    docs = DocOrder.objects.filter(specific=is_specific, doc__create_time__year=datetime.now().year)
+    return 1 if len(docs) == 0 else docs.last().order_no + 1
+
+
+def get_doc_no(is_specific=False):
+    return str(get_order_no(is_specific)) + "/" + str(int(datetime.now().year) + 543)
