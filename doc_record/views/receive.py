@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pytz
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
@@ -55,7 +56,6 @@ class DocReceiveCredentialListView(DocReceiveListView):
 
 @login_required(login_url='/accounts/login')
 def doc_receive_detail(request, id):
-
     is_specific = 'credential' in request.path
 
     if is_specific:
@@ -221,14 +221,18 @@ def doc_receive_delete(request, id):
         doc_receive = get_object_or_404(DocReceive, id=id)
         units = doc_receive.send_to.all()
         user = request.user
-        my_doc_trace = DocTrace.objects.filter(create_by=user, doc=doc_receive.doc)
+        #delete related trace
+        my_doc_trace = DocTrace.objects.filter(
+            (Q(create_by=user) | Q(action_to_id__in=user.groups.all())) & Q(doc=doc_receive.doc))
         my_doc_trace.delete()
+        # delete send to trace
         for unit in units:
             doc_trace = DocTrace.objects.filter(action_to=unit, doc=doc_receive.doc)
             doc_trace.delete()
         doc_receive.delete()
         doc = doc_receive.doc
-        doc.delete()
+        if doc.create_by == user:
+            doc.delete()
     if 'credential' in request.path:
         return HttpResponseRedirect('/receive/credential')
     else:
