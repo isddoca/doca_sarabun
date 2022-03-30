@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>เข้าสู่ระบบ - ระบบสารบรรณอิเล็กทรอนิกส์ กร.ทบ.</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.bootstrap4.min.css"/>
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+</head>
+{% load crispy_forms_tags %}
+<div class="container">
+
+    <div class="row g-0 auth-row mt-30">
+        <div class="col-lg-6">
+            <div class="auth-cover-wrapper bg-primary-100">
+                <div class="auth-cover">
+                    <div class="title text-center">
+                        <h1 class="text-primary mb-10">ระบบสารบรรณอิเล็กทรอนิกส์</h1>
+                        <p class="text-medium">
+                            สำหรับกรมกิจการพลเรือนทหารบก
+                        </p>
+                    </div>
+                    <div class="cover-image">
+                        <img src="{% static 'assets/images/auth/signin-image.svg' %}" alt=""/>
+                    </div>
+                    <div class="shape-image">
+                        <img src="{% static 'assets/images/auth/shape.svg' %}" alt=""/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end col -->
+        <div class="col-lg-6">
+            <div class="signin-wrapper">
+                <div class="form-wrapper">
+                    <h6 class="mb-15">สร้างบัญชีใหม่</h6>
+                    <p class="text-sm mb-25">
+                        กรุณาลงชื่อเข้าใช้งานก่อนใช้งานระบบ
+                    </p>
+
+                    {% if form.errors %}
+                        <div class="alert-box danger-alert">
+                            <div class="alert">
+                                <p class="text-medium">
+                                    ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-12">
+                                {{ signup_form.username|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ signup_form.password|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ signup_form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ signup_form.last_name|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ signup_form.email|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ signup_form.groups|as_crispy_field }}
+                            </div>
+
+
+                            <div class="col-12">
+                                <div class="button-group d-flex justify-content-center flex-wrap">
+                                    <button class="main-btn primary-btn btn-hover w-100 text-center" type="submit">
+                                        สร้างบัญชี
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- end row -->
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- end col -->
+    </div>
+    <!-- end row -->
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
+<script>
+    let option = {
+        delimiter: ",",
+        persist: false,
+        create: function (input) {
+            return {
+                value: input,
+                text: input,
+            };
+        },
+    }
+
+    let select = $(".selectmultiple").selectize(option);
+    let selectize = select[0].selectize;
+</script>
+</body>
+</html>

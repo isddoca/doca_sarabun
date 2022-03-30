@@ -3,7 +3,7 @@ from datetime import datetime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.forms import ClearableFileInput
 from pythainlp import thai_strftime
 
@@ -32,6 +32,21 @@ class ThaiDateCEField(forms.DateField):
         ce = int(splitdate[2]) - 543
         splitdate[2] = str(ce)
         return "-".join(splitdate[::-1])
+
+
+class SignupForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(queryset=Group.objects,
+                                            widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+                                            label="หน่วยงาน", required=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'groups']
+        labels = {'username': 'ชื่อผู้ใช้งาน', 'password': 'รหัสผ่าน', 'first_name': 'ยศและชื่อ',
+                  'last_name': 'นามสกุล'}
+        widgets = {
+            'password': forms.PasswordInput(),
+        }
 
 
 class DocModelForm(forms.ModelForm):
