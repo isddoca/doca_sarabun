@@ -7,10 +7,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
-from doc_record.views.receive import get_docs_no
 
 from doc_record.forms import DocReceiveModelForm, DocTracePendingModelForm
-from doc_record.models import DocReceive, DocTrace
+from doc_record.models import DocReceive, DocTrace, DocFile
+from doc_record.views.receive import get_docs_no
 
 
 @method_decorator(login_required, name='dispatch')
@@ -51,6 +51,7 @@ def doc_trace_action(request, id):
     user = request.user
     group = user.groups.all()[0]
     current_doc_trace = DocTrace.objects.get(id=id)
+    doc_old_files = DocFile.objects.filter(doc=current_doc_trace.doc)
 
     doc_receive_of_group = None
     if current_doc_trace.doc_status_id == 3:
@@ -79,7 +80,8 @@ def doc_trace_action(request, id):
                 doc_receive_form.save_m2m()
 
                 current_unit = current_doc_trace.create_by.groups.all()[0]
-                pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=False).exclude(doc_status_id__gt=1)
+                pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=False).exclude(
+                    doc_status_id__gt=1)
 
                 exclude_unit = []
                 for trace in pending_traces:
@@ -92,12 +94,14 @@ def doc_trace_action(request, id):
                             DocTrace.objects.get(doc=current_doc_trace.doc, doc_status_id=2, action_from=group,
                                                  action_to=send_unit, done=True)
                         except DocTrace.DoesNotExist:
-                            DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=2, create_by=user,
-                                                    action_to=send_unit, action_from=group,
-                                                    time=datetime.now(timezone), note=doc_trace_save.note)
+                            DocTrace.objects.update_or_create(time=datetime.now(timezone), note=doc_trace_save.note,
+                                                              defaults={'doc': current_doc_trace.doc,
+                                                                        'doc_status_id': 2, 'create_by': user,
+                                                                        'action_to': send_unit, 'action_from': group})
             else:
                 DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1, action_to=group, action_from=group,
-                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note, done=True)
+                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note,
+                                        done=True)
                 DocReceive.objects.create(doc=current_doc_trace.doc,
                                           receive_no=get_docs_no(user, current_doc_trace.doc.credential), group=group)
             return HttpResponseRedirect('/trace/pending')
@@ -106,5 +110,6 @@ def doc_trace_action(request, id):
         doc_trace_form = DocTracePendingModelForm(instance=current_doc_trace)
         doc_receive_form = DocReceiveModelForm(instance=doc_receive_of_group)
 
-    context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace}
+    context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace,
+               'old_files': doc_old_files}
     return render(request, 'doc_record/doctrace_pending_view.html', context)
