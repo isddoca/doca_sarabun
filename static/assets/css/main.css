@@ -1,13 +1,15 @@
 /*===========================
 		COMMON css
 ===========================*/
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@200;400;600&display=swap');
+
 html {
   scroll-behavior: smooth; }
 
 body {
-  font-family: "Inter", sans-serif !important;
-  font-weight: normal;
+  font-family: 'Sarabun', sans-serif !important;
+  font-weight: 400;
   font-style: normal;
   color: #5d657b;
   overflow-x: hidden;
