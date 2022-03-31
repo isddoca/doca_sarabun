@@ -35,20 +35,30 @@
                                 class="dropdown-menu dropdown-menu-end"
                                 aria-labelledby="message"
                         >
-                            {% for doc in pending_docs %}
+                            {% if pending_docs %}
+                                {% for doc in pending_docs %}
+                                    <li>
+                                        <a href="/trace/pending/{{ doc.id }}">
+                                            <div class="image">
+                                                <img src="assets/images/lead/lead-5.png" alt=""/>
+                                            </div>
+                                            <div class="content">
+                                                <h6>{{ doc.action_from }}</h6>
+                                                <p>{{ doc.action_from }} {{ doc.doc_status.name }}ไปยัง {{ doc.action_to }}</p>
+                                                <span>{{ doc.time_th }}</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
                                 <li>
-                                    <a href="/trace/pending/{{ doc.id }}">
-                                        <div class="image">
-                                            <img src="assets/images/lead/lead-5.png" alt=""/>
-                                        </div>
+                                    <a href="">
                                         <div class="content">
-                                            <h6>{{ doc.action_from }}</h6>
-                                            <p>{{ doc.action_from }} {{ doc.doc_status.name }}ไปยัง {{ doc.action_to }}</p>
-                                            <span>{{ doc.time_th }}</span>
+                                            <p>ยังไม่มีเรื่องเข้ามา</p>
                                         </div>
                                     </a>
                                 </li>
-                            {% endfor %}
+                            {% endif %}
                         </ul>
                     </div>
                     <!-- message end -->
