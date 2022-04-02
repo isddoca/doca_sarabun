@@ -42,13 +42,34 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'sass_processor',
     'crispy_forms',
     "crispy_bootstrap5",
     'doc_record',
     'doc_classify',
     'rest_framework',
+
+    'allauth',  # New
+    'allauth.account',  # New
+    'allauth.socialaccount',  # New
+    'allauth.socialaccount.providers.line',  # New
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+SOCIALACCOUNT_PROVIDERS = {
+    'line': {
+        'APP': {
+            'client_id': env('LINE_LOGIN_CHANNEL_ID'),
+            'secret': env('LINE_LOGIN_CHANNEL_SECRET')
+        },
+        "SCOPE": ['profile', 'openid', 'email']
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

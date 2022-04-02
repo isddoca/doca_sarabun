@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 
 from doc_record.models import Doc
-from forms import SignupForm
+from doc_record.forms import SignupForm
 
 
 @login_required(login_url='/accounts/login')
