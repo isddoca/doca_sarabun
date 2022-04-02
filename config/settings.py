@@ -61,6 +61,10 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+ACCOUNT_FORMS = {'signup': 'doc_record.forms.SignupForm'}
+
 SOCIALACCOUNT_PROVIDERS = {
     'line': {
         'APP': {
@@ -162,6 +166,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MODELS = os.path.join(BASE_DIR, 'doc_classify/models')
 RESOURCES = os.path.join(BASE_DIR, 'doc_classify/resources')
 
+SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login'
 

@@ -1,5 +1,6 @@
 from datetime import date
 
+from allauth.account.views import SignupView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponseRedirect

@@ -3,6 +3,8 @@ from datetime import datetime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, User
 from django.forms import ClearableFileInput
 from pythainlp import thai_strftime
@@ -34,19 +36,24 @@ class ThaiDateCEField(forms.DateField):
         return "-".join(splitdate[::-1])
 
 
-class SignupForm(forms.ModelForm):
+class SignupForm(UserCreationForm):
     groups = forms.ModelMultipleChoiceField(queryset=Group.objects,
                                             widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
                                             label="หน่วยงาน", required=True)
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'groups']
+        fields = ['username', 'first_name', 'last_name', 'email', 'groups']
         labels = {'username': 'ชื่อผู้ใช้งาน', 'password': 'รหัสผ่าน', 'first_name': 'ยศและชื่อ',
                   'last_name': 'นามสกุล'}
-        widgets = {
-            'password': forms.PasswordInput(),
-        }
+
+    def save(self, commit=True):
+        sign_up = super(SignupForm, self).save(commit=False)
+        sign_up.password = make_password(self.cleaned_data['password1'])
+        sign_up.is_active = True
+        sign_up.save()
+        self.save_m2m()
+        return sign_up
 
 
 class DocModelForm(forms.ModelForm):

@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+{% load account %}
+{% load socialaccount %}
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -107,6 +109,7 @@
                                     ยังไม่มีบัญชีใช่ไหม?
                                     <a href="/accounts/signup">สร้างบัญชีเลย</a>
                                 </p>
+                                <a href="{% provider_login_url 'line' %}">login via line</a>
                             </div>
                         </div>
                         <!-- end row -->
