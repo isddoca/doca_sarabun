@@ -56,7 +56,7 @@ class SignupForm(UserCreationForm):
         return sign_up
 
 
-class UserGroupForm(forms.ModelForm):
+class UserInfoForm(forms.ModelForm):
     groups = forms.ModelMultipleChoiceField(queryset=Group.objects,
                                             widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
                                             label="หน่วยงาน", required=True)

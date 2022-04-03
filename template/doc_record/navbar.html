@@ -94,7 +94,7 @@
                     >
                         <span class="text">ทะเบียนหนังสือคำสั่ง</span>
                     </a>
-                    <ul id="ddmenu_3" class="collapse dropdown-nav show">
+                    <ul id="ddmenu_3" class="collapse dropdown-nav">
                         <li>
                             <a href="/order" class="{% if url_name == 'order' %}active{% endif %}"><i
                                     class="fa-regular fa-file-text"></i>ทะเบียนหนังสือคำสั่ง</a>
@@ -103,6 +103,27 @@
                             <a href="/order/specific"
                                class="{% if url_name == 'order_specific' %}active{% endif %}"><i
                                     class="fa-solid fa-file-text"></i>ทะเบียนหนังสือคำสั่งเฉพาะ</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <span class="divider"><hr/></span>
+
+            <li class="nav-item nav-item-has-children">
+                    <a
+                            href="#2"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ddmenu_4"
+                            aria-controls="ddmenu_4"
+                            aria-expanded="true"
+                            aria-label="Toggle navigation"
+                    >
+                        <span class="text">จัดการผู้ใช้งาน</span>
+                    </a>
+                    <ul id="ddmenu_4" class="collapse dropdown-nav show">
+                        <li>
+                            <a href="/accounts/edit" class="{% if url_name == 'account' %}active{% endif %}"><i
+                                    class="fa-regular fa-user"></i>ตั้งค่าผู้ใช้</a>
                         </li>
                     </ul>
                 </li>

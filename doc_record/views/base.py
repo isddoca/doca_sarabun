@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 
 from doc_record.models import Doc
-from doc_record.forms import SignupForm, UserGroupForm
+from doc_record.forms import SignupForm, UserInfoForm
 
 
 @login_required(login_url='/accounts/login')
@@ -18,7 +18,7 @@ def account_init(request):
     if groups:
         return redirect('/receive/')
     elif request.method == 'POST':
-        signup_form = UserGroupForm(request.POST)
+        signup_form = UserInfoForm(request.POST)
         if signup_form.is_valid():
             user = signup_form.save(commit=False)
             user.id = request.user.id
@@ -28,9 +28,27 @@ def account_init(request):
             signup_form.save_m2m()
         return redirect('/receive/')
     else:
-        signup_form = UserGroupForm(instance=request.user)
+        signup_form = UserInfoForm(instance=request.user)
         context = {'signup_form': signup_form}
         return render(request, 'account/init_group.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def user_info_edit(request):
+    if request.method == 'POST':
+        signup_form = UserInfoForm(request.POST)
+        if signup_form.is_valid():
+            user = signup_form.save(commit=False)
+            user.id = request.user.id
+            user.username = request.user.username
+            user.password = request.user.password
+            user.save()
+            signup_form.save_m2m()
+        return redirect('/receive/')
+    else:
+        signup_form = UserInfoForm(instance=request.user)
+        context = {'signup_form': signup_form}
+        return render(request, 'doc_record/user_info_form.html', context)
 
 
 def generate_doc_id():
