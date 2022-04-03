@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'doc_classify',
     'rest_framework',
 
+    'django.contrib.sites',
     'allauth',  # New
     'allauth.account',  # New
     'allauth.socialaccount',  # New
