@@ -55,15 +55,15 @@
                         </div>
                     {% endif %}
 
-                    <form method="post">
+                    <form method="post" action="/accounts/login/">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-12">
                                 <div class="input-style-1">
-                                    <label for="id_username">ชื่อผู้ใช้:</label>
-                                    <input type="text" name="username" autofocus autocapitalize="none"
+                                    <label for="id_login">ชื่อผู้ใช้:</label>
+                                    <input type="text" name="login" autofocus autocapitalize="none"
                                            autocomplete="username" maxlength="150"
-                                           required id="id_username">
+                                           required id="id_login">
                                 </div>
                             </div>
                             <!-- end col -->
@@ -82,9 +82,9 @@
                                             class="form-check-input"
                                             type="checkbox"
                                             value=""
-                                            id="checkbox-remember"
+                                            id="id-remember"
                                     />
-                                    <label class="form-check-label" for="checkbox-remember">
+                                    <label class="form-check-label" for="id-remember">
                                         จดจำการเข้าใช้งานครั้งถัดไป
                                     </label>
                                 </div>
@@ -93,7 +93,7 @@
                             <div class="col-xxl-6 col-lg-12 col-md-6">
                                 <div
                                         class="text-start text-md-end text-lg-start text-xxl-end mb-30">
-                                    <a href="/accounts/password_reset" class="hover-underline">
+                                    <a href="/accounts/password/reset" class="hover-underline">
                                         ลืมรหัสผ่าน?
                                     </a>
                                 </div>
@@ -124,6 +124,5 @@
 
 
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'assets/js/main.js' %}"></script>
 </body>
 </html>
