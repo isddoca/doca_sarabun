@@ -1,34 +1,38 @@
 <!DOCTYPE html>
-{% load account %}
-{% load socialaccount %}
+{% load account %} {% load socialaccount %}
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <title>เข้าสู่ระบบ - ระบบสารบรรณอิเล็กทรอนิกส์ กร.ทบ.</title>
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"/>
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no"
+    />
     {% load static %}
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/css/lineicons.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
+    <link
+            rel="stylesheet"
+            href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+    />
+    <link rel="stylesheet" href="{% static 'assets/css/lineicons.css' %}"/>
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
 </head>
 <body>
 <div class="container">
-
     <div class="row g-0 auth-row mt-30">
         <div class="col-lg-6">
             <div class="auth-cover-wrapper bg-primary-100">
                 <div class="auth-cover">
                     <div class="title text-center">
                         <h1 class="text-primary mb-10">ระบบสารบรรณอิเล็กทรอนิกส์</h1>
-                        <p class="text-medium">
-                            สำหรับกรมกิจการพลเรือนทหารบก
-                        </p>
+                        <p class="text-medium">สำหรับกรมกิจการพลเรือนทหารบก</p>
                     </div>
                     <div class="cover-image">
-                        <img src="{% static 'assets/images/auth/signin-image.svg' %}" alt=""/>
+                        <img
+                                src="{% static 'assets/images/auth/signin-image.svg' %}"
+                                alt=""
+                        />
                     </div>
                     <div class="shape-image">
                         <img src="{% static 'assets/images/auth/shape.svg' %}" alt=""/>
@@ -41,16 +45,12 @@
             <div class="signin-wrapper">
                 <div class="form-wrapper">
                     <h6 class="mb-15">ลงชื่อใช้งาน</h6>
-                    <p class="text-sm mb-25">
-                        กรุณาลงชื่อเข้าใช้งานก่อนใช้งานระบบ
-                    </p>
+                    <p class="text-sm mb-25">กรุณาลงชื่อเข้าใช้งานก่อนใช้งานระบบ</p>
 
                     {% if form.errors %}
                         <div class="alert-box danger-alert">
                             <div class="alert">
-                                <p class="text-medium">
-                                    ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
-                                </p>
+                                <p class="text-medium">ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง</p>
                             </div>
                         </div>
                     {% endif %}
@@ -61,18 +61,30 @@
                             <div class="col-12">
                                 <div class="input-style-1">
                                     <label for="id_login">ชื่อผู้ใช้:</label>
-                                    <input type="text" name="login" autofocus autocapitalize="none"
-                                           autocomplete="username" maxlength="150"
-                                           required id="id_login">
+                                    <input
+                                            type="text"
+                                            name="login"
+                                            autofocus
+                                            autocapitalize="none"
+                                            autocomplete="username"
+                                            maxlength="150"
+                                            required
+                                            id="id_login"
+                                    />
                                 </div>
                             </div>
                             <!-- end col -->
                             <div class="col-12">
                                 <div class="input-style-1">
                                     <label for="id_password">รหัสผ่าน:</label>
-                                    <input type="password" name="password" autocomplete="current-password" required
-                                           id="id_password"
-                                           class="form-control">
+                                    <input
+                                            type="password"
+                                            name="password"
+                                            autocomplete="current-password"
+                                            required
+                                            id="id_password"
+                                            class="form-control"
+                                    />
                                 </div>
                             </div>
                             <!-- end col -->
@@ -91,8 +103,7 @@
                             </div>
                             <!-- end col -->
                             <div class="col-xxl-6 col-lg-12 col-md-6">
-                                <div
-                                        class="text-start text-md-end text-lg-start text-xxl-end mb-30">
+                                <div class="text-start text-md-end text-lg-start text-xxl-end mb-30">
                                     <a href="/accounts/password/reset" class="hover-underline">
                                         ลืมรหัสผ่าน?
                                     </a>
@@ -101,19 +112,33 @@
                             <!-- end col -->
                             <div class="col-12">
                                 <div class="button-group d-flex justify-content-center flex-wrap">
-                                    <button class="main-btn primary-btn btn-hover w-100 text-center" type="submit">
+                                    <button
+                                            class="main-btn primary-btn btn-hover w-100 text-center" type="submit">
                                         ลงชื่อเข้าใช้
                                     </button>
                                 </div>
-                                <p class="text-sm text-medium text-dark text-center pt-3">
-                                    ยังไม่มีบัญชีใช่ไหม?
-                                    <a href="/accounts/signup">สร้างบัญชีเลย</a>
-                                </p>
-                                <a href="{% provider_login_url 'line' %}">login via line</a>
                             </div>
                         </div>
                         <!-- end row -->
                     </form>
+                    <div class="singin-option pt-40">
+                        <p class="text-sm text-medium text-center text-gray">
+                            หรือเข้าระบบด้วย
+                        </p>
+                        <div class="button-group d-flex justify-content-center flex-wrap">
+                            <form id="line" method="post" action="/accounts/line/login/">
+                                {% csrf_token %}
+                                <button class="main-btn success-btn-outline m-2">
+                                    <i class="lni lni-line mr-10"></i>
+                                    Line
+                                </button>
+                            </form>
+                        </div>
+                        <p class="text-sm text-medium text-dark text-center pt-3">
+                            ยังไม่มีบัญชีใช่ไหม?
+                            <a href="/accounts/signup">สร้างบัญชีเลย</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,7 +146,6 @@
     </div>
     <!-- end row -->
 </div>
-
 
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 </body>
