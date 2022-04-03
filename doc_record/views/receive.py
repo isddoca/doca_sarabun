@@ -2,7 +2,9 @@ import os
 from datetime import datetime
 
 import pytz
+from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group, User
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -12,7 +14,7 @@ from django.views.generic import ListView
 from config import settings
 from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm
 from doc_record.models import DocReceive, DocFile, DocTrace, Doc
-from doc_record.views.base import generate_doc_id
+from doc_record.views.base import generate_doc_id, get_line_id
 
 
 @method_decorator(login_required, name='dispatch')
@@ -111,6 +113,9 @@ def doc_receive_add(request):
             send_to = doc_receive_model.send_to.all()
             DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_from_id=group_id, done=True,
                                     action_to_id=group_id, time=datetime.now(timezone))
+
+            get_line_id(send_to)
+
             for unit in send_to:
                 DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
                                         action_from_id=group_id, time=datetime.now(timezone))
