@@ -10,7 +10,7 @@ from .views import trace
 
 
 urlpatterns = [
-    path('', base.index, name='receive'),
+    path('', base.account_init, name='receive'),
 
     path('receive/', receive.DocReceiveListView.as_view(), name='receive'),
     path('receive/<int:id>/', receive.doc_receive_detail, name='receive'),

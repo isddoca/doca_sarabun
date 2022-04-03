@@ -13,7 +13,7 @@ from doc_record.forms import SignupForm, UserGroupForm
 
 
 @login_required(login_url='/accounts/login')
-def index(request):
+def account_init(request):
     groups = request.user.groups.all()
     if groups:
         return redirect('/receive/')
