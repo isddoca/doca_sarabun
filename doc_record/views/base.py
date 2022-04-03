@@ -7,28 +7,28 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 
 from doc_record.models import Doc
-from doc_record.forms import SignupForm
+from doc_record.forms import SignupForm, UserGroupForm
 
 
 @login_required(login_url='/accounts/login')
 def index(request):
-    return redirect('/receive/')
-
-
-def signup(request):
-    if request.method == 'POST':
-        signup_form = SignupForm(request.POST)
+    groups = request.user.groups.all()
+    if groups:
+        return redirect('/receive/')
+    elif request.method == 'POST':
+        signup_form = UserGroupForm(request.POST)
         if signup_form.is_valid():
-            sign_up = signup_form.save(commit=False)
-            sign_up.password = make_password(signup_form.cleaned_data['password'])
-            sign_up.save()
+            user = signup_form.save(commit=False)
+            user.id = request.user.id
+            user.username = request.user.username
+            user.password = request.user.password
+            user.save()
             signup_form.save_m2m()
-            return HttpResponseRedirect('/accounts/login')
+        return redirect('/receive/')
     else:
-        signup_form = SignupForm()
-
-    context = {'signup_form': signup_form}
-    return render(request, 'registration/signup.html', context)
+        signup_form = UserGroupForm(instance=request.user)
+        context = {'signup_form': signup_form}
+        return render(request, 'account/init_group.html', context)
 
 
 def generate_doc_id():

@@ -56,6 +56,17 @@ class SignupForm(UserCreationForm):
         return sign_up
 
 
+class UserGroupForm(forms.ModelForm):
+    groups = forms.ModelMultipleChoiceField(queryset=Group.objects,
+                                            widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+                                            label="หน่วยงาน", required=True)
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'groups']
+        labels = {'first_name': 'ยศและชื่อ', 'last_name': 'นามสกุล'}
+
+
 class DocModelForm(forms.ModelForm):
     doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.today(), "%d/%m/%Y"),
                                label='ลงวันที่',
