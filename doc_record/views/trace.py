@@ -1,15 +1,18 @@
 from datetime import datetime
 
 import pytz
+import requests
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from songline import Sendline
 
 from doc_record.forms import DocReceiveModelForm, DocTracePendingModelForm
-from doc_record.models import DocReceive, DocTrace, DocFile
+from doc_record.models import DocReceive, DocTrace, DocFile, LineNotifyToken
 from doc_record.views.receive import get_docs_no
 
 
@@ -64,10 +67,12 @@ def doc_trace_action(request, id):
             current_doc_trace.save()
             doc_trace_save = doc_trace_form.save(commit=False)
             if 'reject' in doc_trace_form.data:
-                DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=3,
+                doc_trace = DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=3,
                                         action_from=group,
                                         action_to=current_doc_trace.create_by.groups.all()[0],
                                         create_by=user, time=datetime.now(timezone), note=doc_trace_save.note)
+                url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
+                doc_trace_notify(doc_trace, group, current_doc_trace.action_from, url)
             elif 'resend' in doc_trace_form.data:
                 doc_receive_form = DocReceiveModelForm(request.POST)
                 doc_receive_model = doc_receive_form.save(commit=False)
@@ -94,14 +99,25 @@ def doc_trace_action(request, id):
                             DocTrace.objects.get(doc=current_doc_trace.doc, doc_status_id=2, action_from=group,
                                                  action_to=send_unit, done=True)
                         except DocTrace.DoesNotExist:
-                            DocTrace.objects.update_or_create(time=datetime.now(timezone), note=doc_trace_save.note,
-                                                              defaults={'doc': current_doc_trace.doc,
-                                                                        'doc_status_id': 2, 'create_by': user,
-                                                                        'action_to': send_unit, 'action_from': group})
+                            doc_trace_old, doc_trace_new = DocTrace.objects.update_or_create(time=datetime.now(timezone),
+                                                                                   note=doc_trace_save.note, done=False,
+                                                                                   defaults={
+                                                                                       'doc': current_doc_trace.doc,
+                                                                                       'doc_status_id': 2,
+                                                                                       'create_by': user,
+                                                                                       'action_to': send_unit,
+                                                                                       'action_from': group})
+                            if doc_trace_old:
+                                url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_old.pk))
+                                doc_trace_notify(doc_trace_old, group, send_unit, url)
+                            else:
+                                url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_new.pk))
+                                doc_trace_notify(doc_trace_new, group, send_unit, url)
             else:
-                DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1, action_to=group, action_from=group,
+                doc_trace = DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1, action_to=group, action_from=group,
                                         create_by=user, time=datetime.now(timezone), note=doc_trace_save.note,
                                         done=True)
+                doc_trace_notify(doc_trace, group, current_doc_trace.action_from, None)
                 DocReceive.objects.create(doc=current_doc_trace.doc,
                                           receive_no=get_docs_no(user, current_doc_trace.doc.credential), group=group)
             return HttpResponseRedirect('/trace/pending')
@@ -113,3 +129,41 @@ def doc_trace_action(request, id):
     context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace,
                'old_files': doc_old_files}
     return render(request, 'doc_record/doctrace_pending_view.html', context)
+
+
+def doc_trace_notify(doc_trace, from_group, to_group, url):
+    users_in_unit = None
+    message = None
+    doc = doc_trace.doc
+    action = doc_trace.doc_status.name
+    print(doc)
+    print(action)
+    match action:
+        case "รับเอกสาร":
+            users_in_unit = User.objects.filter(groups=to_group)
+            msg_template = "{receive_from} ได้รับหนังสือ\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nเรียบร้อยแล้ว"
+            message = msg_template.format(receive_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
+                                          title=doc.title)
+            print(message)
+        case "ส่งเอกสาร":
+            users_in_unit = User.objects.filter(groups=to_group)
+            msg_template = "มีหนังสือส่งมาจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
+            message = msg_template.format(send_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
+                                          title=doc.title, url=url)
+        case "ตีกลับ":
+            users_in_unit = User.objects.filter(groups=to_group)
+            print(users_in_unit)
+            msg_template = "มีหนังสือตีกลับจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
+            message = msg_template.format(send_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
+                                          title=doc.title, url=url)
+
+    for user in users_in_unit:
+        try:
+            print(user.username)
+            user_token = LineNotifyToken.objects.get(user=user)
+            linenotify = Sendline(user_token.token)
+            linenotify.sendtext(message)
+        except LineNotifyToken.DoesNotExist:
+            print(user.username + " not registered line notify")
+        except requests.exceptions.ConnectionError:
+            print("เน็ตล่ม")

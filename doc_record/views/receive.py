@@ -85,7 +85,7 @@ def doc_receive_detail(request, id):
 def doc_receive_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
-    group = user.groups.all()[0]
+    current_group = user.groups.all()[0]
     group_id = user.groups.all()[0].id
     parent_nav_title = "ทะเบียนหนังสือรับ"
     parent_nav_path = "/receive"
@@ -126,7 +126,7 @@ def doc_receive_add(request):
                 doctrace = DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
                                         action_from_id=group_id, time=datetime.now(timezone))
                 url = request.build_absolute_uri('/trace/pending/'+str(doctrace.pk))
-                send_doc_notify(group, doc_model, unit, url)
+                send_doc_notify(current_group, doc_model, unit, url)
 
             if 'credential' in request.path:
                 return HttpResponseRedirect('/receive/credential')
@@ -216,9 +216,16 @@ def doc_receive_edit(request, id):
                                               action_to=current_group, action_from=current_group, done=True,
                                               defaults={'time': datetime.now(timezone)})
             for unit in send_to:
-                DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
+                doc_trace_old, doc_trace_new = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
                                                   action_from=current_group, action_to=unit,
                                                   defaults={'time': datetime.now(timezone)})
+
+                if doc_trace_old:
+                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_old.pk))
+                else:
+                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_new.pk))
+                send_doc_notify(current_group, doc_model, unit, url)
+
 
             if 'credential' in request.path:
                 return HttpResponseRedirect('/receive/credential')
