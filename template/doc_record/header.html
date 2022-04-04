@@ -92,12 +92,16 @@
                                 aria-labelledby="profile"
                         >
                             <li>
-                                <a href="#0">
-                                    <i class="lni lni-user"></i> ข้อมูลผู้ใช้
+                                <a href="/accounts/edit">
+                                    <i class="lni lni-user"></i> ตั้งค่าผู้ใช้
                                 </a>
                             </li>
                             <li>
-                                <a href="{% url 'account_logout' %}"> <i class="lni lni-exit"></i> ออกจากระบบ</a>
+                                <form id="logout" method="post" action="/accounts/logout/">
+                                    {% csrf_token %}
+                                    <a href="#" onclick="document.getElementById('logout').submit();"><i class="lni lni-exit"></i>
+                                        ออกจากระบบ</a>
+                                </form>
                             </li>
                         </ul>
                     </div>
