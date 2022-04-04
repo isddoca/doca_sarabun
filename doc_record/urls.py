@@ -12,6 +12,8 @@ from .views import trace
 urlpatterns = [
     path('', base.account_init, name='receive'),
     path('accounts/edit', base.user_info_edit, name='account'),
+    path('linenotify/register', base.line_notify_register, name='linenotify'),
+    path('linenotify/callback', base.line_notify_callback, name='linenotify'),
 
     path('receive/', receive.DocReceiveListView.as_view(), name='receive'),
     path('receive/<int:id>/', receive.doc_receive_detail, name='receive'),

@@ -2,10 +2,12 @@ import os
 from datetime import datetime, timedelta
 
 import pytz
+from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import environ
 from pythainlp import thai_strftime
 
 
@@ -150,6 +152,15 @@ class DocUrgent(models.Model):
 class Unit(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     unit_id = models.CharField(max_length=64, blank=True, null=True)
+
+
+class LineNotifyToken(models.Model):
+    token = models.TextField(blank=False, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="line_notify_user", blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'line_notify_token'
 
 
 @receiver(post_save, sender=Group)
