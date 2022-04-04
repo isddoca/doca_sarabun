@@ -46,6 +46,8 @@ def line_notify_callback(request):
     data = {'code': code, 'client_id': client_id, 'client_secret': client_secret, 'redirect_uri': redirect_uri,
             'grant_type': 'authorization_code'}
     result = requests.post(url, data=data)
-    data = json.loads(result.text)
-    LineNotifyToken.objects.update_or_create(token=data['access_token'], defaults={'user': request.user})
+    if status.is_success(result.status_code):
+        data = json.loads(result.text)
+        LineNotifyToken.objects.update_or_create(token=data['access_token'], defaults={'user': request.user})
+
     return redirect('/accounts/edit')

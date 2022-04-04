@@ -48,7 +48,11 @@ def user_info_edit(request):
         return redirect('/receive/')
     else:
         signup_form = UserInfoForm(instance=request.user)
-        context = {'signup_form': signup_form}
+        try:
+            linenotify_status = LineNotifyToken.objects.get(user=request.user)
+        except LineNotifyToken.DoesNotExist:
+            linenotify_status = None
+        context = {'signup_form': signup_form, 'notify_status':linenotify_status}
         return render(request, 'doc_record/user_info_form.html', context)
 
 

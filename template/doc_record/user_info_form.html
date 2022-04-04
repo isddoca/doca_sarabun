@@ -58,11 +58,21 @@
                     {{ signup_form.groups|as_crispy_field }}
                 </div>
 
-                <div class="mb-2">
+
+                <div class="form-check pb-3">
+                    <input class="form-check-input" type="checkbox" value="need_notify" id="notify-check"
+                           onchange="notify_trigger(this)" {% if notify_status %}checked{% endif %}>
+                    <label class="form-check-label" for="invalidCheck">
+                        เปิดการแจ้งเตือนผ่าน Line Notify
+                    </label>
+                </div>
+
+
+                <div class="form-group row">
                     <input type="submit"
                            name="submit"
                            value="บันทึก"
-                           class="btn btn-primary"
+                           class="btn btn-primary col-md-offset-6"
                            id="submit-id-submit"
                     />
                 </div>
@@ -91,5 +101,20 @@
 
         let select = $(".selectmultiple").selectize(option);
         let selectize = select[0].selectize;
+
+        function notify_trigger(value) {
+            if (value.checked) {
+                window.open("/linenotify/register", '_self')
+            } else {
+                window.open("/linenotify/revoke", '_self')
+            }
+            console.log(value.checked)
+        }
+
+        {# reload page when press back. #}
+        let perfEntries = performance.getEntriesByType("navigation");
+        if (perfEntries[0].type === "back_forward") {
+            location.reload(true);
+        }
     </script>
 {% endblock %}
