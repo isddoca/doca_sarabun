@@ -44,7 +44,7 @@ class DocClassification(APIView):
         raw_received_units = logreg_model.predict_proba(regressor)
         classes = logreg_model.classes_[0]
         result = pd.DataFrame(raw_received_units[0], columns=classes)
-        received_units = result.apply(lambda row: row.account_init[row >= thresholds].tolist(), axis=1)
+        received_units = result.apply(lambda row: row.index[row >= thresholds].tolist(), axis=1)
 
         response_dict = {"received_units": np.array(received_units).flatten()[0]}
         return Response(response_dict, status=200)

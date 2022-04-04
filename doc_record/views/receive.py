@@ -1,20 +1,25 @@
 import os
 from datetime import datetime
 
+import environ
 import pytz
-from allauth.socialaccount.models import SocialAccount
+import requests.exceptions
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from songline import Sendline
 
 from config import settings
 from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm
-from doc_record.models import DocReceive, DocFile, DocTrace, Doc
+from doc_record.models import DocReceive, DocFile, DocTrace, Doc, LineNotifyToken
 from doc_record.views.base import generate_doc_id, get_line_id
+
+env = environ.Env()
+environ.Env.read_env()
 
 
 @method_decorator(login_required, name='dispatch')
@@ -80,6 +85,7 @@ def doc_receive_detail(request, id):
 def doc_receive_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
+    group = user.groups.all()[0]
     group_id = user.groups.all()[0].id
     parent_nav_title = "ทะเบียนหนังสือรับ"
     parent_nav_path = "/receive"
@@ -117,8 +123,10 @@ def doc_receive_add(request):
             get_line_id(send_to)
 
             for unit in send_to:
-                DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
+                doctrace = DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
                                         action_from_id=group_id, time=datetime.now(timezone))
+                url = request.build_absolute_uri('/trace/pending/'+str(doctrace.pk))
+                send_doc_notify(group, doc_model, unit, url)
 
             if 'credential' in request.path:
                 return HttpResponseRedirect('/receive/credential')
@@ -139,6 +147,22 @@ def doc_receive_add(request):
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
+
+
+def send_doc_notify(group, doc_model, unit, url):
+    users_in_unit = User.objects.filter(groups=unit)
+    for user in users_in_unit:
+        try:
+            user_token = LineNotifyToken.objects.get(user=user)
+            linenotify = Sendline(user_token.token)
+            msg_template = "มีหนังสือส่งมาจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
+            message = msg_template.format(send_from=group.name, doc_no=doc_model.doc_no, doc_date=doc_model.doc_date_th(),
+                                          title=doc_model.title, url=url)
+            linenotify.sendtext(message)
+        except LineNotifyToken.DoesNotExist:
+            print(user.username + " not registered line notify")
+        except requests.exceptions.ConnectionError:
+            print("เน็ตล่ม")
 
 
 @login_required(login_url='/accounts/login')
@@ -226,7 +250,7 @@ def doc_receive_delete(request, id):
         doc_receive = get_object_or_404(DocReceive, id=id)
         units = doc_receive.send_to.all()
         user = request.user
-        #delete related trace
+        # delete related trace
         my_doc_trace = DocTrace.objects.filter(
             (Q(create_by=user) | Q(action_to_id__in=user.groups.all())) & Q(doc=doc_receive.doc))
         my_doc_trace.delete()
