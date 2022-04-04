@@ -2,6 +2,7 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from config import settings
+from .views import linenotify
 from .views import order
 from .views import base
 from .views import receive
@@ -12,8 +13,10 @@ from .views import trace
 urlpatterns = [
     path('', base.account_init, name='receive'),
     path('accounts/edit', base.user_info_edit, name='account'),
-    path('linenotify/register', base.line_notify_register, name='linenotify'),
-    path('linenotify/callback', base.line_notify_callback, name='linenotify'),
+
+    path('linenotify/register', linenotify.line_notify_register, name='linenotify'),
+    path('linenotify/callback', linenotify.line_notify_callback, name='linenotify'),
+    path('linenotify/revoke', linenotify.line_notify_revoke, name='linenotify'),
 
     path('receive/', receive.DocReceiveListView.as_view(), name='receive'),
     path('receive/<int:id>/', receive.doc_receive_detail, name='receive'),
