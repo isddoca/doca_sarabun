@@ -14,6 +14,7 @@ from songline import Sendline
 from doc_record.forms import DocReceiveModelForm, DocTracePendingModelForm
 from doc_record.models import DocReceive, DocTrace, DocFile, LineNotifyToken
 from doc_record.views.receive import get_docs_no
+from doc_record.views.linenotify import doc_trace_notify
 
 
 @method_decorator(login_required, name='dispatch')
@@ -127,41 +128,3 @@ def doc_trace_action(request, id):
     context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace,
                'old_files': doc_old_files}
     return render(request, 'doc_record/doctrace_pending_view.html', context)
-
-
-def doc_trace_notify(doc_trace, from_group, to_group, url):
-    users_in_unit = None
-    message = None
-    doc = doc_trace.doc
-    action = doc_trace.doc_status.name
-    print(doc)
-    print(action)
-    match action:
-        case "รับเอกสาร":
-            users_in_unit = User.objects.filter(groups=to_group)
-            msg_template = "{receive_from} ได้รับหนังสือ\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nเรียบร้อยแล้ว"
-            message = msg_template.format(receive_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
-                                          title=doc.title)
-            print(message)
-        case "ส่งเอกสาร":
-            users_in_unit = User.objects.filter(groups=to_group)
-            msg_template = "มีหนังสือส่งมาจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
-            message = msg_template.format(send_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
-                                          title=doc.title, url=url)
-        case "ตีกลับ":
-            users_in_unit = User.objects.filter(groups=to_group)
-            print(users_in_unit)
-            msg_template = "มีหนังสือตีกลับจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
-            message = msg_template.format(send_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
-                                          title=doc.title, url=url)
-
-    for user in users_in_unit:
-        try:
-            print(user.username)
-            user_token = LineNotifyToken.objects.get(user=user)
-            linenotify = Sendline(user_token.token)
-            linenotify.sendtext(message)
-        except LineNotifyToken.DoesNotExist:
-            print(user.username + " not registered line notify")
-        except requests.exceptions.ConnectionError:
-            print("เน็ตล่ม")

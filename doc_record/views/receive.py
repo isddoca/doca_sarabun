@@ -17,6 +17,7 @@ from config import settings
 from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm
 from doc_record.models import DocReceive, DocFile, DocTrace, Doc, LineNotifyToken
 from doc_record.views.base import generate_doc_id, get_line_id
+from doc_record.views.linenotify import send_doc_notify
 
 env = environ.Env()
 environ.Env.read_env()
@@ -147,23 +148,6 @@ def doc_receive_add(request):
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
-
-
-def send_doc_notify(group, doc_model, unit, url):
-    users_in_unit = User.objects.filter(groups=unit)
-    for user in users_in_unit:
-        try:
-            user_token = LineNotifyToken.objects.get(user=user)
-            linenotify = Sendline(user_token.token)
-            msg_template = "มีหนังสือส่งมาจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
-            message = msg_template.format(send_from=group.name, doc_no=doc_model.doc_no,
-                                          doc_date=doc_model.doc_date_th(),
-                                          title=doc_model.title, url=url)
-            linenotify.sendtext(message)
-        except LineNotifyToken.DoesNotExist:
-            print(user.username + " not registered line notify")
-        except requests.exceptions.ConnectionError:
-            print("เน็ตล่ม")
 
 
 @login_required(login_url='/accounts/login')

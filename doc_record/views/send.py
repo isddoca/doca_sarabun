@@ -13,6 +13,7 @@ from config import settings
 from doc_record.forms import DocModelForm, DocCredentialModelForm, DocSendModelForm
 from doc_record.models import DocFile, DocTrace, Doc, DocSend
 from doc_record.views.base import generate_doc_id
+from doc_record.views.linenotify import send_doc_notify
 
 
 @method_decorator(login_required, name='dispatch')
@@ -127,7 +128,9 @@ def doc_send_detail(request, id):
 def doc_send_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
-    group = user.groups.all()[0]
+
+    current_group = user.groups.all()[0]
+    doca_group = Group.objects.get(id=1)
 
     parent_nav_title = "ทะเบียนหนังสือส่ง"
     parent_nav_path = "/send"
@@ -168,8 +171,10 @@ def doc_send_add(request):
             else:
                 send_to = doc_send_model.send_to.all()
                 for unit in send_to:
-                    DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
-                                            action_from=group, time=datetime.now(timezone))
+                    doc_trace = DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
+                                                        action_from=current_group, time=datetime.now(timezone))
+                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
+                    send_doc_notify(current_group, doc_model, unit, url)
                 if is_credential:
                     return HttpResponseRedirect('/send/credential')
                 else:
@@ -177,7 +182,7 @@ def doc_send_add(request):
 
     else:
         send_no = get_send_no(request.user, is_secret=is_credential, is_outside=is_sent_outside)
-        doc_no = get_doc_no(group, is_outside=is_sent_outside, send_no=send_no)
+        doc_no = get_doc_no(current_group, is_outside=is_sent_outside, send_no=send_no)
         doc_send_form = DocSendModelForm(initial={'send_no': send_no})
         if is_credential:
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
@@ -254,9 +259,13 @@ def doc_send_edit(request, id):
 
             send_to = doc_send_model.send_to.all()
             for unit in send_to:
-                DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
-                                                  action_from=current_group, action_to=unit,
-                                                  defaults={'time': datetime.now(timezone)})
+                doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
+                                                                         action_from=current_group, action_to=unit,
+                                                                         done=False,
+                                                                         defaults={'time': datetime.now(timezone)})
+                if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
+                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
+                    send_doc_notify(current_group, doc_model, unit, url)
 
             if is_sent_outside:
                 if is_credential:
