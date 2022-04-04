@@ -124,8 +124,8 @@ def doc_receive_add(request):
 
             for unit in send_to:
                 doctrace = DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
-                                        action_from_id=group_id, time=datetime.now(timezone))
-                url = request.build_absolute_uri('/trace/pending/'+str(doctrace.pk))
+                                                   action_from_id=group_id, time=datetime.now(timezone))
+                url = request.build_absolute_uri('/trace/pending/' + str(doctrace.pk))
                 send_doc_notify(current_group, doc_model, unit, url)
 
             if 'credential' in request.path:
@@ -156,7 +156,8 @@ def send_doc_notify(group, doc_model, unit, url):
             user_token = LineNotifyToken.objects.get(user=user)
             linenotify = Sendline(user_token.token)
             msg_template = "มีหนังสือส่งมาจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
-            message = msg_template.format(send_from=group.name, doc_no=doc_model.doc_no, doc_date=doc_model.doc_date_th(),
+            message = msg_template.format(send_from=group.name, doc_no=doc_model.doc_no,
+                                          doc_date=doc_model.doc_date_th(),
                                           title=doc_model.title, url=url)
             linenotify.sendtext(message)
         except LineNotifyToken.DoesNotExist:
@@ -212,20 +213,21 @@ def doc_receive_edit(request, id):
                     DocFile.objects.create(file=f, doc=doc_model)
 
             send_to = doc_receive_model.send_to.all()
-            DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=1, create_by=user,
+            DocTrace.objects.get_or_create(doc=doc_model, doc_status_id=1, create_by=user,
                                               action_to=current_group, action_from=current_group, done=True,
                                               defaults={'time': datetime.now(timezone)})
             for unit in send_to:
-                doc_trace_old, doc_trace_new = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
-                                                  action_from=current_group, action_to=unit,
-                                                  defaults={'time': datetime.now(timezone)})
+                doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2,
+                                                                                 create_by=user,
+                                                                                 action_from=current_group,
+                                                                                 action_to=unit,
+                                                                                 done = False,
+                                                                                 defaults={
+                                                                                     'time': datetime.now(timezone)})
 
-                if doc_trace_old:
-                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_old.pk))
-                else:
-                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_new.pk))
-                send_doc_notify(current_group, doc_model, unit, url)
-
+                if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
+                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
+                    send_doc_notify(current_group, doc_model, unit, url)
 
             if 'credential' in request.path:
                 return HttpResponseRedirect('/receive/credential')

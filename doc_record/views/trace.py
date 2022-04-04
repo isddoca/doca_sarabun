@@ -3,7 +3,7 @@ from datetime import datetime
 import pytz
 import requests
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -68,9 +68,10 @@ def doc_trace_action(request, id):
             doc_trace_save = doc_trace_form.save(commit=False)
             if 'reject' in doc_trace_form.data:
                 doc_trace = DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=3,
-                                        action_from=group,
-                                        action_to=current_doc_trace.create_by.groups.all()[0],
-                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note)
+                                                    action_from=group,
+                                                    action_to=current_doc_trace.create_by.groups.all()[0],
+                                                    create_by=user, time=datetime.now(timezone),
+                                                    note=doc_trace_save.note)
                 url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
                 doc_trace_notify(doc_trace, group, current_doc_trace.action_from, url)
             elif 'resend' in doc_trace_form.data:
@@ -88,35 +89,32 @@ def doc_trace_action(request, id):
                 pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=False).exclude(
                     doc_status_id__gt=1)
 
-                exclude_unit = []
+                pending_unit = []
                 for trace in pending_traces:
-                    exclude_unit.append(trace.action_to)
+                    pending_unit.append(trace.action_to)
 
                 send_to = doc_receive_model.send_to.all()
                 for send_unit in send_to:
-                    if send_unit != current_unit and send_unit not in exclude_unit:  # exclude current unit
-                        try:
-                            DocTrace.objects.get(doc=current_doc_trace.doc, doc_status_id=2, action_from=group,
-                                                 action_to=send_unit, done=True)
-                        except DocTrace.DoesNotExist:
-                            doc_trace_old, doc_trace_new = DocTrace.objects.update_or_create(time=datetime.now(timezone),
-                                                                                   note=doc_trace_save.note, done=False,
-                                                                                   defaults={
-                                                                                       'doc': current_doc_trace.doc,
-                                                                                       'doc_status_id': 2,
-                                                                                       'create_by': user,
-                                                                                       'action_to': send_unit,
-                                                                                       'action_from': group})
-                            if doc_trace_old:
-                                url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_old.pk))
-                                doc_trace_notify(doc_trace_old, group, send_unit, url)
-                            else:
-                                url = request.build_absolute_uri('/trace/pending/' + str(doc_trace_new.pk))
-                                doc_trace_notify(doc_trace_new, group, send_unit, url)
+                    if send_unit != current_unit and send_unit not in pending_unit:  # exclude current unit
+                        doc_trace, is_create = DocTrace.objects.update_or_create(doc=current_doc_trace.doc,
+                                                                                         doc_status_id=2,
+                                                                                         create_by=user,
+                                                                                         action_from=group,
+                                                                                         action_to=send_unit,
+                                                                                         done=False,
+                                                                                         defaults={
+                                                                                             'time': datetime.now(
+                                                                                                 timezone)})
+
+                        if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
+                            url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
+                            doc_trace_notify(doc_trace, group, send_unit, url)
             else:
-                doc_trace = DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1, action_to=group, action_from=group,
-                                        create_by=user, time=datetime.now(timezone), note=doc_trace_save.note,
-                                        done=True)
+                doc_trace = DocTrace.objects.create(doc=current_doc_trace.doc, doc_status_id=1, action_to=group,
+                                                    action_from=group,
+                                                    create_by=user, time=datetime.now(timezone),
+                                                    note=doc_trace_save.note,
+                                                    done=True)
                 doc_trace_notify(doc_trace, group, current_doc_trace.action_from, None)
                 DocReceive.objects.create(doc=current_doc_trace.doc,
                                           receive_no=get_docs_no(user, current_doc_trace.doc.credential), group=group)
