@@ -123,7 +123,7 @@ def doc_trace_action(request, id):
 
     else:
         doc_trace_form = DocTracePendingModelForm(instance=current_doc_trace)
-        doc_receive_form = DocReceiveModelForm(instance=doc_receive_of_group)
+        doc_receive_form = DocReceiveModelForm(instance=doc_receive_of_group, group_id=group.id)
 
     context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace,
                'old_files': doc_old_files}

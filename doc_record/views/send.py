@@ -183,7 +183,7 @@ def doc_send_add(request):
     else:
         send_no = get_send_no(request.user, is_secret=is_credential, is_outside=is_sent_outside)
         doc_no = get_doc_no(current_group, is_outside=is_sent_outside, send_no=send_no)
-        doc_send_form = DocSendModelForm(initial={'send_no': send_no})
+        doc_send_form = DocSendModelForm(initial={'send_no': send_no}, group_id=current_group.id)
         if is_credential:
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
             if is_sent_outside:
@@ -280,6 +280,7 @@ def doc_send_edit(request, id):
     else:
         tmp_doc_date = doc_send.doc.doc_date
         doc_send.doc.doc_date = tmp_doc_date.replace(year=2565)
+        doc_send_form = DocSendModelForm(instance=doc_send, group_id=current_group.id)
         if is_credential:
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
@@ -290,14 +291,12 @@ def doc_send_edit(request, id):
                 parent_nav_path = "/send/credential"
                 title = "แก้ไขทะเบียนส่งหนังสือ (ลับ)"
             doc_form = DocCredentialModelForm(instance=doc_send.doc)
-            doc_send_form = DocSendModelForm(instance=doc_send)
         else:
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
                 parent_nav_path = "/send/out"
                 title = "แก้ไขทะเบียนส่งหนังสือภายนอกหน่วย"
             doc_form = DocModelForm(instance=doc_send.doc)
-            doc_send_form = DocSendModelForm(instance=doc_send)
 
     context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'doc_files': doc_old_files, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
