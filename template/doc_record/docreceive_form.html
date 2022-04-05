@@ -97,10 +97,10 @@
                         <label class="form-label">ไฟล์เอกสารเดิม</label>
                         <ul class="list-inline">
                             {% for doc_file in doc_files %}
-                            <li class="list-inline-item">
-                                <a href="{{ MEDIA_URL }}{{ doc_file.file.url }}">{{ doc_file.filename }}</a>
-                            </li>
-                        {% endfor %}
+                                <li class="list-inline-item">
+                                    <a href="{{ MEDIA_URL }}{{ doc_file.file.url }}">{{ doc_file.filename }}</a>
+                                </li>
+                            {% endfor %}
                         </ul>
                     </div>
                 {% endif %}
@@ -129,25 +129,9 @@
     <script src="{% static 'vendor/thdatepicker/js/bootstrap-datepicker-thai.js' %}"></script>
     <script src="{% static 'vendor/thdatepicker/js/locales/bootstrap-datepicker.th.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
+    <script src="{% static 'vendor/selectize/selectize.option.js' %}"></script>
     <script>
-
-        $('.datepicker').datepicker({});
-
-        let option = {
-            delimiter: ",",
-            persist: false,
-            create: function (input) {
-                return {
-                    value: input,
-                    text: input,
-                };
-            },
-        }
-
-        let select = $(".selectmultiple").selectize(option);
-        let selectize = select[0].selectize;
-
-        function classify_doc() {
+            function classify_doc() {
             let doc = {
                 doc_title: $("#id_title").val(),
                 doc_unit: $("#id_doc_from").val(),
@@ -197,14 +181,10 @@
                 data: doc,
                 dataType: "json",
                 success: function (response) {
-                    // on successfull creating object
-                    // 1. clear the form.
-                    // display the newly friend to table.
                     let instance = response["received_units"];
                     selectize.setValue(getCodeByUnitName(instance))
                 },
                 error: function (response) {
-                    // alert the error if any error occured
                     alert(response["responseJSON"]["error"]);
                 }
             })

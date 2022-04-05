@@ -118,22 +118,5 @@
     <script src="{% static 'vendor/thdatepicker/js/bootstrap-datepicker-thai.js' %}"></script>
     <script src="{% static 'vendor/thdatepicker/js/locales/bootstrap-datepicker.th.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
-    <script>
-
-        $('.datepicker').datepicker({});
-
-        let option = {
-            delimiter: ",",
-            persist: false,
-            create: function (input) {
-                return {
-                    value: input,
-                    text: input,
-                };
-            },
-        }
-
-        let select = $(".selectmultiple").selectize(option);
-        let selectize = select[0].selectize;
-    </script>
+    <script src="{% static 'vendor/selectize/selectize.option.js' %}"></script>
 {% endblock %}
