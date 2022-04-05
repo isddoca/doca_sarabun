@@ -3,19 +3,16 @@ from datetime import datetime
 
 import environ
 import pytz
-import requests.exceptions
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
-from songline import Sendline
 
 from config import settings
 from doc_record.forms import DocReceiveModelForm, DocModelForm, DocCredentialModelForm
-from doc_record.models import DocReceive, DocFile, DocTrace, Doc, LineNotifyToken
+from doc_record.models import DocReceive, DocFile, DocTrace, Doc
 from doc_record.views.base import generate_doc_id, get_line_id
 from doc_record.views.linenotify import send_doc_notify
 
@@ -136,15 +133,14 @@ def doc_receive_add(request):
     else:
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
-            doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=True)})
             title = "ลงทะเบียนรับหนังสือ (ลับ)"
             parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
             parent_nav_path = "/receive/credential"
         else:
             doc_form = DocModelForm(initial={'id': generate_doc_id()})
-            doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=False)})
             parent_nav_path = "/receive"
-
+        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=False)},
+                                               group_id=group_id)
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
@@ -198,16 +194,16 @@ def doc_receive_edit(request, id):
 
             send_to = doc_receive_model.send_to.all()
             DocTrace.objects.get_or_create(doc=doc_model, doc_status_id=1, create_by=user,
-                                              action_to=current_group, action_from=current_group, done=True,
-                                              defaults={'time': datetime.now(timezone)})
+                                           action_to=current_group, action_from=current_group, done=True,
+                                           defaults={'time': datetime.now(timezone)})
             for unit in send_to:
                 doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2,
-                                                                                 create_by=user,
-                                                                                 action_from=current_group,
-                                                                                 action_to=unit,
-                                                                                 done = False,
-                                                                                 defaults={
-                                                                                     'time': datetime.now(timezone)})
+                                                                         create_by=user,
+                                                                         action_from=current_group,
+                                                                         action_to=unit,
+                                                                         done=False,
+                                                                         defaults={
+                                                                             'time': datetime.now(timezone)})
 
                 if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
                     url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
@@ -222,15 +218,14 @@ def doc_receive_edit(request, id):
         doc_receive.doc.doc_date = tmp_doc_date.replace(year=2565)
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(instance=doc_receive.doc)
-            doc_receive_form = DocReceiveModelForm(instance=doc_receive)
             title = "แก้ไขทะเบียนรับหนังสือ (ลับ)"
             parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
             parent_nav_path = "/receive/credential"
         else:
             doc_form = DocModelForm(instance=doc_receive.doc)
-            doc_receive_form = DocReceiveModelForm(instance=doc_receive)
-            parent_nav_path = "/receive"
 
+            parent_nav_path = "/receive"
+    doc_receive_form = DocReceiveModelForm(instance=doc_receive, group_id=current_group.id)
     print(doc_old_files)
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
