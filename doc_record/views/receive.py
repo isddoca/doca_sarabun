@@ -84,17 +84,19 @@ def doc_receive_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
     current_group = user.groups.all()[0]
-    group_id = user.groups.all()[0].id
     parent_nav_title = "ทะเบียนหนังสือรับ"
     parent_nav_path = "/receive"
     title = "ลงทะเบียนรับหนังสือ"
+
+    is_secret = 'credential' in request.path
+
     if request.method == 'POST':
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
 
-        doc_receive_form = DocReceiveModelForm(request.POST)
+        doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
             doc_model = doc_form.save(commit=False)
@@ -110,28 +112,30 @@ def doc_receive_add(request):
 
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.doc = doc_model
-            doc_receive_model.group = user.groups.all()[0]
+            doc_receive_model.group = current_group
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
             send_to = doc_receive_model.send_to.all()
-            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_from_id=group_id, done=True,
-                                    action_to_id=group_id, time=datetime.now(timezone))
+            DocTrace.objects.create(doc=doc_model, doc_status_id=1, create_by=user, action_from_id=current_group.id,
+                                    done=True,
+                                    action_to_id=current_group.id, time=datetime.now(timezone))
 
             get_line_id(send_to)
 
             for unit in send_to:
                 doctrace = DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
-                                                   action_from_id=group_id, time=datetime.now(timezone))
+                                                   action_from_id=current_group.id, time=datetime.now(timezone))
                 url = request.build_absolute_uri('/trace/pending/' + str(doctrace.pk))
                 send_doc_notify(current_group, doc_model, unit, url)
 
-            if 'credential' in request.path:
+            if is_secret:
                 return HttpResponseRedirect('/receive/credential')
             else:
                 return HttpResponseRedirect('/receive')
     else:
-        if 'credential' in request.path:
+
+        if is_secret:
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
             title = "ลงทะเบียนรับหนังสือ (ลับ)"
             parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
@@ -139,8 +143,7 @@ def doc_receive_add(request):
         else:
             doc_form = DocModelForm(initial={'id': generate_doc_id()})
             parent_nav_path = "/receive"
-        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=False)},
-                                               group_id=group_id)
+        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=is_secret)}, groups_id=[current_group.id])
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
@@ -154,16 +157,18 @@ def doc_receive_edit(request, id):
     parent_nav_title = "ทะเบียนหนังสือรับ"
     parent_nav_path = "/receive"
     title = "แก้ไขทะเบียนรับหนังสือ"
+
+    is_secret = 'credential' in request.path
     doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
     if request.method == 'POST':
         print("POST")
         user = request.user
 
-        if 'credential' in request.path:
+        if is_secret:
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
-        doc_receive_form = DocReceiveModelForm(request.POST)
+        doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
             doc_model = doc_form.save(commit=False)
@@ -178,7 +183,7 @@ def doc_receive_edit(request, id):
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.id = doc_receive.id
             doc_receive_model.doc = doc_model
-            doc_receive_model.group = current_group
+            doc_receive_model.groups = current_group
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
@@ -209,7 +214,7 @@ def doc_receive_edit(request, id):
                     url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
                     send_doc_notify(current_group, doc_model, unit, url)
 
-            if 'credential' in request.path:
+            if is_secret:
                 return HttpResponseRedirect('/receive/credential')
             else:
                 return HttpResponseRedirect('/receive')
@@ -225,7 +230,7 @@ def doc_receive_edit(request, id):
             doc_form = DocModelForm(instance=doc_receive.doc)
 
             parent_nav_path = "/receive"
-    doc_receive_form = DocReceiveModelForm(instance=doc_receive, group_id=current_group.id)
+        doc_receive_form = DocReceiveModelForm(instance=doc_receive, groups_id=[current_group.id])
     print(doc_old_files)
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'doc_files': doc_old_files, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}

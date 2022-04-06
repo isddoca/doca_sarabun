@@ -143,7 +143,7 @@ def doc_send_add(request):
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
-        doc_send_form = DocSendModelForm(request.POST)
+        doc_send_form = DocSendModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_send_form.is_valid():
             doc_model = doc_form.save(commit=False)
@@ -159,7 +159,7 @@ def doc_send_add(request):
 
             doc_send_model = doc_send_form.save(commit=False)
             doc_send_model.doc = doc_model
-            doc_send_model.group = Group.objects.get(id=1) if is_sent_outside else user.groups.all()[0]
+            doc_send_model.group = doca_group if is_sent_outside else user.groups.all()[0]
             doc_send_model.save()
             doc_send_form.save_m2m()
 
@@ -183,7 +183,7 @@ def doc_send_add(request):
     else:
         send_no = get_send_no(request.user, is_secret=is_credential, is_outside=is_sent_outside)
         doc_no = get_doc_no(current_group, is_outside=is_sent_outside, send_no=send_no)
-        doc_send_form = DocSendModelForm(initial={'send_no': send_no}, group_id=current_group.id)
+        doc_send_form = DocSendModelForm(initial={'send_no': send_no}, groups_id=[current_group.id])
         if is_credential:
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
             if is_sent_outside:
@@ -228,7 +228,7 @@ def doc_send_edit(request, id):
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
-        doc_send_form = DocSendModelForm(request.POST)
+        doc_send_form = DocSendModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_send_form.is_valid():
             doc_model = doc_form.save(commit=False)
@@ -280,7 +280,7 @@ def doc_send_edit(request, id):
     else:
         tmp_doc_date = doc_send.doc.doc_date
         doc_send.doc.doc_date = tmp_doc_date.replace(year=2565)
-        doc_send_form = DocSendModelForm(instance=doc_send, group_id=current_group.id)
+        doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[current_group.id])
         if is_credential:
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"

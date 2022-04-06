@@ -95,9 +95,9 @@ class DocCredentialModelForm(DocModelForm):
 
 class DocReceiveModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        self.group_id = kwargs.pop('group_id')
+        self.groups_id = kwargs.pop('groups_id')
         super(DocReceiveModelForm, self).__init__(*args, **kwargs)
-        self.fields['send_to'].queryset = Group.objects.exclude(id=self.group_id)
+        self.fields['send_to'].queryset = Group.objects.exclude(id__in=self.groups_id).order_by('id')
 
     helper = FormHelper()
     helper.add_input(Submit('submit', 'บันทึก', css_class='btn-primary'))

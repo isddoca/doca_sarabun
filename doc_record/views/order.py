@@ -82,9 +82,6 @@ def doc_order_add(request):
     if request.method == 'POST':
         doc_form = DocModelForm(request.POST, request.FILES)
         doc_order_form = DocOrderModelForm(request.POST)
-        print("44444")
-        print(doc_form.errors)
-        print(doc_order_form.is_valid())
         if doc_form.is_valid() and doc_order_form.is_valid():
             doc_model = doc_form.save(commit=False)
             doc_model.id = generate_doc_id()
