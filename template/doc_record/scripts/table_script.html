@@ -10,10 +10,16 @@
             ordering: false,
             info: true,
             pageLength: 50,
-            responsive: true,
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/th.json'
-            }
+            },
         });
     });
 </script>
+
+<style>
+    table.dataTable > tbody > tr.child ul.dtr-details > li {
+        border-bottom: none;
+        padding: .1em 0;
+    }
+</style>

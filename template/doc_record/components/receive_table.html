@@ -1,75 +1,78 @@
-            <div class="mt-3">
-                <table id="datatable" class="table table-sm" style="width:100%">
-                    <thead>
-                    <tr>
-                        <th>เลขรับ</th>
-                        <th>ที่</th>
-                        <th>ลงวันที่</th>
-                        <th>จาก</th>
-                        <th>ถึง</th>
-                        <th>เรื่อง</th>
-                        <th>การปฏิบัติ</th>
-                        <th>เครื่องมือ</th>
-                    </tr>
-                    </thead>
+<div class="mt-3">
+    <table id="datatable" class="table table-sm dt-responsive" style="width:100%">
+        <thead>
+        <tr>
+            <th>เลขรับ</th>
+            <th>ที่</th>
+            <th class="min-tablet">ลงวันที่</th>
+            <th class="min-tablet">จาก</th>
+            <th class="min-tablet">ถึง</th>
+            <th class="min-tablet">เรื่อง</th>
+            <th class="min-tablet">การปฏิบัติ</th>
+            <th>เครื่องมือ</th>
+        </tr>
+        </thead>
 
-                    <tbody>
-                    {% for data in page_obj %}
-                        <tr>
-                            <td class="small">{{ data.receive_no }}</td>
-                            <td class="small"><a href="{{ edit_path }}{{ data.id }}">{{ data.doc.doc_no }}</a></td>
-                            <td class="small">
-                                {{ data.doc.doc_date_th }}
-                            </td>
-                            <td class="small">{{ data.doc.doc_from }}</td>
-                            <td class="small">{{ data.doc.doc_to }}</td>
-                            <td class="small">{{ data.doc.title }}</td>
-                            <td class="small">
-                                {% for receive_unit in data.send_to.all %}
-                                    {{ receive_unit.name }}<br>
-                                {% endfor %}
-                            </td>
-                            <td class="text-center">
-                                <div class="row">
-                                    <div class="col">
-
-                                        <a href="{{ edit_path }}{{ data.id }}/edit" class="btn text-info m-1"><i
-                                                class="fas fa-pencil-alt"></i></a>
-                                        <button type="button" class="btn text-danger m-1" data-bs-toggle="modal"
-                                                data-bs-target="#delete-{{ data.id }}"><i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-
-
-                        <div class="modal fade" id="delete-{{ data.id }}" data-bs-backdrop="static"
-                             data-bs-keyboard="false"
-                             tabindex="-1"
-                             aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="staticBackdropLabel">ลบข้อมูล</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        ต้องการลบหนังสือเรื่อง {{ data.doc.title }} หรือไม่
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก
-                                        </button>
-                                        <form action="{% url 'receive_delete' id=data.id %}" method="POST">
-                                            {% csrf_token %}
-                                            <button class="btn btn-danger">ลบ {{ id }}</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
+        <tbody>
+        {% for data in page_obj %}
+            <tr>
+                <td class="small">{{ data.receive_no }}</td>
+                <td class="small"><a href="{{ edit_path }}{{ data.id }}">{{ data.doc.doc_no }}</a></td>
+                <td class="small">
+                    {{ data.doc.doc_date_th }}
+                </td>
+                <td class="small">{% if data.doc.doc_from %}{{ data.doc.doc_from }}{% else %}-{% endif %}</td>
+                <td class="small">{% if data.doc.doc_to %}{{ data.doc.doc_to }}{% else %}-{% endif %}</td>
+                <td class="small">{{ data.doc.title }}</td>
+                <td class="small">
+                    {% if data.send_to_all %}
+                        {% for receive_unit in data.send_to.all %}
+                            {{ receive_unit.name }}<br>
+                        {% endfor %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <div class="row">
+                        <div class="col-auto">
+                            <a href="{{ edit_path }}{{ data.id }}/edit" class="btn text-info m-1"><i
+                                    class="fas fa-pencil-alt"></i></a>
+                            <button type="button" class="btn text-danger m-1" data-bs-toggle="modal"
+                                    data-bs-target="#delete-{{ data.id }}"><i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                    </div>
+                </td>
+            </tr>
+
+
+            <div class="modal fade" id="delete-{{ data.id }}" data-bs-backdrop="static"
+                 data-bs-keyboard="false"
+                 tabindex="-1"
+                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">ลบข้อมูล</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            ต้องการลบหนังสือเรื่อง {{ data.doc.title }} หรือไม่
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก
+                            </button>
+                            <form action="{% url 'receive_delete' id=data.id %}" method="POST">
+                                {% csrf_token %}
+                                <button class="btn btn-danger">ลบ {{ id }}</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
