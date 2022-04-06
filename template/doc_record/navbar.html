@@ -48,7 +48,7 @@
                     >
                         <span class="text">ทะเบียนหนังสือรับ-ส่ง</span>
                     </a>
-                    <ul id="ddmenu_2" class="collapse dropdown-nav show">
+                    <ul id="ddmenu_2" class="collapse dropdown-nav {% if 'receive' in url_name or 'send' in url_name %}show{% endif %}">
                         <li>
                             <a href="/receive" class="{% if url_name == 'receive' %}active{% endif %}"><i
                                     class="fa-regular fa-circle-down"></i>ทะเบียนหนังสือรับ</a>
@@ -94,7 +94,7 @@
                     >
                         <span class="text">ทะเบียนหนังสือคำสั่ง</span>
                     </a>
-                    <ul id="ddmenu_3" class="collapse dropdown-nav">
+                    <ul id="ddmenu_3" class="collapse dropdown-nav {% if 'order' in url_name %}show{% endif %}">
                         <li>
                             <a href="/order" class="{% if url_name == 'order' %}active{% endif %}"><i
                                     class="fa-regular fa-file-text"></i>ทะเบียนหนังสือคำสั่ง</a>
