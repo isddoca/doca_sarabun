@@ -38,61 +38,12 @@
 
 
         <div class="card-style mb-30">
-            <div class="table-responsive mt-3">
-                <table id="datatable" class="table table-sm">
-                    <thead>
-                    <tr>
-
-                        <th>ที่</th>
-                        <th>ลงวันที่</th>
-                        <th>จาก</th>
-                        <th>ถึง</th>
-                        <th>เรื่อง</th>
-                        <th>ส่งมาจาก</th>
-                        <th>สถานะเอกสาร</th>
-
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    {% for data in page_obj %}
-                            <tr>
-                                <td class="small"><a href="{{ data.id }}">{{ data.doc.doc_no }}</a></td>
-                                <td class="small">
-                                    {{ data.doc.doc_date_th }}
-                                </td>
-                                <td class="small">{{ data.doc.doc_from }}</td>
-                                <td class="small">{{ data.doc.doc_to }}</td>
-                                <td class="small">{{ data.doc.title }}</td>
-                                <td class="small">{{ data.create_by.groups.all.0.name }}</td>
-                                <td class="small">{{ data.doc_status.name }}</td>
-                            </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            {% include "doc_record/components/trace_pending_table.html" %}
         </div>
     </div>
 {% endblock %}
 {% block js %}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.js"></script>
-
-
-    <script>
-        $(document).ready(function () {
-            $("#datatable").DataTable({
-                paging: true,
-                ordering: false,
-                info: true,
-                "pageLength": 50,
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/th.json'
-                }
-            });
-        });
-    </script>
+    {% include "doc_record/scripts/table_script.html" %}
 {% endblock %}
 
 
