@@ -18,7 +18,7 @@ environ.Env.read_env()
 def line_notify_register(request):
     client_id = env('LINE_NOTIFY_CLIENT_ID')
     state = 'test'
-    redirect_uri = 'http://localhost:8000/linenotify/callback'
+    redirect_uri = request.build_absolute_uri('callback')
     url = 'https://notify-bot.line.me/oauth/authorize?client_id={client_id}&scope=notify&response_type=code&state={state}&redirect_uri={redirect_uri}'.format(
         client_id=client_id, state=state, redirect_uri=redirect_uri)
     result = requests.get(url)
@@ -42,7 +42,7 @@ def line_notify_callback(request):
     code = request.GET.get('code')
     client_id = env('LINE_NOTIFY_CLIENT_ID')
     client_secret = env('LINE_NOTIFY_CLIENT_SECRET')
-    redirect_uri = 'http://localhost:8000/linenotify/callback'
+    redirect_uri = request.build_absolute_uri('callback')
     url = 'https://notify-bot.line.me/oauth/token'
 
     data = {'code': code, 'client_id': client_id, 'client_secret': client_secret, 'redirect_uri': redirect_uri,
