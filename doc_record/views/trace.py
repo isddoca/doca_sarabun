@@ -23,7 +23,7 @@ class DocTraceListView(ListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
         object_list = DocTrace.objects.filter(
-            Q(doc__create_by=self.request.user) | Q(action_to_id=current_group_id)).order_by('-time')
+            Q(doc__create_by=self.request.user) | Q(action_from_id=current_group_id)).order_by('-time')
         return object_list
 
 
