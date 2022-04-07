@@ -112,8 +112,8 @@
                     <p class="fw-bold">ส่งไปยัง</p>
                 </div>
                 <div class="form-group col-sm-10">
-                    {% if doc_receive.send_to.all %}
-                        {{ doc_receive.send_to.all|join:", " }}
+                    {% if doc_send.send_to.all %}
+                        {{ doc_send.send_to.all|join:", " }}
                     {% else %}
                         -
                     {% endif %}
