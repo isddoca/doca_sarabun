@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytz
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
@@ -68,7 +69,8 @@ class UserInfoForm(forms.ModelForm):
 
 
 class DocModelForm(forms.ModelForm):
-    doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.today(), "%d/%m/%Y"),
+    timezone = pytz.timezone('Asia/Bangkok')
+    doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.now(tz=timezone), "%d/%m/%Y"),
                                label='ลงวันที่',
                                widget=forms.DateInput(attrs={'class': 'form-control', 'data-provide': "datepicker",
                                                              'data-date-language': "th-th"}))
