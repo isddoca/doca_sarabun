@@ -1,3 +1,4 @@
+import numpy
 import numpy as np
 import pandas as pd
 from django.contrib.auth.models import Group
@@ -36,15 +37,18 @@ class DocClassification(APIView):
         thresholds = 0.05
         unit = data['doc_unit']
         title = data['doc_title']
-        logreg_model = DocClassifyConfig.model
+        classify_model = DocClassifyConfig.model
         d2v_model = DocClassifyConfig.d2v
 
         tokenized_title = tokenize(title, unit)
         regressor = vec_for_testing(d2v_model, tokenized_title, epochs)
-        raw_received_units = logreg_model.predict_proba(regressor)
-        classes = logreg_model.classes_[0]
-        result = pd.DataFrame(raw_received_units[0], columns=classes)
-        received_units = result.apply(lambda row: row.index[row >= thresholds].tolist(), axis=1)
+        raw_received_units = classify_model.predict(regressor)
+        classes = ['กกช.', 'กกร.', 'กคง.', 'กธก.(กพ.)', 'กธก.(บร.)', 'กธก.(สก.)',
+       'กธก.(สบ.)', 'กนผ.', 'กบภ.', 'กปจว.', 'กปส.', 'กพน.', 'กสท.', 'งป.',
+       'ผกง.', 'สกร.', 'สจว.']
+        print(raw_received_units)
+        result = pd.DataFrame(raw_received_units, columns=classes)
+        result['selected'] = result.apply(lambda row: row.index[row == 1].tolist(), axis=1)
 
-        response_dict = {"received_units": np.array(received_units).flatten()[0]}
+        response_dict = {"received_units": np.array(result['selected']).flatten()[0]}
         return Response(response_dict, status=200)
