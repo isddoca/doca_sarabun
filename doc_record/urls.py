@@ -12,6 +12,7 @@ from .views import trace
 
 urlpatterns = [
     path('', base.account_init, name='receive'),
+    path('fulfillment', base.fulfillment, name='fulfillment'),
     path('accounts/edit', base.user_info_edit, name='account'),
 
     path('linenotify/register', linenotify.line_notify_register, name='linenotify'),

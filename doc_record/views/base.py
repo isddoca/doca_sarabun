@@ -1,16 +1,15 @@
 import json
 from datetime import date
 
-import environ
-import requests
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from rest_framework import status
+from django.views.decorators.csrf import csrf_exempt
 
 from doc_record.forms import UserInfoForm
-from doc_record.models import Doc, LineNotifyToken
+from doc_record.models import Doc, LineNotifyToken, DocTrace
 
 
 @login_required(login_url='/accounts/login')
@@ -52,8 +51,48 @@ def user_info_edit(request):
             linenotify_status = LineNotifyToken.objects.get(user=request.user)
         except LineNotifyToken.DoesNotExist:
             linenotify_status = None
-        context = {'signup_form': signup_form, 'notify_status':linenotify_status}
+        context = {'signup_form': signup_form, 'notify_status': linenotify_status}
         return render(request, 'doc_record/user_info_form.html', context)
+
+
+@csrf_exempt
+def fulfillment(request):
+    # build a request object
+    req = json.loads(request.body)
+    print(req)
+    # get action from json
+    action = req.get('queryResult').get('action')
+    param = req.get('queryResult').get('parameters')
+    is_using_line = req.get('originalDetectIntentRequest').get('source') == 'line'
+
+    match action:
+        case "find_doc":
+            fulfillment_txt = {'fulfillmentText': 'This is Django test response from webhook. 1'}
+        case "track_document":
+            doc_no = param.get('doc_no')
+            fulfillment_txt = trace_answer(doc_no)
+        case _:
+            fulfillment_txt = {'fulfillmentText': 'This is Django test response from webhook. 3'}
+    return JsonResponse(fulfillment_txt, safe=False)
+
+
+def trace_answer(doc_no):
+    if doc_no == '':
+        fulfillment_txt = {'fulfillmentText': 'กรุณาแจ้งเลขที่หนังสือคำสั่งด้วยครับ'}
+    else:
+        doc_trace = DocTrace.objects.filter(doc__doc_no=doc_no).order_by('time')
+        if doc_trace:
+            detail = f"ที่ : {doc_trace[0].doc.doc_no}\nเรื่อง : {doc_trace[0].doc.title}\n\nสถานะหนังสือ :\n"
+            for trace in doc_trace:
+                if trace.action_from == trace.action_to:
+                    detail += f'{trace.action_from} รับเอกสารเข้าระบบเมื่อ {trace.time_th()}\n'
+                else:
+                    detail += f'{trace.action_from} {trace.doc_status.name}ไปยัง {trace.action_to} เมื่อ {trace.time_th()}\n'
+
+            fulfillment_txt = {'fulfillmentText': detail}
+        else:
+            fulfillment_txt = {'fulfillmentText': 'ไม่พบข้อมูลหนังสือ/คำสั่งนี้ครับ'}
+    return fulfillment_txt
 
 
 def generate_doc_id():
