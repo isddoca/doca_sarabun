@@ -99,9 +99,14 @@ def doc_trace_action(request, id):
                 for trace in pending_traces:
                     pending_unit.append(trace.action_to)
 
+                done_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=True)
+                done_unit = []
+                for trace in done_traces:
+                    done_unit.append(trace.action_to)
+
                 send_to = doc_receive_model.send_to.all()
                 for send_unit in send_to:
-                    if send_unit != current_unit and send_unit not in pending_unit:  # exclude current unit
+                    if send_unit != current_unit and send_unit not in pending_unit and send_unit not in done_unit:  # exclude current unit
                         doc_trace, is_create = DocTrace.objects.update_or_create(doc=current_doc_trace.doc,
                                                                                  doc_status_id=2,
                                                                                  create_by=user,
