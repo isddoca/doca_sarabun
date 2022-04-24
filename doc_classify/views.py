@@ -41,6 +41,7 @@ class DocClassification(APIView):
         d2v_model = DocClassifyConfig.d2v
 
         tokenized_title = tokenize(title, unit)
+        print(tokenized_title)
         regressor = vec_for_testing(d2v_model, tokenized_title, epochs)
         raw_received_units = classify_model.predict(regressor)
         classes = ['กกช.', 'กกร.', 'กคง.', 'กธก.(กพ.)', 'กธก.(บร.)', 'กธก.(สก.)',
