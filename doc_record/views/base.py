@@ -63,14 +63,26 @@ def fulfillment(request):
     # get action from json
     action = req.get('queryResult').get('action')
     param = req.get('queryResult').get('parameters')
-    is_using_line = req.get('originalDetectIntentRequest').get('source') == 'line'
 
     match action:
-        case "find_doc":
-            fulfillment_txt = {'fulfillmentText': 'This is Django test response from webhook. 1'}
         case "track_document":
             doc_no = param.get('doc_no')
-            fulfillment_txt = trace_answer(doc_no)
+            if doc_no == '':
+                fulfillment_txt = {'fulfillmentText': 'กรุณาแจ้งเลขที่หนังสือคำสั่งด้วยครับ'}
+            else:
+                doc_trace = DocTrace.objects.filter(doc__doc_no=doc_no).order_by('time')
+                if doc_trace:
+                    detail = f"ที่ : {doc_trace[0].doc.doc_no}\nเรื่อง : {doc_trace[0].doc.title}\n\nสถานะหนังสือ :\n"
+                    for trace in doc_trace:
+                        if trace.action_from == trace.action_to:
+                            detail += f'{trace.action_from} รับเอกสารเข้าระบบเมื่อ {trace.time_th()}\n'
+                        else:
+                            detail += f'{trace.action_from} {trace.doc_status.name}ไปยัง {trace.action_to} ' \
+                                      f'เมื่อ {trace.time_th()}\n'
+
+                    fulfillment_txt = {'fulfillmentText': detail}
+                else:
+                    fulfillment_txt = {'fulfillmentText': 'ไม่พบข้อมูลหนังสือ/คำสั่งนี้ครับ'}
         case _:
             fulfillment_txt = {'fulfillmentText': 'This is Django test response from webhook. 3'}
     return JsonResponse(fulfillment_txt, safe=False)
