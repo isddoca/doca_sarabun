@@ -87,6 +87,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+CSRF_TRUSTED_ORIGINS = ['https://e982-1-20-139-214.ap.ngrok.io']
 
 TEMPLATES = [
     {
