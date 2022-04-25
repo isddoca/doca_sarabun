@@ -23,7 +23,7 @@ class DocTraceListView(ListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
         object_list = DocTrace.objects.filter(
-            Q(doc__create_by=self.request.user) | Q(action_from_id=current_group_id)).order_by('-time')
+            Q(action_from_id=current_group_id) | Q(action_to_id=current_group_id)).order_by('-time')
         return object_list
 
 
@@ -55,6 +55,14 @@ def doc_trace_action(request, id):
     doc_old_files = DocFile.objects.filter(doc=current_doc_trace.doc)
 
     doc_receive_of_group = None
+
+    if current_doc_trace.done:
+        #หาจาก record สุดท้ายที่กองได้ดำเนินการล่าสุด
+        current_doc_trace = DocTrace.objects.filter(action_to=current_group, doc_id=current_doc_trace.doc.id).last()
+        context = {'doc_trace': current_doc_trace,
+                   'old_files': doc_old_files}
+        return render(request, 'doc_record/doctrace_pending_finish_view.html', context)
+
     if current_doc_trace.doc_status_id == 3:
         doc_receive_of_group = DocReceive.objects.get(doc=current_doc_trace.doc, group=current_group)
 
@@ -91,9 +99,14 @@ def doc_trace_action(request, id):
                 for trace in pending_traces:
                     pending_unit.append(trace.action_to)
 
+                done_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=True)
+                done_unit = []
+                for trace in done_traces:
+                    done_unit.append(trace.action_to)
+
                 send_to = doc_receive_model.send_to.all()
                 for send_unit in send_to:
-                    if send_unit != current_unit and send_unit not in pending_unit:  # exclude current unit
+                    if send_unit != current_unit and send_unit not in pending_unit and send_unit not in done_unit:  # exclude current unit
                         doc_trace, is_create = DocTrace.objects.update_or_create(doc=current_doc_trace.doc,
                                                                                  doc_status_id=2,
                                                                                  create_by=user,
