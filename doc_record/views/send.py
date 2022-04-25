@@ -258,14 +258,20 @@ def doc_send_edit(request, id):
                     DocFile.objects.create(file=f, doc=doc_model)
 
             send_to = doc_send_model.send_to.all()
+
+            # หาหน่วยที่ทำเสร็จแล้ว
+            done_traces = DocTrace.objects.filter(doc=doc_model, done=True)
+            done_unit = []
+            for trace in done_traces:
+                done_unit.append(trace.action_to)
+
             for unit in send_to:
-                doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2, create_by=user,
-                                                                         action_from=current_group, action_to=unit,
-                                                                         done=False,
-                                                                         defaults={'time': datetime.now(timezone)})
-                if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
-                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
-                    send_doc_notify(current_group, doc_model, unit, url)
+                if unit not in done_unit:  # เพิ่มหรือแก้ไขประวัติการส่งเฉพาะหน่วยที่ยังดำเนินการไม่เสร็จ
+                    doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2,
+                                                                             create_by=user,
+                                                                             action_from=current_group,
+                                                                             action_to=unit,
+                                                                             defaults={'time': datetime.now(timezone)})
 
             if is_sent_outside:
                 if is_credential:

@@ -143,7 +143,8 @@ def doc_receive_add(request):
         else:
             doc_form = DocModelForm(initial={'id': generate_doc_id()})
             parent_nav_path = "/receive"
-        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=is_secret)}, groups_id=[current_group.id])
+        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=is_secret)},
+                                               groups_id=[current_group.id])
     context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
@@ -168,6 +169,7 @@ def doc_receive_edit(request, id):
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
+        print(current_group)
         doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
@@ -183,7 +185,7 @@ def doc_receive_edit(request, id):
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.id = doc_receive.id
             doc_receive_model.doc = doc_model
-            doc_receive_model.groups = current_group
+            doc_receive_model.group = current_group
             doc_receive_model.save()
             doc_receive_form.save_m2m()
 
@@ -201,14 +203,20 @@ def doc_receive_edit(request, id):
             DocTrace.objects.get_or_create(doc=doc_model, doc_status_id=1, create_by=user,
                                            action_to=current_group, action_from=current_group, done=True,
                                            defaults={'time': datetime.now(timezone)})
+
+            # หาหน่วยที่ทำเสร็จแล้ว
+            done_traces = DocTrace.objects.filter(doc=doc_model, done=True)
+            done_unit = []
+            for trace in done_traces:
+                done_unit.append(trace.action_to)
+
             for unit in send_to:
-                doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2,
-                                                                         create_by=user,
-                                                                         action_from=current_group,
-                                                                         action_to=unit,
-                                                                         done=False,
-                                                                         defaults={
-                                                                             'time': datetime.now(timezone)})
+                if unit not in done_unit:  # เพิ่มหรือแก้ไขประวัติการส่งเฉพาะหน่วยที่ยังดำเนินการไม่เสร็จ
+                    doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2,
+                                                                             create_by=user,
+                                                                             action_from=current_group,
+                                                                             action_to=unit,
+                                                                             defaults={'time': datetime.now(timezone)})
 
                 if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
                     url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
