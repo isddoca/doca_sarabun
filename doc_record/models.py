@@ -32,6 +32,9 @@ class Doc(models.Model):
     def doc_date_th(self):
         return thai_strftime(datetime(self.doc_date.year, self.doc_date.month, self.doc_date.day), "%d %b %Y")
 
+    def is_secret(self):
+        return self.credential.id > 1
+
     class Meta:
         managed = True
         db_table = 'doc'

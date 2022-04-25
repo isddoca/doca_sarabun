@@ -128,7 +128,7 @@ def doc_trace_action(request, id):
                                                     done=True)
                 doc_trace_notify(doc_trace, current_group, current_doc_trace.action_from, None)
                 DocReceive.objects.create(doc=current_doc_trace.doc,
-                                          receive_no=get_docs_no(user, current_doc_trace.doc.credential),
+                                          receive_no=get_docs_no(user, current_doc_trace.doc.is_secret()),
                                           group=current_group)
             return HttpResponseRedirect('/trace/pending')
 
