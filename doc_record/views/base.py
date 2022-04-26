@@ -15,8 +15,12 @@ from doc_record.models import Doc, LineNotifyToken, DocTrace
 @login_required(login_url='/accounts/login')
 def account_init(request):
     groups = request.user.groups.all()
+    referrer_url = request.META.get('HTTP_REFERER')
+    main_redirect = referrer_url == request.build_absolute_uri('/accounts/login/?next=/')
+    login_redirect = referrer_url == request.build_absolute_uri('/accounts/login/')
+    redirect_url = '/receive'if referrer_url is None or main_redirect or login_redirect else referrer_url
     if groups:
-        return redirect('/receive/')
+        return redirect(redirect_url)
     elif request.method == 'POST':
         signup_form = UserInfoForm(request.POST)
         if signup_form.is_valid():
@@ -26,7 +30,7 @@ def account_init(request):
             user.password = request.user.password
             user.save()
             signup_form.save_m2m()
-        return redirect('/receive/')
+        return redirect(redirect_url)
     else:
         signup_form = UserInfoForm(instance=request.user)
         context = {'signup_form': signup_form}
@@ -109,7 +113,7 @@ def trace_answer(doc_no):
 
 def generate_doc_id():
     docs_record = Doc.objects.filter(doc_date__year=date.today().year).last()
-    latest_id = int(docs_record.id[5:])+1 if docs_record else 1
+    latest_id = int(docs_record.id[5:]) + 1 if docs_record else 1
     doc_id = "{year}-{no}".format(year=date.today().year, no=f'{latest_id:06}')
     return doc_id
 

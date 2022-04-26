@@ -126,7 +126,7 @@
                             หรือเข้าระบบด้วย
                         </p>
                         <div class="button-group d-flex justify-content-center flex-wrap">
-                            <form id="line" method="post" action="/accounts/line/login/">
+                            <form id="line" method="post" action="/accounts/line/login/?next={{ request.GET.next }}">
                                 {% csrf_token %}
                                 <button class="main-btn success-btn-outline m-2">
                                     <i class="lni lni-line mr-10"></i>
