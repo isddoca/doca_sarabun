@@ -75,6 +75,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ['profile', 'openid', 'email']
     }
 }
+SOCIALACCOUNT_ADAPTER = 'doc_record.adapter.SocialAccountAdapter'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
