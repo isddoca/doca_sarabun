@@ -64,8 +64,9 @@ AUTHENTICATION_BACKENDS = (
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-ACCOUNT_FORMS = {'signup': 'doc_record.forms.SignupForm'}
-
+ACCOUNT_FORMS = {'signup': 'doc_record.forms.BasicSignupForm'}
+SOCIALACCOUNT_FORMS = {'signup': 'doc_record.forms.SocialSignupForm'}
+SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_PROVIDERS = {
     'line': {
         'APP': {
@@ -75,7 +76,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ['profile', 'openid', 'email']
     }
 }
-SOCIALACCOUNT_ADAPTER = 'doc_record.adapter.SocialAccountAdapter'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -170,7 +171,7 @@ MODELS = os.path.join(BASE_DIR, 'doc_classify/models')
 RESOURCES = os.path.join(BASE_DIR, 'doc_classify/resources')
 
 SITE_ID = 1
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/receive'
 LOGOUT_REDIRECT_URL = '/accounts/login'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"

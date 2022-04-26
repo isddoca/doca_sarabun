@@ -59,17 +59,52 @@
                     <form method="post">
                         {% csrf_token %}
                         <div class="row">
-                            <div class="col-12">
-                                {{ signup_form.groups|as_crispy_field }}
+                            <div class="mb-3">
+                                <label for="id_username" class="form-label">ชื่อผู้ใช้งาน</label>
+                                <input
+                                        type="text"
+                                        name="username"
+                                        autocomplete="username"
+                                        required
+                                        class="form-control"
+                                        id="id_username"
+                                />
                             </div>
-                            <div class="col-12">
-                                {{ signup_form.first_name|as_crispy_field }}
+                            <div class="mb-3">
+                                <label for="id_first_name" class="form-label">ยศและชื่อ</label>
+                                <input
+                                        type="text"
+                                        name="first_name"
+                                        autocomplete="first_name"
+                                        required
+                                        class="form-control"
+                                        id="id_first_name"
+                                />
                             </div>
-                            <div class="col-12">
-                                {{ signup_form.last_name|as_crispy_field }}
+                            <div class="mb-3">
+                                <label for="id_last_name" class="form-label">นามสกุล</label>
+                                <input
+                                        type="text"
+                                        name="last_name"
+                                        autocomplete="last_name"
+                                        required
+                                        class="form-control"
+                                        id="id_last_name"
+                                />
                             </div>
-                            <div class="col-12">
-                                {{ signup_form.email|as_crispy_field }}
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label">อีเมล</label>
+                                <input
+                                        type="text"
+                                        name="email"
+                                        autocomplete="email"
+                                        class="form-control"
+                                        id="id_email"
+                                />
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_groups" class="form-label">หน่วยงาน</label>
+                                {{ form.groups }}
                             </div>
 
                             <div class="col-12">

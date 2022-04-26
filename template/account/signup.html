@@ -14,7 +14,7 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.bootstrap4.min.css"/>
     <link rel="stylesheet" href="{% static 'assets/css/main.css' %}">
 </head>
-{% load crispy_forms_tags %}
+<body>
 <div class="container">
 
     <div class="row g-0 auth-row mt-30">
@@ -57,37 +57,86 @@
 
                     <form method="post">
                         {% csrf_token %}
-                        <div class="row">
-                            <div class="col-12">
-                                {{ form.username|as_crispy_field }}
-                            </div>
-                            <div class="col-12">
-                                {{ form.password1|as_crispy_field }}
-                            </div>
-                            <div class="col-12">
-                                {{ form.password2|as_crispy_field }}
-                            </div>
-                            <div class="col-12">
-                                {{ form.first_name|as_crispy_field }}
-                            </div>
-                            <div class="col-12">
-                                {{ form.last_name|as_crispy_field }}
-                            </div>
-                            <div class="col-12">
-                                {{ form.email|as_crispy_field }}
-                            </div>
-                            <div class="col-12">
-                                {{ form.groups|as_crispy_field }}
-                            </div>
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">ชื่อผู้ใช้:</label>
+                            <input
+                                    type="text"
+                                    name="username"
+                                    maxlength="150"
+                                    required
+                                    class="form-control"
+                                    id="id_username"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label">รหัสผ่าน</label>
+                            <input
+                                    type="password"
+                                    name="password1"
+                                    autocomplete="password1"
+                                    maxlength="150"
+                                    required
+                                    class="form-control"
+                                    id="id_password1"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password2" class="form-label">รหัสผ่าน (พิมพ์อีกครั้ง)</label>
+                            <input
+                                    type="password"
+                                    name="password2"
+                                    autocomplete="password1"
+                                    maxlength="150"
+                                    required
+                                    class="form-control"
+                                    id="id_password2"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_first_name" class="form-label">ยศและชื่อ</label>
+                            <input
+                                    type="text"
+                                    name="first_name"
+                                    autocomplete="first_name"
+                                    maxlength="150"
+                                    required
+                                    class="form-control"
+                                    id="id_first_name"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_last_name" class="form-label">นามสกุล</label>
+                            <input
+                                    type="text"
+                                    name="last_name"
+                                    autocomplete="last_name"
+                                    maxlength="150"
+                                    required
+                                    class="form-control"
+                                    id="id_last_name"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">อีเมล</label>
+                            <input
+                                    type="text"
+                                    name="email"
+                                    autocomplete="email"
+                                    maxlength="150"
+                                    class="form-control"
+                                    id="id_email"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_groups" class="form-label">หน่วยงาน</label>
+                            {{ form.groups }}
+                        </div>
 
-
-                            <div class="col-12">
-                                <div class="button-group d-flex justify-content-center flex-wrap">
-                                    <button class="main-btn primary-btn btn-hover w-100 text-center" type="submit">
-                                        สร้างบัญชี
-                                    </button>
-                                </div>
-
+                        <div class="col-12">
+                            <div class="button-group d-flex justify-content-center flex-wrap">
+                                <button class="main-btn primary-btn btn-hover w-100 text-center" type="submit">
+                                    สร้างบัญชี
+                                </button>
                             </div>
                         </div>
                         <!-- end row -->
@@ -108,12 +157,6 @@
     let option = {
         delimiter: ",",
         persist: false,
-        create: function (input) {
-            return {
-                value: input,
-                text: input,
-            };
-        },
     }
 
     let select = $(".selectmultiple").selectize(option);

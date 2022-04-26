@@ -55,7 +55,7 @@
                         </div>
                     {% endif %}
 
-                    <form method="post" action="/accounts/login/">
+                    <form method="post" action="/accounts/login/?next={{ request.GET.next }}">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-12">
@@ -136,7 +136,7 @@
                         </div>
                         <p class="text-sm text-medium text-dark text-center pt-3">
                             ยังไม่มีบัญชีใช่ไหม?
-                            <a href="/accounts/signup">สร้างบัญชีเลย</a>
+                            <a href="/accounts/signup/?next={{ request.GET.next }}">สร้างบัญชีเลย</a>
                         </p>
                     </div>
                 </div>
