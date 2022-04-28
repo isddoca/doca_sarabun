@@ -1,0 +1,52 @@
+{% extends 'doc_record/base.html' %}
+{% load static %}
+{% load sass_tags %}
+{% block css %}
+
+    <link rel="stylesheet" type="text/css" href="{% sass_src 'assets/css/timeline.scss' %}"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+
+
+{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>{% block page_title %} รายละเอียดสถานะหนังสือ {% endblock %}</h2>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper mb-30">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">ติดตามหนังสือ</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#0">สถานะหนังสือ</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    รายละเอียดสถานะหนังสือ
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        <div class="card-style mb-30">
+            <p>ไม่พบหนังสือในระบบ</p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+{% endblock %}

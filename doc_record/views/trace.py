@@ -40,10 +40,13 @@ class DocTracePendingListView(DocTraceListView):
 
 @login_required(login_url='/accounts/login')
 def doc_trace_detail(request, id):
-    doc_trace = DocTrace.objects.get(id=id)
-    trace_status = DocTrace.objects.filter(doc_id=doc_trace.doc_id).order_by('time')
-    context = {'doc_trace': doc_trace, 'trace_status': trace_status}
-    return render(request, 'doc_record/doctrace_view.html', context)
+    try:
+        doc_trace = DocTrace.objects.get(id=id)
+        trace_status = DocTrace.objects.filter(doc_id=doc_trace.doc_id).order_by('time')
+        context = {'doc_trace': doc_trace, 'trace_status': trace_status}
+        return render(request, 'doc_record/doctrace_view.html', context)
+    except DocTrace.DoesNotExist:
+        return render(request, 'doc_record/doctrace_view_notfound.html')
 
 
 @login_required(login_url='/accounts/login')
