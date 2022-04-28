@@ -40,7 +40,13 @@
                                     <li>
                                         <a href="/trace/pending/{{ doc.id }}">
                                             <div class="image">
-                                                <img src="assets/images/lead/lead-5.png" alt=""/>
+                                                {% if doc.doc_status.id == 3%}
+                                                    <img src="{% static 'assets/images/doc_status/cancel.png' %}"
+                                                         alt=""/>
+                                                {% else %}
+                                                    <img src="{% static 'assets/images/doc_status/send.png' %}"
+                                                         alt=""/>
+                                                {% endif %}
                                             </div>
                                             <div class="content">
                                                 <h6>{{ doc.action_from }}</h6>
@@ -99,7 +105,8 @@
                             <li>
                                 <form id="logout" method="post" action="/accounts/logout/">
                                     {% csrf_token %}
-                                    <a href="#" onclick="document.getElementById('logout').submit();"><i class="lni lni-exit"></i>
+                                    <a href="#" onclick="document.getElementById('logout').submit();"><i
+                                            class="lni lni-exit"></i>
                                         ออกจากระบบ</a>
                                 </form>
                             </li>
