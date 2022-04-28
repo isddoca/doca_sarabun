@@ -165,14 +165,27 @@
         let option = {
             delimiter: ",",
             persist: false,
-            create: function (input) {
-                return {
-                    value: input,
-                    text: input,
-                };
-            },
+            render: {
+                item: function (data, escape) {
+                    let color = data.value === "{{ doc_trace.action_from.id }}" ? "#bf4f4f" : "#efefef";
+                    let txt_color = data.value === "{{ doc_trace.action_from.id }}" ? "#ffffff" : "#343a40";
+
+                    return '<div class="option" style="background: '+ color+ ';color: '+ txt_color+ ';">'
+                        + escape(data.text)
+                        + '</div>';
+                },
+                option: function (data, escape) {
+                    let color = data.value === "{{ doc_trace.action_from.id }}" ? "#bf4f4f" : "#ffffff";
+                    let txt_color = data.value === "{{ doc_trace.action_from.id }}" ? "#ffffff" : "#343a40";
+
+                    return '<div class="option" style="background: '+ color+ ';color: '+ txt_color+ ';">'
+                        + escape(data.text)
+                        + '</div>';
+                }
+            }
         }
         let select = $(".selectmultiple").selectize(option);
         let selectize = select[0].selectize;
+
     </script>
 {% endblock %}
