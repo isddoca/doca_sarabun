@@ -42,6 +42,16 @@
         </div>
         <!-- ========== title-wrapper end ========== -->
         <div class="card-style mb-30">
+            <div class="row form-row pb-10">
+                <div class="form-group col-md-2 col-sm-1">
+                    <p class="fw-bold">{{ doc_trace.doc_status.name }}จาก</p>
+                </div>
+                <div class="form-group col-md-4 col-sm-5">
+                    <p>{{ doc_trace.action_from }}</p>
+                </div>
+            </div>
+
+
             <div class="row form-row">
                 <div class="form-group col-md-2 col-sm-1">
                     <p class="fw-bold">ที่</p>
@@ -100,10 +110,15 @@
             <form action="" method="post">
                 {% csrf_token %}
 
-                <div class="row form-row pt-3">
-                    {{ doc_trace_form.note | as_crispy_field }}
-                </div>
                 {% if doc_trace.doc_status.id == 3 %}
+                    <div class="row form-row">
+                        <div class="form-group col-md-2">
+                            <p class="fw-bold">หมายเหตุ</p>
+                        </div>
+                        <div class="form-group col-md-10">
+                            <p>{{ doc_trace.note }}</p>
+                        </div>
+                    </div>
                     <div class="row form-row  pt-3">
                         {{ doc_receive_form.send_to | as_crispy_field }}
                     </div>
@@ -116,6 +131,9 @@
                         />
                     </div>
                 {% else %}
+                    <div class="row form-row pt-3">
+                        {{ doc_trace_form.note | as_crispy_field }}
+                    </div>
                     <div class="mb-2">
                     <input type="submit"
                            name="receive"
