@@ -147,6 +147,9 @@ def doc_trace_action(request, id):
 
 @login_required(login_url='/accounts/login')
 def doc_dashboard(request):
+    query_year = request.GET.get('year', datetime.now().year)
+    print(query_year)
+
     current_group = request.user.groups.all().first()
     normal_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
         doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=1, doc_status_id=2)))
@@ -175,15 +178,17 @@ def doc_dashboard(request):
     higher_secret_count_values = list(higher_secret_count.values_list("doc_count", flat=True))
     highest_secret_count_values = list(highest_secret_count.values_list("doc_count", flat=True))
 
-    context = {"labels": all_groups_label,
-               "normal_values": normal_urgent_count_values,
-               "fast_values": fast_urgent_count_values,
-               "faster_values": faster_urgent_count_values,
-               "fastest_values": fastest_urgent_count_values,
-               "normal_cred_values": normal_secret_count_values,
-               "high_cred_values": high_secret_count_values,
-               "higher_cred_values": higher_secret_count_values,
-               "highest_cred_values": highest_secret_count_values,
-               }
+    context = {
+        "query_year": DocTrace.objects.dates('time', 'year').distinct(),
+        "labels": all_groups_label,
+        "normal_values": normal_urgent_count_values,
+        "fast_values": fast_urgent_count_values,
+        "faster_values": faster_urgent_count_values,
+        "fastest_values": fastest_urgent_count_values,
+        "normal_cred_values": normal_secret_count_values,
+        "high_cred_values": high_secret_count_values,
+        "higher_cred_values": higher_secret_count_values,
+        "highest_cred_values": highest_secret_count_values,
+    }
     print(context)
     return render(request, 'doc_record/dashboard_view.html', context)
