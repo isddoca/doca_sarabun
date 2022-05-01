@@ -2,7 +2,8 @@ from datetime import datetime
 
 import pytz
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.contrib.auth.models import Group
+from django.db.models import Q, Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
@@ -60,7 +61,7 @@ def doc_trace_action(request, id):
     doc_receive_of_group = None
 
     if current_doc_trace.done:
-        #หาจาก record สุดท้ายที่กองได้ดำเนินการล่าสุด
+        # หาจาก record สุดท้ายที่กองได้ดำเนินการล่าสุด
         current_doc_trace = DocTrace.objects.filter(action_to=current_group, doc_id=current_doc_trace.doc.id).last()
         context = {'doc_trace': current_doc_trace,
                    'old_files': doc_old_files}
@@ -142,3 +143,47 @@ def doc_trace_action(request, id):
     context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace,
                'old_files': doc_old_files}
     return render(request, 'doc_record/doctrace_pending_view.html', context)
+
+
+@login_required(login_url='/accounts/login')
+def doc_dashboard(request):
+    current_group = request.user.groups.all().first()
+    normal_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=1, doc_status_id=2)))
+    fast_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=2, doc_status_id=2)))
+    faster_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=3, doc_status_id=2)))
+    fastest_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=4, doc_status_id=2)))
+    normal_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=1, doc_status_id=2)))
+    high_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=2, doc_status_id=2)))
+    higher_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=3, doc_status_id=2)))
+    highest_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=4, doc_status_id=2)))
+
+    all_groups_label = list(normal_urgent_count.values_list("action_to__name", flat=True))
+    normal_urgent_count_values = list(normal_urgent_count.values_list("doc_count", flat=True))
+    fast_urgent_count_values = list(fast_urgent_count.values_list("doc_count", flat=True))
+    faster_urgent_count_values = list(faster_urgent_count.values_list("doc_count", flat=True))
+    fastest_urgent_count_values = list(fastest_urgent_count.values_list("doc_count", flat=True))
+    normal_secret_count_values = list(normal_secret_count.values_list("doc_count", flat=True))
+    high_secret_count_values = list(high_secret_count.values_list("doc_count", flat=True))
+    higher_secret_count_values = list(higher_secret_count.values_list("doc_count", flat=True))
+    highest_secret_count_values = list(highest_secret_count.values_list("doc_count", flat=True))
+
+    context = {"labels": all_groups_label,
+               "normal_values": normal_urgent_count_values,
+               "fast_values": fast_urgent_count_values,
+               "faster_values": faster_urgent_count_values,
+               "fastest_values": fastest_urgent_count_values,
+               "normal_cred_values": normal_secret_count_values,
+               "high_cred_values": high_secret_count_values,
+               "higher_cred_values": higher_secret_count_values,
+               "highest_cred_values": highest_secret_count_values,
+               }
+    print(context)
+    return render(request, 'doc_record/dashboard_view.html', context)

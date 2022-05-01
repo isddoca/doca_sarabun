@@ -1,0 +1,151 @@
+{% extends 'doc_record/base.html' %}
+{% load static %}
+{% block css %}
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/thdatepicker/css/datepicker.css' %}"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.bootstrap4.min.css"/>
+{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>สถิติการส่งหนังสือ</h2>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper mb-30">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">ข้อมูลโดยรวม</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    สถิติการส่งหนังสือ
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        <div class="card-style mb-30">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h3>ระดับความเร่งด่วน</h3>
+                    <canvas id="urgent_chart"></canvas>
+                </div>
+                <div class="col-lg-6">
+                    <h3>ชั้นความลับ</h3>
+                    <canvas id="secret_chart"></canvas>
+                </div>
+            </div>
+            <div class="row">
+
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+
+        const urgent_data = {
+            labels: {{ labels|safe }},
+            datasets: [{
+                label: 'ปกติ',
+                backgroundColor: 'rgb(99,255,115)',
+                borderColor: 'rgb(99,255,115)',
+                data: {{ normal_values }},
+            },
+                {
+                    label: 'ด่วน',
+                    backgroundColor: 'rgb(255,229,99)',
+                    borderColor: 'rgb(255,229,99)',
+                    data: {{ fast_values }},
+                },
+                {
+                    label: 'ด่วนมาก',
+                    backgroundColor: 'rgb(255,154,99)',
+                    borderColor: 'rgb(255,154,99)',
+                    data: {{ faster_values }},
+                },
+                {
+                    label: 'ด่วนที่สุด',
+                    backgroundColor: 'rgb(255,99,99)',
+                    borderColor: 'rgb(255,99,99)',
+                    data: {{ fastest_values }},
+                }]
+        };
+
+        const secret_data = {
+            labels: {{ labels|safe }},
+            datasets: [{
+                label: 'ปกติ',
+                backgroundColor: 'rgb(99,255,115)',
+                borderColor: 'rgb(99,255,115)',
+                data: {{ normal_cred_values }},
+            },
+                {
+                    label: 'ลับ',
+                    backgroundColor: 'rgb(255,229,99)',
+                    borderColor: 'rgb(255,229,99)',
+                    data: {{ high_cred_values }},
+                },
+                {
+                    label: 'ลับมาก',
+                    backgroundColor: 'rgb(255,154,99)',
+                    borderColor: 'rgb(255,154,99)',
+                    data: {{ higher_cred_values }},
+                },
+                {
+                    label: 'ลับที่สุด',
+                    backgroundColor: 'rgb(255,99,99)',
+                    borderColor: 'rgb(255,99,99)',
+                    data: {{ highest_cred_values }},
+                }]
+        };
+
+        const urgent_config = {
+            type: 'bar',
+            data: urgent_data,
+            options: {
+                responsive: true,
+            }
+        };
+
+        const secret_config = {
+            type: 'bar',
+            data: secret_data,
+            options: {
+                responsive: true,
+            }
+        };
+
+        const urgentChart = new Chart(
+            document.getElementById('urgent_chart'),
+            urgent_config
+        );
+
+        const secretChart = new Chart(
+            document.getElementById('secret_chart'),
+            secret_config
+        );
+    </script>
+{% endblock %}

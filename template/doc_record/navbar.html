@@ -22,9 +22,28 @@
                             aria-expanded="true"
                             aria-label="Toggle navigation"
                     >
-                        <span class="text">ติดตามหนังสือ</span>
+                        <span class="text">ข้อมูลโดยรวม</span>
                     </a>
                     <ul id="ddmenu_1" class="collapse dropdown-nav show">
+                        <li>
+                            <a href="/send_stat" class="{% if url_name == 'send_stat' %}active{% endif %}"><i
+                                    class="fa-solid fa-chart-column"></i></i>สถิติการส่งหนังสือ</a>
+                        </li>
+                    </ul>
+                </li>
+                <span class="divider"><hr/></span>
+                <li class="nav-item nav-item-has-children">
+                    <a
+                            href="#0"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ddmenu_2"
+                            aria-controls="ddmenu_2"
+                            aria-expanded="true"
+                            aria-label="Toggle navigation"
+                    >
+                        <span class="text">ติดตามหนังสือ</span>
+                    </a>
+                    <ul id="ddmenu_2" class="collapse dropdown-nav show">
                         <li>
                             <a href="/trace" class="{% if url_name == 'trace' %}active{% endif %}"><i
                                     class="fa-solid fa-clock-rotate-left"></i></i>สถานะหนังสือ</a>
@@ -41,14 +60,15 @@
                     <a
                             href="#1"
                             data-bs-toggle="collapse"
-                            data-bs-target="#ddmenu_2"
-                            aria-controls="ddmenu_2"
+                            data-bs-target="#ddmenu_3"
+                            aria-controls="ddmenu_3"
                             aria-expanded="true"
                             aria-label="Toggle navigation"
                     >
                         <span class="text">ทะเบียนหนังสือรับ-ส่ง</span>
                     </a>
-                    <ul id="ddmenu_2" class="collapse dropdown-nav {% if 'receive' in url_name or 'send' in url_name %}show{% endif %}">
+                    <ul id="ddmenu_3"
+                        class="collapse dropdown-nav {% if 'receive' in url_name or 'send' in url_name %}show{% endif %}">
                         <li>
                             <a href="/receive" class="{% if url_name == 'receive' %}active{% endif %}"><i
                                     class="fa-regular fa-circle-down"></i>ทะเบียนหนังสือรับ</a>
@@ -68,7 +88,7 @@
                                class="{% if url_name == 'send_credential' %}active{% endif %}"><i
                                     class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่ง (ลับ)</a>
                         </li>
-                        {% if request.user.groups.all.0.unit.unit_id != '0405'  %}
+                        {% if request.user.groups.all.0.unit.unit_id != '0405' %}
                             <li>
                                 <a href="/send/out" class="{% if url_name == 'send_out' %}active{% endif %}"><i
                                         class="fa-regular fa-circle-up"></i>ทะเบียนหนังสือส่งนอกหน่วย</a>
@@ -87,14 +107,14 @@
                     <a
                             href="#2"
                             data-bs-toggle="collapse"
-                            data-bs-target="#ddmenu_3"
-                            aria-controls="ddmenu_3"
+                            data-bs-target="#ddmenu_4"
+                            aria-controls="ddmenu_4"
                             aria-expanded="true"
                             aria-label="Toggle navigation"
                     >
                         <span class="text">ทะเบียนหนังสือคำสั่ง</span>
                     </a>
-                    <ul id="ddmenu_3" class="collapse dropdown-nav {% if 'order' in url_name %}show{% endif %}">
+                    <ul id="ddmenu_4" class="collapse dropdown-nav {% if 'order' in url_name %}show{% endif %}">
                         <li>
                             <a href="/order" class="{% if url_name == 'order' %}active{% endif %}"><i
                                     class="fa-regular fa-file-text"></i>ทะเบียนหนังสือคำสั่ง</a>
@@ -109,18 +129,18 @@
 
                 <span class="divider"><hr/></span>
 
-            <li class="nav-item nav-item-has-children">
+                <li class="nav-item nav-item-has-children">
                     <a
                             href="#2"
                             data-bs-toggle="collapse"
-                            data-bs-target="#ddmenu_4"
-                            aria-controls="ddmenu_4"
+                            data-bs-target="#ddmenu_5"
+                            aria-controls="ddmenu_5"
                             aria-expanded="true"
                             aria-label="Toggle navigation"
                     >
                         <span class="text">จัดการผู้ใช้งาน</span>
                     </a>
-                    <ul id="ddmenu_4" class="collapse dropdown-nav show">
+                    <ul id="ddmenu_5" class="collapse dropdown-nav show">
                         <li>
                             <a href="/accounts/edit" class="{% if url_name == 'account' %}active{% endif %}"><i
                                     class="fa-regular fa-user"></i>ตั้งค่าผู้ใช้</a>
