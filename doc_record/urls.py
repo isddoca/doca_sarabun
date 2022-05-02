@@ -31,6 +31,7 @@ urlpatterns = [
     path('receive/credential/<int:id>/', receive.doc_receive_detail, name='receive_credential'),
     path('receive/credential/add', receive.doc_receive_add, name='receive_credential'),
     path('receive/credential/<int:id>/edit/', receive.doc_receive_edit, name='receive_credential'),
+    path('receive/credential/<int:id>/delete/', receive.doc_receive_delete, name='receive_credential_delete'),
 
     path('send/', send.DocSendListView.as_view(), name='send'),
     path('send/<int:id>/', send.doc_send_detail, name='send'),

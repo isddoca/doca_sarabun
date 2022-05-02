@@ -64,7 +64,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก
                             </button>
-                            <form action="{% url 'receive_delete' id=data.id %}" method="POST">
+                            <form action="{{ edit_path }}{{ data.id }}/delete/" method="POST">
                                 {% csrf_token %}
                                 <button class="btn btn-danger">ลบ {{ id }}</button>
                             </form>
