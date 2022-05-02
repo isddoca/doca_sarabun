@@ -218,10 +218,9 @@ def doc_receive_edit(request, id):
                                                                              action_to=unit,
                                                                              defaults={'time': datetime.now(timezone)})
 
-                if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
-                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
-                    send_doc_notify(current_group, doc_model, unit, url)
-
+                    if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
+                        url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
+                        send_doc_notify(current_group, doc_model, unit, url)
             if is_secret:
                 return HttpResponseRedirect('/receive/credential')
             else:
