@@ -213,10 +213,10 @@ def doc_receive_edit(request, id):
             for unit in send_to:
                 if unit not in done_unit:  # เพิ่มหรือแก้ไขประวัติการส่งเฉพาะหน่วยที่ยังดำเนินการไม่เสร็จ
                     doc_trace, is_create = DocTrace.objects.update_or_create(doc=doc_model, doc_status_id=2,
-                                                                             create_by=user,
                                                                              action_from=current_group,
                                                                              action_to=unit,
-                                                                             defaults={'time': datetime.now(timezone)})
+                                                                             defaults={'time': datetime.now(timezone),
+                                                                                       'create_by': user})
 
                     if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
                         url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))

@@ -1,18 +1,15 @@
 from datetime import datetime
 
-import pythainlp.util
 import pytz
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
-from pythainlp import thai_strftime
 
-from doc_record.forms import DocReceiveModelForm, DocTracePendingModelForm
-from doc_record.models import DocReceive, DocTrace, DocFile
+from doc_record.forms import DocReceiveModelForm, DocTracePendingModelForm, DocSendModelForm
+from doc_record.models import DocReceive, DocTrace, DocFile, DocSend
 from doc_record.views.linenotify import doc_trace_notify
 from doc_record.views.receive import get_docs_no
 
@@ -61,6 +58,7 @@ def doc_trace_action(request, id):
     doc_old_files = DocFile.objects.filter(doc=current_doc_trace.doc)
 
     doc_receive_of_group = None
+    doc_send_of_group = None
 
     if current_doc_trace.done:
         # หาจาก record สุดท้ายที่กองได้ดำเนินการล่าสุด
@@ -69,8 +67,15 @@ def doc_trace_action(request, id):
                    'old_files': doc_old_files}
         return render(request, 'doc_record/doctrace_pending_finish_view.html', context)
 
+    from_receive = False
+    from_send = False
     if current_doc_trace.doc_status_id == 3:
-        doc_receive_of_group = DocReceive.objects.get(doc=current_doc_trace.doc, group=current_group)
+        try:
+            doc_receive_of_group = DocReceive.objects.get(doc=current_doc_trace.doc, group=current_group)
+            from_receive = True
+        except DocReceive.DoesNotExist:
+            doc_send_of_group = DocSend.objects.get(doc=current_doc_trace.doc, group=current_group)
+            from_send = True
 
     if request.method == 'POST':
         doc_trace_form = DocTracePendingModelForm(request.POST)
@@ -87,15 +92,10 @@ def doc_trace_action(request, id):
                 url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
                 doc_trace_notify(doc_trace, current_group, current_doc_trace.action_from, url)
             elif 'resend' in doc_trace_form.data:
-                doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
-                doc_receive_model = doc_receive_form.save(commit=False)
-                doc_receive_model.id = doc_receive_of_group.id
-                doc_receive_model.receive_no = doc_receive_of_group.receive_no
-                doc_receive_model.doc = doc_receive_of_group.doc
-                doc_receive_model.groups = doc_receive_of_group.group
-                doc_receive_model.note = doc_receive_of_group.note
-                doc_receive_model.save()
-                doc_receive_form.save_m2m()
+                if from_receive:
+                    doc_receive_model = save_doc_receive(current_group, doc_receive_of_group, request)
+                elif from_send:
+                    doc_send_model = save_doc_send(current_group, doc_send_of_group, request)
 
                 current_unit = current_doc_trace.create_by.groups.all()[0]
                 pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=False).exclude(
@@ -110,18 +110,19 @@ def doc_trace_action(request, id):
                 for trace in done_traces:
                     done_unit.append(trace.action_to)
 
-                send_to = doc_receive_model.send_to.all()
+                if from_receive:
+                    send_to = doc_receive_model.send_to.all()
+                else:
+                    send_to = doc_send_model.send_to.all()
                 for send_unit in send_to:
                     if send_unit != current_unit and send_unit not in pending_unit and send_unit not in done_unit:  # exclude current unit
                         doc_trace, is_create = DocTrace.objects.update_or_create(doc=current_doc_trace.doc,
                                                                                  doc_status_id=2,
-                                                                                 create_by=user,
                                                                                  action_from=current_group,
                                                                                  action_to=send_unit,
-                                                                                 done=False,
                                                                                  defaults={
-                                                                                     'time': datetime.now(
-                                                                                         timezone)})
+                                                                                     'time': datetime.now(timezone),
+                                                                                     'create_by': user})
 
                         if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
                             url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
@@ -141,8 +142,39 @@ def doc_trace_action(request, id):
     else:
         doc_trace_form = DocTracePendingModelForm(instance=current_doc_trace)
         doc_receive_form = DocReceiveModelForm(instance=doc_receive_of_group, groups_id=[current_group.id])
+        doc_send_form = DocSendModelForm(instance=doc_send_of_group, groups_id=[current_group.id])
 
-    context = {'doc_trace_form': doc_trace_form, 'doc_receive_form': doc_receive_form, 'doc_trace': current_doc_trace,
+    context = {'doc_trace_form': doc_trace_form, 'doc_trace': current_doc_trace,
                'old_files': doc_old_files}
+    if from_receive:
+        context.update({'doc_action_form': doc_receive_form})
+    else:
+        context.update({'doc_action_form': doc_send_form})
+    print(context)
     return render(request, 'doc_record/doctrace_pending_view.html', context)
 
+
+def save_doc_send(current_group, doc_send_of_group, request):
+    doc_send_form = DocSendModelForm(request.POST, groups_id=[current_group.id])
+    doc_send_model = doc_send_form.save(commit=False)
+    doc_send_model.id = doc_send_of_group.id
+    doc_send_model.send_no = doc_send_of_group.send_no
+    doc_send_model.doc = doc_send_of_group.doc
+    doc_send_model.group = doc_send_of_group.group
+    doc_send_model.note = doc_send_of_group.note
+    doc_send_model.save()
+    doc_send_form.save_m2m()
+    return doc_send_model
+
+
+def save_doc_receive(current_group, doc_receive_of_group, request):
+    doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
+    doc_receive_model = doc_receive_form.save(commit=False)
+    doc_receive_model.id = doc_receive_of_group.id
+    doc_receive_model.receive_no = doc_receive_of_group.receive_no
+    doc_receive_model.doc = doc_receive_of_group.doc
+    doc_receive_model.group = doc_receive_of_group.group
+    doc_receive_model.note = doc_receive_of_group.note
+    doc_receive_model.save()
+    doc_receive_form.save_m2m()
+    return doc_receive_model
