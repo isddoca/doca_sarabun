@@ -1,0 +1,163 @@
+{% extends 'doc_record/base.html' %}
+{% load static %}
+{% block css %}
+    <link
+            rel="stylesheet"
+            type="text/css"
+            href="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/thdatepicker/css/datepicker.css' %}"/>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/css/selectize.bootstrap4.min.css"/>
+{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="title-wrapper pt-30">
+
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2>{% block page_title %} สถิติการรับ-ส่งหนังสือ {% endblock %}</h2>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper mb-30">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">ข้อมูลโดยรวม</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    สถิติการรับ-ส่งหนังสือ
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+        <div class="card-style mb-30">
+            <form action="" method="get">
+                <div class="row">
+                    <div class="col-auto">
+                        <label for="id_doc_date" class="col-form-label">วันที่</label>
+                    </div>
+
+                    <div class="col">
+                        <input type="text" name="date"
+                               value="{% if request.GET.date %}{{ request.GET.date }}{% else %}{{ today }}{% endif %}"
+                               class="form-control dateinput"
+                               data-provide="datepicker" data-date-language="th-th" required id="id_doc_date">
+                    </div>
+
+                    <div class="col-auto">
+                        <label for="query_year" class="col-form-label">เวลา</label>
+                    </div>
+
+                    <div class="col">
+                        <select class="form-select" aria-label="ช่วงเวลา" name="time">
+                            <option value="allday" {% if request.GET.time == "allday" %}selected{% endif %}>ทั้งวัน
+                            </option>
+                            <option value="morning" {% if request.GET.time == "morning" %}selected{% endif %}>0900 -
+                                1200
+                            </option>
+                            <option value="afternoon" {% if request.GET.time == "afternoon" %}selected{% endif %}>1300 -
+                                1600
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-auto">
+                        <button class="btn btn-primary">เรียกดู</button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card-style mb-30 ">
+                    <h3>ระดับความเร่งด่วน</h3>
+                    <canvas id="urgent_chart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card-style mb-30">
+                    <h3>ชั้นความลับ</h3>
+                    <canvas id="secret_chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+
+        let bar_colors = ['rgb(99,255,115)', 'rgb(255,229,99)', 'rgb(255,154,99)', 'rgb(255,99,99)']
+        const urgent_data = {
+            labels: {{urgent_label|safe}},
+            datasets: [{
+                label: "จำนวนหนังสือ",
+                backgroundColor: bar_colors,
+                borderColor: bar_colors,
+                data: {{ urgent_receive_values }},
+            }]
+        };
+
+        const secret_data = {
+            labels: {{credential_label|safe}},
+            datasets: [{
+                label: "จำนวนหนังสือ",
+                backgroundColor: bar_colors,
+                borderColor: bar_colors,
+                data: {{ credential_receive_values }},
+            }]
+        };
+
+        const urgent_config = {
+            type: 'bar',
+            data: urgent_data,
+            options: {
+                responsive: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        };
+
+        const secret_config = {
+            type: 'bar',
+            data: secret_data,
+            options: {
+                responsive: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        };
+
+        const urgentChart = new Chart(
+            document.getElementById('urgent_chart'),
+            urgent_config
+        );
+
+        const secretChart = new Chart(
+            document.getElementById('secret_chart'),
+            secret_config
+        );
+    </script>
+    <script src="/static/vendor/thdatepicker/js/bootstrap-datepicker.js"></script>
+    <script src="/static/vendor/thdatepicker/js/bootstrap-datepicker-thai.js"></script>
+    <script src="/static/vendor/thdatepicker/js/locales/bootstrap-datepicker.th.js"></script>
+{% endblock %}

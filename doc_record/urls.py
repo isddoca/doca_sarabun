@@ -2,6 +2,7 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from config import settings
+from .views import dashboard
 from .views import linenotify
 from .views import order
 from .views import base
@@ -11,8 +12,9 @@ from .views import trace
 
 
 urlpatterns = [
-    path('', trace.doc_dashboard, name='send_stat'),
-    path('send_stat', trace.doc_dashboard, name='send_stat'),
+    path('', dashboard.distribute_info, name='dist-stat'),
+    path('dist-stat', dashboard.distribute_info, name='dist-stat'),
+    path('send-recv-stat', dashboard.send_receive_info, name='send-recv-stat'),
     path('fulfillment', base.fulfillment, name='fulfillment'),
     path('accounts/edit', base.user_info_edit, name='account'),
 

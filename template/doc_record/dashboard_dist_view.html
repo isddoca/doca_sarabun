@@ -18,7 +18,7 @@
 
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h2>สถิติการส่งหนังสือ</h2>
+                    <h2>{% block page_title %} สถิติการแจกจ่ายหนังสือ {% endblock %}</h2>
                 </div>
                 <!-- end col -->
                 <div class="col-md-6">
@@ -29,7 +29,7 @@
                                     <a href="#0">ข้อมูลโดยรวม</a>
                                 </li>
                                 <li class="breadcrumb-item">
-                                    สถิติการส่งหนังสือ
+                                    สถิติการแจกจ่ายหนังสือ
                                 </li>
                             </ol>
                         </nav>
@@ -42,7 +42,7 @@
         <!-- ========== title-wrapper end ========== -->
         <div class="card-style mb-30">
             <form action="" method="get">
-                <div class="row mb-30">
+                <div class="row">
                     <div class="col-auto">
                         <label for="id_doc_date" class="col-form-label">วันที่</label>
                     </div>
@@ -77,19 +77,22 @@
 
                 </div>
             </form>
-            <div class="row">
-                <div class="col-lg-6">
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card-style mb-30 ">
                     <h3>ระดับความเร่งด่วน</h3>
                     <canvas id="urgent_chart"></canvas>
                 </div>
-                <div class="col-lg-6">
+            </div>
+            <div class="col-lg-6">
+                <div class="card-style mb-30">
                     <h3>ชั้นความลับ</h3>
                     <canvas id="secret_chart"></canvas>
                 </div>
             </div>
-            <div class="row">
-
-            </div>
+        </div>
+        <div class="row">
 
         </div>
     </div>
@@ -164,6 +167,9 @@
             data: urgent_data,
             options: {
                 responsive: true,
+                ticks: {
+                    stepSize: 1
+                }
             }
         };
 
@@ -172,6 +178,9 @@
             data: secret_data,
             options: {
                 responsive: true,
+                ticks: {
+                    stepSize: 1
+                }
             }
         };
 

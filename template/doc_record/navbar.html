@@ -26,8 +26,10 @@
                     </a>
                     <ul id="ddmenu_1" class="collapse dropdown-nav show">
                         <li>
-                            <a href="/send_stat" class="{% if url_name == 'send_stat' %}active{% endif %}"><i
-                                    class="fa-solid fa-chart-column"></i></i>สถิติการส่งหนังสือ</a>
+                            <a href="/dist-stat" class="{% if url_name == 'dist-stat' %}active{% endif %}">
+                                <i class="fa-solid fa-chart-column"></i>สถิติการแจกจ่ายหนังสือ</a>
+                            <a href="/send-recv-stat" class="{% if url_name == 'send-recv-stat' %}active{% endif %}">
+                                <i class="fa-solid fa-chart-column"></i>สถิติการรับ-ส่งหนังสือ</a>
                         </li>
                     </ul>
                 </li>
