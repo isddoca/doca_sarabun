@@ -105,14 +105,14 @@ def doc_send_detail(request, id):
     if is_credential:
         if is_sent_outside:
             parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
-            parent_nav_path = "/send/credential/out"
+            parent_nav_path = "/send/out/credential"
         else:
             parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
             parent_nav_path = "/send/credential"
     else:
         if is_sent_outside:
             parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
-            parent_nav_path = "/send/credential/out"
+            parent_nav_path = "/send/out"
         else:
             parent_nav_title = "ทะเบียนหนังสือส่ง"
             parent_nav_path = "/send"
@@ -188,7 +188,7 @@ def doc_send_add(request):
             doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
-                parent_nav_path = "/send/credential/out"
+                parent_nav_path = "/send/out/credential"
                 title = "ลงทะเบียนส่งหนังสือภายนอกหน่วย (ลับ)"
             else:
                 parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
@@ -198,7 +198,7 @@ def doc_send_add(request):
             doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
-                parent_nav_path = "/send/credential/out"
+                parent_nav_path = "/send/out"
                 title = "ลงทะเบียนส่งหนังสือภายนอกหน่วย"
 
     context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'title': title,
@@ -273,16 +273,7 @@ def doc_send_edit(request, id):
                                                                              action_to=unit,
                                                                              defaults={'time': datetime.now(timezone)})
 
-            if is_sent_outside:
-                if is_credential:
-                    return HttpResponseRedirect('/send/out/credential')
-                else:
-                    return HttpResponseRedirect('/send/out')
-            else:
-                if is_credential:
-                    return HttpResponseRedirect('/send/credential')
-                else:
-                    return HttpResponseRedirect('/send')
+            return return_page(request)
     else:
         tmp_doc_date = doc_send.doc.doc_date
         doc_send.doc.doc_date = tmp_doc_date.replace(year=2565)
@@ -290,7 +281,7 @@ def doc_send_edit(request, id):
         if is_credential:
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
-                parent_nav_path = "/send/credential/out"
+                parent_nav_path = "/send/out/credential"
                 title = "แก้ไขทะเบียนส่งหนังสือภายนอกหน่วย (ลับ)"
             else:
                 parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
@@ -319,10 +310,16 @@ def doc_send_delete(request, id):
             doc_trace = DocTrace.objects.filter(action_to=unit, doc=doc_send.doc)
             doc_trace.delete()
         doc_send.delete()
+    return return_page(request)
+
+
+def return_page(request):
+    is_outside = 'out' in request.path
     if 'credential' in request.path:
-        return HttpResponseRedirect('/send/credential')
+        return_path = '/send/out/credential' if is_outside else '/send/credential'
     else:
-        return HttpResponseRedirect('/send')
+        return_path = '/send/out' if is_outside else '/send'
+    return HttpResponseRedirect(return_path)
 
 
 def get_send_no(user, is_secret=False, is_outside=False):
