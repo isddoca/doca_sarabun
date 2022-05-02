@@ -44,28 +44,35 @@
             <form action="" method="get">
                 <div class="row mb-30">
                     <div class="col-auto">
-                        <label for="query_year" class="col-form-label">ปี</label>
+                        <label for="id_doc_date" class="col-form-label">วันที่</label>
                     </div>
 
                     <div class="col">
-                        <select class="form-select" aria-label="ปี" name="year" onchange="submit()">
-                            {% for year in query_year reversed %}
-                                <option value="{{ year|date:'Y' }}"
-                                        {% if request.GET.year == year|date:'Y' %}selected{% endif %}>{{ year|date:'Y'|add:"543" }}
-                                </option>
-                            {% endfor %}
+                        <input type="text" name="date"
+                               value="{% if request.GET.date %}{{ request.GET.date }}{% else %}{{ today }}{% endif %}"
+                               class="form-control dateinput"
+                               data-provide="datepicker" data-date-language="th-th" required id="id_doc_date">
+                    </div>
+
+                    <div class="col-auto">
+                        <label for="query_year" class="col-form-label">เวลา</label>
+                    </div>
+
+                    <div class="col">
+                        <select class="form-select" aria-label="ช่วงเวลา" name="time">
+                            <option value="allday" {% if request.GET.time == "allday" %}selected{% endif %}>ทั้งวัน
+                            </option>
+                            <option value="morning" {% if request.GET.time == "morning" %}selected{% endif %}>0900 -
+                                1200
+                            </option>
+                            <option value="afternoon" {% if request.GET.time == "afternoon" %}selected{% endif %}>1300 -
+                                1600
+                            </option>
                         </select>
                     </div>
 
                     <div class="col-auto">
-                        <label for="query_time" class="col-form-label">เวลา</label>
-                    </div>
-
-                    <div class="col">
-                        <option value="{{ year|date:'Y' }}"
-                                {% if request.GET.year == year|date:'Y' %}selected{% endif %}>{{ year|date:'Y'|add:"543" }}
-                        </option>
-
+                        <button class="btn btn-primary">เรียกดู</button>
                     </div>
 
                 </div>
@@ -178,4 +185,7 @@
             secret_config
         );
     </script>
+    <script src="/static/vendor/thdatepicker/js/bootstrap-datepicker.js"></script>
+    <script src="/static/vendor/thdatepicker/js/bootstrap-datepicker-thai.js"></script>
+    <script src="/static/vendor/thdatepicker/js/locales/bootstrap-datepicker.th.js"></script>
 {% endblock %}

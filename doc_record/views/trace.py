@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pythainlp.util
 import pytz
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
@@ -8,6 +9,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
+from pythainlp import thai_strftime
 
 from doc_record.forms import DocReceiveModelForm, DocTracePendingModelForm
 from doc_record.models import DocReceive, DocTrace, DocFile
@@ -147,26 +149,50 @@ def doc_trace_action(request, id):
 
 @login_required(login_url='/accounts/login')
 def doc_dashboard(request):
-    query_year = request.GET.get('year', datetime.now().year)
-    print(query_year)
+    today_th = thai_strftime(datetime.now(), "%0d/%0m/%Y")
+    query_date = request.GET.get('date', today_th)
+    query_time = request.GET.get('time', "allday")
+
+    split_date = query_date.split('/')
+    ce = int(split_date[2]) - 543
+    split_date[2] = str(ce)
+    date = "-".join(split_date[::-1])
+    time_range = []
+
+    match query_time:
+        case "allday":
+            time_range = [date + " 00:00:00", date + " 23:59:59"]
+        case "morning":
+            time_range = [date + " 09:00:00", date + " 12:00:00"]
+        case "afternoon":
+            time_range = [date + " 13:00:00", date + " 16:00:00"]
+    print(time_range)
 
     current_group = request.user.groups.all().first()
     normal_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=1, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=1, doc_status_id=2,
+                                              time__range=time_range)))
     fast_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=2, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=2, doc_status_id=2,
+                                              time__range=time_range)))
     faster_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=3, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=3, doc_status_id=2,
+                                              time__range=time_range)))
     fastest_urgent_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=4, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__urgent__id=4, doc_status_id=2,
+                                              time__range=time_range)))
     normal_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=1, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=1, doc_status_id=2,
+                                              time__range=time_range)))
     high_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=2, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=2, doc_status_id=2,
+                                              time__range=time_range)))
     higher_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=3, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=3, doc_status_id=2,
+                                              time__range=time_range)))
     highest_secret_count = DocTrace.objects.order_by("action_to").values('action_to').annotate(
-        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=4, doc_status_id=2)))
+        doc_count=Count("action_to", filter=Q(action_from=current_group, doc__credential__id=4, doc_status_id=2,
+                                              time__range=time_range)))
 
     all_groups_label = list(normal_urgent_count.values_list("action_to__name", flat=True))
     normal_urgent_count_values = list(normal_urgent_count.values_list("doc_count", flat=True))
@@ -177,9 +203,8 @@ def doc_dashboard(request):
     high_secret_count_values = list(high_secret_count.values_list("doc_count", flat=True))
     higher_secret_count_values = list(higher_secret_count.values_list("doc_count", flat=True))
     highest_secret_count_values = list(highest_secret_count.values_list("doc_count", flat=True))
-
     context = {
-        "query_year": DocTrace.objects.dates('time', 'year').distinct(),
+        "today": today_th,
         "labels": all_groups_label,
         "normal_values": normal_urgent_count_values,
         "fast_values": fast_urgent_count_values,
