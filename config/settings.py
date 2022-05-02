@@ -171,7 +171,7 @@ MODELS = os.path.join(BASE_DIR, 'doc_classify/models')
 RESOURCES = os.path.join(BASE_DIR, 'doc_classify/resources')
 
 SITE_ID = 1
-LOGIN_REDIRECT_URL = '/send_stat'
+LOGIN_REDIRECT_URL = '/dist-stat'
 LOGOUT_REDIRECT_URL = '/accounts/login'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
