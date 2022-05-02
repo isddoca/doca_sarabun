@@ -81,18 +81,34 @@
         <div class="row">
             <div class="col-lg-6">
                 <div class="card-style mb-30 ">
-                    <h3>ระดับความเร่งด่วน</h3>
-                    <canvas id="urgent_chart"></canvas>
+                    <h3>สถิติการรับหนังสือ</h3>
+                    <p>จำแนกตามระดับความเร่งด่วน</p>
+                    <canvas id="r_urgent_chart"></canvas>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="card-style mb-30">
-                    <h3>ชั้นความลับ</h3>
-                    <canvas id="secret_chart"></canvas>
+                    <h3>สถิติการรับหนังสือ</h3>
+                    <p>จำแนกตามชั้นความลับ</p>
+                    <canvas id="r_secret_chart"></canvas>
                 </div>
             </div>
         </div>
         <div class="row">
+            <div class="col-lg-6">
+                <div class="card-style mb-30 ">
+                    <h3>สถิติการส่งหนังสือ</h3>
+                    <p>จำแนกตามระดับความเร่งด่วน</p>
+                    <canvas id="s_urgent_chart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card-style mb-30">
+                    <h3>สถิติการส่งหนังสือ</h3>
+                    <p>จำแนกตามชั้นความลับ</p>
+                    <canvas id="s_secret_chart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -105,29 +121,49 @@
     <script>
 
         let bar_colors = ['rgb(99,255,115)', 'rgb(255,229,99)', 'rgb(255,154,99)', 'rgb(255,99,99)']
-        const urgent_data = {
-            labels: {{urgent_label|safe}},
+        const r_urgent_data = {
+            labels: {{r_urgent_label|safe}},
             datasets: [{
                 label: "จำนวนหนังสือ",
                 backgroundColor: bar_colors,
                 borderColor: bar_colors,
-                data: {{ urgent_receive_values }},
+                data: {{ r_urgent_receive_values }},
             }]
         };
 
-        const secret_data = {
-            labels: {{credential_label|safe}},
+        const r_secret_data = {
+            labels: {{r_credential_label|safe}},
             datasets: [{
                 label: "จำนวนหนังสือ",
                 backgroundColor: bar_colors,
                 borderColor: bar_colors,
-                data: {{ credential_receive_values }},
+                data: {{ r_credential_receive_values }},
             }]
         };
 
-        const urgent_config = {
+        const s_urgent_data = {
+            labels: {{s_urgent_label|safe}},
+            datasets: [{
+                label: "จำนวนหนังสือ",
+                backgroundColor: bar_colors,
+                borderColor: bar_colors,
+                data: {{ s_urgent_receive_values }},
+            }]
+        };
+
+        const s_secret_data = {
+            labels: {{s_credential_label|safe}},
+            datasets: [{
+                label: "จำนวนหนังสือ",
+                backgroundColor: bar_colors,
+                borderColor: bar_colors,
+                data: {{ s_credential_receive_values }},
+            }]
+        };
+
+        const r_urgent_config = {
             type: 'bar',
-            data: urgent_data,
+            data: r_urgent_data,
             options: {
                 responsive: true,
                 ticks: {
@@ -136,9 +172,9 @@
             }
         };
 
-        const secret_config = {
+        const r_secret_config = {
             type: 'bar',
-            data: secret_data,
+            data: r_secret_data,
             options: {
                 responsive: true,
                 ticks: {
@@ -147,14 +183,46 @@
             }
         };
 
-        const urgentChart = new Chart(
-            document.getElementById('urgent_chart'),
-            urgent_config
+        const s_urgent_config = {
+            type: 'bar',
+            data: s_urgent_data,
+            options: {
+                responsive: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        };
+
+        const s_secret_config = {
+            type: 'bar',
+            data: s_secret_data,
+            options: {
+                responsive: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        };
+
+        const r_urgentChart = new Chart(
+            document.getElementById('r_urgent_chart'),
+            r_urgent_config
         );
 
-        const secretChart = new Chart(
-            document.getElementById('secret_chart'),
-            secret_config
+        const r_secretChart = new Chart(
+            document.getElementById('r_secret_chart'),
+            r_secret_config
+        );
+
+        const s_urgentChart = new Chart(
+            document.getElementById('s_urgent_chart'),
+            s_urgent_config
+        );
+
+        const s_secretChart = new Chart(
+            document.getElementById('s_secret_chart'),
+            s_secret_config
         );
     </script>
     <script src="/static/vendor/thdatepicker/js/bootstrap-datepicker.js"></script>

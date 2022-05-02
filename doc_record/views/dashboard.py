@@ -5,7 +5,7 @@ from django.db.models import Count, Q
 from django.shortcuts import render
 from pythainlp import thai_strftime
 
-from doc_record.models import DocTrace, DocReceive
+from doc_record.models import DocTrace, DocReceive, DocSend
 
 
 @login_required(login_url='/accounts/login')
@@ -28,6 +28,7 @@ def send_receive_info(request):
     current_group = request.user.groups.all().first()
     context = {"today": query_date}
     context.update(get_count_of_receive(current_group, time_range))
+    context.update(get_count_of_send(current_group, time_range))
     print(context)
     return render(request, 'doc_record/dashboard_send_receive_view.html', context)
 
@@ -98,12 +99,12 @@ def get_count_of_distribute(current_group, time_range, today_th):
 
 
 def get_count_of_receive(current_group, time_range):
-    doc_receive_urgent_count = DocReceive.objects.order_by("doc__urgent__id").values('doc__urgent').annotate(
-        urgent_count=Count("doc__urgent", filter=Q(group_id=current_group.id,
-                                                   doc__create_time__range=time_range)))
-    doc_receive_credential_count = DocReceive.objects.order_by("doc__credential__id").values('doc__credential').annotate(
-        credential_count=Count("doc__credential", filter=Q(group_id=current_group.id,
-                                                   doc__create_time__range=time_range)))
+    doc_receive_urgent_count = DocTrace.objects.order_by("doc__urgent__id").values('doc__urgent').annotate(
+        urgent_count=Count("doc__urgent", filter=Q(action_from=current_group, doc_status_id=1,
+                                                   time__range=time_range)))
+    doc_receive_credential_count = DocTrace.objects.order_by("doc__credential__id").values('doc__credential').annotate(
+        credential_count=Count("doc__credential", filter=Q(action_from=current_group, doc_status_id=1,
+                                                           time__range=time_range)))
 
     urgent_label = list(doc_receive_urgent_count.values_list("doc__urgent__name", flat=True))
     credential_label = list(doc_receive_credential_count.values_list("doc__credential__name", flat=True))
@@ -111,10 +112,31 @@ def get_count_of_receive(current_group, time_range):
     receive_credential_counts = list(doc_receive_credential_count.values_list("credential_count", flat=True))
 
     context = {
-        "urgent_label": urgent_label,
-        "credential_label": credential_label,
-        "urgent_receive_values": receive_urgent_counts,
-        "credential_receive_values": receive_credential_counts,
+        "r_urgent_label": urgent_label,
+        "r_credential_label": credential_label,
+        "r_urgent_receive_values": receive_urgent_counts,
+        "r_credential_receive_values": receive_credential_counts,
+    }
+    return context
 
+
+def get_count_of_send(current_group, time_range):
+    doc_receive_urgent_count = DocSend.objects.order_by("doc__urgent__id").values('doc__urgent').annotate(
+        urgent_count=Count("doc__urgent", filter=Q(group_id=current_group.id,
+                                                   doc__create_time__range=time_range)))
+    doc_receive_credential_count = DocSend.objects.order_by("doc__credential__id").values('doc__credential').annotate(
+        credential_count=Count("doc__credential", filter=Q(group_id=current_group.id,
+                                                           doc__create_time__range=time_range)))
+
+    urgent_label = list(doc_receive_urgent_count.values_list("doc__urgent__name", flat=True))
+    credential_label = list(doc_receive_credential_count.values_list("doc__credential__name", flat=True))
+    receive_urgent_counts = list(doc_receive_urgent_count.values_list("urgent_count", flat=True))
+    receive_credential_counts = list(doc_receive_credential_count.values_list("credential_count", flat=True))
+
+    context = {
+        "s_urgent_label": urgent_label,
+        "s_credential_label": credential_label,
+        "s_urgent_receive_values": receive_urgent_counts,
+        "s_credential_receive_values": receive_credential_counts,
     }
     return context
