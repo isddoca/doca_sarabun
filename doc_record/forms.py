@@ -124,7 +124,7 @@ class DocReceiveModelForm(forms.ModelForm):
 
     send_to = forms.ModelMultipleChoiceField(queryset=Group.objects,
                                              widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
-                                             label="ส่งไปยัง", required=False)
+                                             label="แจกจ่ายไปยัง", required=False)
 
     class Meta:
         model = DocReceive
