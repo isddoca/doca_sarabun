@@ -76,22 +76,22 @@ def doc_trace_notify(doc_trace, from_group, to_group, url):
     users_in_unit = None
     message = None
     doc = doc_trace.doc
-    action = doc_trace.doc_status.name
+    action = doc_trace.doc_status.id
     print(doc)
     print(action)
     match action:
-        case "รับเอกสาร":
+        case 1:
             users_in_unit = User.objects.filter(groups=to_group)
             msg_template = "{receive_from} ได้รับหนังสือ\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nเรียบร้อยแล้ว"
             message = msg_template.format(receive_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
                                           title=doc.title)
             print(message)
-        case "ส่งเอกสาร":
+        case 2:
             users_in_unit = User.objects.filter(groups=to_group)
             msg_template = "มีหนังสือส่งมาจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
             message = msg_template.format(send_from=from_group, doc_no=doc.doc_no, doc_date=doc.doc_date_th(),
                                           title=doc.title, url=url)
-        case "ตีกลับ":
+        case 3:
             users_in_unit = User.objects.filter(groups=to_group)
             print(users_in_unit)
             msg_template = "มีหนังสือตีกลับจาก : {send_from}\nที่ : {doc_no}\nลงวันที่ : {doc_date}\nเรื่อง : {title}\nURL : {url}"
