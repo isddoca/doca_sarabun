@@ -40,7 +40,7 @@
                                     <li>
                                         <a href="/trace/pending/{{ doc.id }}">
                                             <div class="image">
-                                                {% if doc.doc_status.id == 3%}
+                                                {% if doc.doc_status.id == 3 %}
                                                     <img src="{% static 'assets/images/doc_status/cancel.png' %}"
                                                          alt=""/>
                                                 {% else %}
@@ -49,8 +49,8 @@
                                                 {% endif %}
                                             </div>
                                             <div class="content">
-                                                <h6>{{ doc.action_from }}</h6>
-                                                <p>{{ doc.action_from }} {{ doc.doc_status.name }}ไปยัง {{ doc.action_to }}</p>
+                                                <h6>มีหนังสือ{{ doc.doc_status.name }}มาจาก {{ doc.action_from }}</h6>
+                                                <p>เรื่อง {{ doc.doc.title }}</p>
                                                 <span>{{ doc.time_th }}</span>
                                             </div>
                                         </a>
