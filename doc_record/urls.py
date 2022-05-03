@@ -68,6 +68,7 @@ urlpatterns = [
     path('order/specific/<int:id>/', order.doc_order_detail, name='order_specific'),
     path('order/specific/<int:id>/edit/', order.doc_order_edit, name='order_specific'),
     path('order/specific/add', order.doc_order_add, name='order_specific'),
+    path('order/specific/<int:id>/delete/', order.doc_order_delete, name='order_specific_delete'),
 ]
 
 if settings.DEBUG is True:
