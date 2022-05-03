@@ -98,12 +98,11 @@ def doc_trace_action(request, id):
                     doc_send_model = save_doc_send(current_group, doc_send_of_group, request)
 
                 current_unit = current_doc_trace.create_by.groups.all()[0]
-                pending_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=False).exclude(
-                    doc_status_id__gt=1)
+                reject_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, doc_status_id=3)
 
-                pending_unit = []
-                for trace in pending_traces:
-                    pending_unit.append(trace.action_to)
+                reject_unit = []
+                for trace in reject_traces:
+                    reject_unit.append(trace.action_from)
 
                 done_traces = DocTrace.objects.filter(doc=current_doc_trace.doc, done=True)
                 done_unit = []
@@ -115,16 +114,19 @@ def doc_trace_action(request, id):
                 else:
                     send_to = doc_send_model.send_to.all()
                 for send_unit in send_to:
-                    if send_unit != current_unit and send_unit not in pending_unit and send_unit not in done_unit:  # exclude current unit
+                    if send_unit != current_unit or send_unit in reject_unit or send_unit not in done_unit:  # exclude current unit
+                        print(send_unit)
                         doc_trace, is_create = DocTrace.objects.update_or_create(doc=current_doc_trace.doc,
                                                                                  doc_status_id=2,
                                                                                  action_from=current_group,
                                                                                  action_to=send_unit,
                                                                                  defaults={
                                                                                      'time': datetime.now(timezone),
+                                                                                     'done': False,
                                                                                      'create_by': user})
 
                         if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
+                            print("send_chat_to "+send_unit)
                             url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
                             doc_trace_notify(doc_trace, current_group, send_unit, url)
             else:
@@ -133,6 +135,8 @@ def doc_trace_action(request, id):
                                                     create_by=user, time=datetime.now(timezone),
                                                     note=doc_trace_save.note,
                                                     done=True)
+
+                print(current_doc_trace.action_from)
                 doc_trace_notify(doc_trace, current_group, current_doc_trace.action_from, None)
                 DocReceive.objects.create(doc=current_doc_trace.doc,
                                           receive_no=get_docs_no(user, current_doc_trace.doc.is_secret()),
