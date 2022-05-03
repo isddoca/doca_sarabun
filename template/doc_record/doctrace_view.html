@@ -84,9 +84,9 @@
                     <li class="bullet">
                         <div class="time">{{ trace.time_th }}</div>
                         {% if trace.action_from == trace.action_to %}
-                            <p>{{ trace.action_from }} รับเอกสารเข้าระบบ
+                            <p>{{ trace.action_from }} รับหนังสือเข้าระบบ
                                 {% else %}
-                            <p>{{ trace.action_from }} {{ trace.doc_status.name }}ไปยัง {{ trace.action_to }}</p>
+                            <p>{{ trace.action_from }} {{ trace.doc_status.name }}หนังสือไปยัง {{ trace.action_to }}</p>
                         {% endif %}
                         <p class="small">ดำเนินการโดย
                             : {{ trace.create_by.first_name }} {{ trace.create_by.last_name }}</p>
