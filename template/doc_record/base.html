@@ -9,11 +9,11 @@
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link
             rel="stylesheet"
-            href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}"
+            href="{% static 'vendors/bootstrap/css/bootstrap.min.css' %}"
     />
     <link
             rel="stylesheet"
-            href="{% static 'vendor/fontawesome/css/all.css' %}"
+            href="{% static 'vendors/fontawesome/css/all.css' %}"
     />
     <link rel="stylesheet" href="{% static 'assets/css/lineicons.css' %}"/>
     <link rel="stylesheet" href="{% static 'assets/css/main.css' %}"/>
@@ -28,12 +28,11 @@
     {% include 'doc_record/header.html' %}
     <!-- ========== signin-section start ========== -->
     <section>{% block content %} {% endblock %}</section>
-    </div>
     <!-- ========== signin-section end ========== -->
     {% include 'doc_record/footer.html' %}
 </main>
 
-<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'vendors/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 <script src="{% static 'assets/js/main.js' %}"></script>
 {% block js %} {% endblock %}
 </body>

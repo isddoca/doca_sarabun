@@ -61,6 +61,16 @@ def fulfillment(request):
                     fulfillment_txt = {'fulfillmentText': detail}
                 else:
                     fulfillment_txt = {'fulfillmentText': 'ไม่พบข้อมูลหนังสือ/คำสั่งนี้ครับ'}
+        case "search_document":
+            doc_no = param.get('doc_no')
+            if doc_no == '':
+                fulfillment_txt = {'fulfillmentText': 'กรุณาแจ้งเลขที่หนังสือคำสั่งด้วยครับ'}
+            else:
+                doc = Doc.objects.get(doc_no)
+                if doc:
+                    detail = f"ที่ : {doc.doc_no}\nเรื่อง : {doc.title}"
+                else:
+                    fulfillment_txt = {'fulfillmentText': 'ไม่พบข้อมูลหนังสือ/คำสั่งนี้ครับ'}
         case _:
             fulfillment_txt = {'fulfillmentText': 'This is Django test response from webhook. 3'}
     return JsonResponse(fulfillment_txt, safe=False)
