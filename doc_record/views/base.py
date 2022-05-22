@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-from doc_record.models import Doc, LineNotifyToken, DocTrace
+from doc_record.models import Doc, LineNotifyToken, DocTrace, DocFile
 from doc_record.forms import UserInfoForm
 
 
@@ -66,13 +66,22 @@ def fulfillment(request):
             if doc_no == '':
                 fulfillment_txt = {'fulfillmentText': 'กรุณาแจ้งเลขที่หนังสือคำสั่งด้วยครับ'}
             else:
-                doc = Doc.objects.get(doc_no)
-                if doc:
-                    detail = f"ที่ : {doc.doc_no}\nเรื่อง : {doc.title}"
-                else:
+                try:
+                    doc = Doc.objects.get(doc_no=doc_no)
+                    files = DocFile.objects.filter(doc=doc)
+                    files_url = ''
+                    for index, file in enumerate(files):
+                        files_url += request.build_absolute_uri(str(files[index].file.url))+"\n"
+                    detail = f"ที่ : {doc.doc_no}" \
+                             f"\nเรื่อง : {doc.title}" \
+                             f"\nลงวันที่ : {doc.doc_date_th()}" \
+                             f"\nสร้างโดย : {doc.create_by.groups.all().first().name}" \
+                             f"\nไฟล์เอกสาร : {files_url}"
+                    fulfillment_txt = {'fulfillmentText': detail}
+                except Doc.DoesNotExist:
                     fulfillment_txt = {'fulfillmentText': 'ไม่พบข้อมูลหนังสือ/คำสั่งนี้ครับ'}
         case _:
-            fulfillment_txt = {'fulfillmentText': 'This is Django test response from webhook. 3'}
+            fulfillment_txt = {'fulfillmentText': f'This is Django test response from webhook. 3{action}'}
     return JsonResponse(fulfillment_txt, safe=False)
 
 
