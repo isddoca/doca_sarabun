@@ -19,8 +19,8 @@
                     <td class="small">
                         {{ data.doc.doc_date_th }}
                     </td>
-                    <td class="small">{{ data.doc.doc_from }}</td>
-                    <td class="small">{{ data.doc.doc_to }}</td>
+                <td class="small">{% if data.doc.doc_from %}{{ data.doc.doc_from }}{% else %}-{% endif %}</td>
+                <td class="small">{% if data.doc.doc_to %}{{ data.doc.doc_to }}{% else %}-{% endif %}</td>
                     <td class="small">{{ data.doc.title }}</td>
                     <td class="small">{{ data.doc_status.name }}</td>
                 </tr>
