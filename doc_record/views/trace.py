@@ -62,7 +62,7 @@ def doc_trace_action(request, id):
 
     if current_doc_trace.done:
         # หาจาก record สุดท้ายที่กองได้ดำเนินการล่าสุด
-        current_doc_trace = DocTrace.objects.filter(action_to=current_group, doc_id=current_doc_trace.doc.id).last()
+        current_doc_trace = DocTrace.objects.filter(action_from=current_group, doc_id=current_doc_trace.doc.id).last()
         context = {'doc_trace': current_doc_trace,
                    'old_files': doc_old_files}
         return render(request, 'doc_record/doctrace_pending_finish_view.html', context)
