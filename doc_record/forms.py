@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import django.utils.timezone
 import pytz
 from allauth.account.forms import SignupForm as b_form
 from allauth.socialaccount.forms import SignupForm as s_form
@@ -88,11 +89,10 @@ class UserInfoForm(forms.ModelForm):
 
 class DocModelForm(forms.ModelForm):
     timezone = pytz.timezone('Asia/Bangkok')
-    doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'], initial=thai_strftime(datetime.now(tz=timezone), "%d/%m/%Y"),
+    doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'],
                                label='ลงวันที่',
                                widget=forms.DateInput(attrs={'class': 'form-control', 'data-provide': "datepicker",
-                                                             'data-date-language': "th-th"}))
-
+                                                             'data-date-language': "th-th"}),)
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน', required=False)
     credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id=1), empty_label=None,
                                         label='ชั้นความลับ', required=False)
