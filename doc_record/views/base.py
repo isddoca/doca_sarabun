@@ -105,7 +105,7 @@ def trace_answer(doc_no):
 
 
 def generate_doc_id():
-    docs_record = Doc.objects.filter(doc_date__year=date.today().year).last()
+    docs_record = Doc.objects.filter(create_time__year=date.today().year).last()
     latest_id = int(docs_record.id[5:]) + 1 if docs_record else 1
     doc_id = "{year}-{no}".format(year=date.today().year, no=f'{latest_id:06}')
     return doc_id
