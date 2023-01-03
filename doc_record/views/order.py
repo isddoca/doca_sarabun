@@ -172,7 +172,7 @@ def doc_order_edit(request, id):
                 return HttpResponseRedirect('/order')
     else:
         tmp_doc_date = doc_order.doc.doc_date
-        doc_order.doc.doc_date = tmp_doc_date.replace(year=2565)
+        doc_order.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
         doc_form = DocModelForm(instance=doc_order.doc)
         doc_order_form = DocOrderModelForm(instance=doc_order)
         if is_specific:

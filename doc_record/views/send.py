@@ -278,7 +278,7 @@ def doc_send_edit(request, id):
             return return_page(request)
     else:
         tmp_doc_date = doc_send.doc.doc_date
-        doc_send.doc.doc_date = tmp_doc_date.replace(year=2565)
+        doc_send.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
         doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[current_group.id])
         if is_credential:
             if is_sent_outside:
@@ -308,10 +308,14 @@ def doc_send_delete(request, id):
     if request.method == "POST":
         doc_send = get_object_or_404(DocSend, id=id)
         units = doc_send.send_to.all()
+        user = request.user
         for unit in units:
             doc_trace = DocTrace.objects.filter(action_to=unit, doc=doc_send.doc)
             doc_trace.delete()
         doc_send.delete()
+        doc = doc_send.doc
+        if doc.create_by == user:
+            doc.delete()
     return return_page(request)
 
 

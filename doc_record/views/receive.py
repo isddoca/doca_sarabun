@@ -169,7 +169,6 @@ def doc_receive_edit(request, id):
             doc_form = DocCredentialModelForm(request.POST, request.FILES)
         else:
             doc_form = DocModelForm(request.POST, request.FILES)
-        print(current_group)
         doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
@@ -227,7 +226,7 @@ def doc_receive_edit(request, id):
                 return HttpResponseRedirect('/receive')
     else:
         tmp_doc_date = doc_receive.doc.doc_date
-        doc_receive.doc.doc_date = tmp_doc_date.replace(year=2565)
+        doc_receive.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(instance=doc_receive.doc)
             title = "แก้ไขทะเบียนรับหนังสือ (ลับ)"
