@@ -16,7 +16,6 @@ def distribute_info(request):
     time_range = get_time_range(query_date, query_time)
     current_group = request.user.groups.all().first()
     context = get_count_of_distribute(current_group, time_range, today_th)
-    print(context)
     return render(request, 'doc_record/dashboard_dist_view.html', context)
 
 

@@ -154,7 +154,6 @@ def doc_trace_action(request, id):
         context.update({'doc_action_form': doc_receive_form})
     else:
         context.update({'doc_action_form': doc_send_form})
-    print(context)
     return render(request, 'doc_record/doctrace_pending_view.html', context)
 
 
