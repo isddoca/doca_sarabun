@@ -150,7 +150,7 @@
 
             this.picker
               .find('.datepicker-months')
-              .find('th:eq(2)')
+              .find('th:eq(1)')
               .text(''+(year+thai.adj))
             
             //console.log(year);
@@ -160,7 +160,7 @@
 
             this.picker
               .find('.datepicker-years')
-              .find('th:eq(2)')
+              .find('th:eq(1)')
               .text((parseInt(d.getUTCFullYear() / 10, 10) * 10) + 543 + '-' + ((((parseInt(d.getUTCFullYear() / 10, 10) + 1) * 10) - 1) + 543))
               .end()
               .find('td')
