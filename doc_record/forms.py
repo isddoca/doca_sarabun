@@ -88,11 +88,24 @@ class UserInfoForm(forms.ModelForm):
 
 
 class DocModelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.can_edit = kwargs.pop('can_edit')
+        super(DocModelForm, self).__init__(*args, **kwargs)
+        if not self.can_edit:
+            self.fields['doc_no'].widget.attrs['readonly'] = True
+            self.fields['doc_date'].widget.attrs['readonly'] = True
+            self.fields['doc_from'].widget.attrs['readonly'] = True
+            self.fields['doc_to'].widget.attrs['readonly'] = True
+            self.fields['title'].widget.attrs['readonly'] = True
+            self.fields['urgent'].widget.attrs['disabled'] = True
+            self.fields['credential'].widget.attrs['disabled'] = True
+            self.fields['file'].widget.attrs['readonly'] = True
+
     timezone = pytz.timezone('Asia/Bangkok')
     doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'],
                                label='ลงวันที่',
                                widget=forms.DateInput(attrs={'class': 'form-control', 'data-provide': "datepicker",
-                                                             'data-date-language': "th-th"}),)
+                                                             'data-date-language': "th-th"}), )
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน', required=False)
     credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id=1), empty_label=None,
                                         label='ชั้นความลับ', required=False)

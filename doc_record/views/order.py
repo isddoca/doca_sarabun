@@ -80,7 +80,7 @@ def doc_order_add(request):
     parent_nav_path = "/order"
     title = "ลงทะเบียนคำสั่ง"
     if request.method == 'POST':
-        doc_form = DocModelForm(request.POST, request.FILES)
+        doc_form = DocModelForm(request.POST, request.FILES, can_edit=True)
         doc_order_form = DocOrderModelForm(request.POST)
         if doc_form.is_valid() and doc_order_form.is_valid():
             doc_model = doc_form.save(commit=False)
@@ -105,7 +105,7 @@ def doc_order_add(request):
             else:
                 return HttpResponseRedirect('/order')
     else:
-        doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(is_specific)})
+        doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(is_specific)}, can_edit=True)
         doc_order_form = DocOrderModelForm(
             initial={'order_no': get_order_no(is_specific)})
         if is_specific:
@@ -124,8 +124,10 @@ def doc_order_add(request):
 def doc_order_edit(request, id):
     doc_order = DocOrder.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
+    current_group = request.user.groups.all()[0]
 
     is_specific = 'specific' in request.path
+    can_edit_doc = current_group in doc_order.doc.create_by.groups.all()
 
     parent_nav_title = "ทะเบียนคำสั่ง"
     parent_nav_path = "/order"
@@ -173,7 +175,7 @@ def doc_order_edit(request, id):
     else:
         tmp_doc_date = doc_order.doc.doc_date
         doc_order.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
-        doc_form = DocModelForm(instance=doc_order.doc)
+        doc_form = DocModelForm(instance=doc_order.doc, can_edit=can_edit_doc)
         doc_order_form = DocOrderModelForm(instance=doc_order)
         if is_specific:
             title = "ลงทะเบียนคำสั่ง (เฉพาะ)"

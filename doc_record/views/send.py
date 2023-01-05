@@ -140,9 +140,9 @@ def doc_send_add(request):
     is_credential = 'credential' in request.path
     if request.method == 'POST':
         if is_credential:
-            doc_form = DocCredentialModelForm(request.POST, request.FILES)
+            doc_form = DocCredentialModelForm(request.POST, request.FILES, can_edit=True)
         else:
-            doc_form = DocModelForm(request.POST, request.FILES)
+            doc_form = DocModelForm(request.POST, request.FILES, can_edit=True)
         doc_send_form = DocSendModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_send_form.is_valid():
@@ -185,7 +185,7 @@ def doc_send_add(request):
         doc_no = get_doc_no(current_group, is_outside=is_sent_outside, send_no=send_no)
         doc_send_form = DocSendModelForm(initial={'send_no': send_no}, groups_id=[current_group.id])
         if is_credential:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no}, can_edit=True)
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
                 parent_nav_path = "/send/out/credential"
@@ -195,7 +195,7 @@ def doc_send_add(request):
                 parent_nav_path = "/send/credential"
                 title = "ลงทะเบียนส่งหนังสือ (ลับ)"
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no})
+            doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no}, can_edit=True)
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
                 parent_nav_path = "/send/out"
@@ -219,6 +219,7 @@ def doc_send_edit(request, id):
 
     is_sent_outside = "out" in request.path
     is_credential = 'credential' in request.path
+    can_edit_doc = current_group in doc_send.doc.create_by.groups.all()
 
     doc_old_files = DocFile.objects.filter(doc=doc_send.doc)
     if request.method == 'POST':
@@ -289,13 +290,13 @@ def doc_send_edit(request, id):
                 parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
                 parent_nav_path = "/send/credential"
                 title = "แก้ไขทะเบียนส่งหนังสือ (ลับ)"
-            doc_form = DocCredentialModelForm(instance=doc_send.doc)
+            doc_form = DocCredentialModelForm(instance=doc_send.doc, can_edit=can_edit_doc)
         else:
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
                 parent_nav_path = "/send/out"
                 title = "แก้ไขทะเบียนส่งหนังสือภายนอกหน่วย"
-            doc_form = DocModelForm(instance=doc_send.doc)
+            doc_form = DocModelForm(instance=doc_send.doc, can_edit=can_edit_doc)
 
     context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'doc_files': doc_old_files, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}

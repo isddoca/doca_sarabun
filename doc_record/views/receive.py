@@ -92,9 +92,9 @@ def doc_receive_add(request):
 
     if request.method == 'POST':
         if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(request.POST, request.FILES)
+            doc_form = DocCredentialModelForm(request.POST, request.FILES, can_edit=True)
         else:
-            doc_form = DocModelForm(request.POST, request.FILES)
+            doc_form = DocModelForm(request.POST, request.FILES, can_edit=True)
 
         doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
@@ -136,12 +136,12 @@ def doc_receive_add(request):
     else:
 
         if is_secret:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()})
+            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()}, can_edit=True)
             title = "ลงทะเบียนรับหนังสือ (ลับ)"
             parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
             parent_nav_path = "/receive/credential"
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id()})
+            doc_form = DocModelForm(initial={'id': generate_doc_id()}, can_edit=True)
             parent_nav_path = "/receive"
         doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=is_secret)},
                                                groups_id=[current_group.id])
@@ -160,6 +160,8 @@ def doc_receive_edit(request, id):
     title = "แก้ไขทะเบียนรับหนังสือ"
 
     is_secret = 'credential' in request.path
+    can_edit_doc = current_group in doc_receive.doc.create_by.groups.all()
+
     doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
     if request.method == 'POST':
         print("POST")
@@ -228,12 +230,12 @@ def doc_receive_edit(request, id):
         tmp_doc_date = doc_receive.doc.doc_date
         doc_receive.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
         if 'credential' in request.path:
-            doc_form = DocCredentialModelForm(instance=doc_receive.doc)
+            doc_form = DocCredentialModelForm(instance=doc_receive.doc, can_edit=can_edit_doc)
             title = "แก้ไขทะเบียนรับหนังสือ (ลับ)"
             parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
             parent_nav_path = "/receive/credential"
         else:
-            doc_form = DocModelForm(instance=doc_receive.doc)
+            doc_form = DocModelForm(instance=doc_receive.doc, can_edit=can_edit_doc)
 
             parent_nav_path = "/receive"
         doc_receive_form = DocReceiveModelForm(instance=doc_receive, groups_id=[current_group.id])
