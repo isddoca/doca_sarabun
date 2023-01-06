@@ -168,9 +168,9 @@ def doc_receive_edit(request, id):
         user = request.user
 
         if is_secret:
-            doc_form = DocCredentialModelForm(request.POST, request.FILES)
+            doc_form = DocCredentialModelForm(request.POST, request.FILES, can_edit=can_edit_doc)
         else:
-            doc_form = DocModelForm(request.POST, request.FILES)
+            doc_form = DocModelForm(request.POST, request.FILES, can_edit=can_edit_doc)
         doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
@@ -273,8 +273,8 @@ def get_docs_no(user, is_secret=False):
     current_group_id = user.groups.all()[0].id
     if is_secret:
         docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id__gt=1,
-                                         doc__create_time__year=datetime.now().year)
+                                         doc__create_time__year=datetime.now().year).order_by('receive_no')
     else:
         docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id=1,
-                                         doc__create_time__year=datetime.now().year)
+                                         doc__create_time__year=datetime.now().year).order_by('receive_no')
     return 1 if len(docs) == 0 else docs.last().receive_no + 1

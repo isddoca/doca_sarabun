@@ -226,9 +226,9 @@ def doc_send_edit(request, id):
         user = request.user
 
         if is_credential:
-            doc_form = DocCredentialModelForm(request.POST, request.FILES)
+            doc_form = DocCredentialModelForm(request.POST, request.FILES, can_edit=can_edit_doc)
         else:
-            doc_form = DocModelForm(request.POST, request.FILES)
+            doc_form = DocModelForm(request.POST, request.FILES, can_edit=can_edit_doc)
         doc_send_form = DocSendModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_send_form.is_valid():
@@ -335,10 +335,10 @@ def get_send_no(user, is_secret=False, is_outside=False):
 
     if is_secret:
         docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id__gt=1,
-                                      doc__create_time__year=datetime.now().year)
+                                      doc__create_time__year=datetime.now().year).order_by('send_no')
     else:
         docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id=1,
-                                      doc__create_time__year=datetime.now().year)
+                                      doc__create_time__year=datetime.now().year).order_by('send_no')
         print(datetime.now().year)
     return 1 if len(docs) == 0 else docs.last().send_no + 1
 

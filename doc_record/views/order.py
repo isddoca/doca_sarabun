@@ -138,7 +138,7 @@ def doc_order_edit(request, id):
         print("POST")
         user = request.user
 
-        doc_form = DocModelForm(request.POST, request.FILES)
+        doc_form = DocModelForm(request.POST, request.FILES, can_edit=can_edit_doc)
         doc_order_form = DocOrderModelForm(request.POST)
 
         if doc_form.is_valid() and doc_order_form.is_valid():
@@ -200,7 +200,7 @@ def doc_order_delete(request, id):
 
 
 def get_order_no(is_specific=False):
-    docs = DocOrder.objects.filter(specific=is_specific, doc__create_time__year=datetime.now().year)
+    docs = DocOrder.objects.filter(specific=is_specific, doc__create_time__year=datetime.now().year).order_by('order_no')
     return 1 if len(docs) == 0 else docs.last().order_no + 1
 
 
