@@ -232,14 +232,18 @@ def doc_send_edit(request, id):
         doc_send_form = DocSendModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_send_form.is_valid():
-            doc_model = doc_form.save(commit=False)
-            doc_model.id = doc_send.doc.id
-            doc_model.active = 1
-            doc_model.update_time = datetime.now(timezone)
-            doc_model.update_by = user
-            doc_model.create_time = doc_send.doc.create_time
-            doc_model.create_by = doc_send.doc.create_by
-            doc_model.save()
+            if can_edit_doc:
+                doc_model = doc_form.save(commit=False)
+                doc_model.id = doc_send.doc.id
+                doc_model.active = 1
+                doc_model.update_time = datetime.now(timezone)
+                doc_model.update_by = user
+                doc_model.create_time = doc_send.doc.create_time
+                doc_model.create_by = doc_send.doc.create_by
+                print(doc_model)
+                doc_model.save()
+            else:
+                doc_model = doc_send.doc
 
             doc_send_model = doc_send_form.save(commit=False)
             doc_send_model.id = doc_send.id

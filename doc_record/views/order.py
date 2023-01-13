@@ -142,14 +142,17 @@ def doc_order_edit(request, id):
         doc_order_form = DocOrderModelForm(request.POST)
 
         if doc_form.is_valid() and doc_order_form.is_valid():
-            doc = doc_form.save(commit=False)
-            doc.id = doc_order.doc.id
-            doc.active = 1
-            doc.update_time = datetime.now(timezone)
-            doc.update_by = user
-            doc.create_time = doc_order.doc.create_time
-            doc.create_by = doc_order.doc.create_by
-            doc.save()
+            if can_edit_doc:
+                doc = doc_form.save(commit=False)
+                doc.id = doc_order.doc.id
+                doc.active = 1
+                doc.update_time = datetime.now(timezone)
+                doc.update_by = user
+                doc.create_time = doc_order.doc.create_time
+                doc.create_by = doc_order.doc.create_by
+                doc.save()
+            else:
+                doc = doc_order.doc
 
             upd_doc_order = doc_order_form.save(commit=False)
             upd_doc_order.id = doc_order.id

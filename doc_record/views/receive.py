@@ -174,14 +174,17 @@ def doc_receive_edit(request, id):
         doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
-            doc_model = doc_form.save(commit=False)
-            doc_model.id = doc_receive.doc.id
-            doc_model.active = 1
-            doc_model.update_time = datetime.now(timezone)
-            doc_model.update_by = user
-            doc_model.create_time = doc_receive.doc.create_time
-            doc_model.create_by = doc_receive.doc.create_by
-            doc_model.save()
+            if can_edit_doc:
+                doc_model = doc_form.save(commit=False)
+                doc_model.id = doc_receive.doc.id
+                doc_model.active = 1
+                doc_model.update_time = datetime.now(timezone)
+                doc_model.update_by = user
+                doc_model.create_time = doc_receive.doc.create_time
+                doc_model.create_by = doc_receive.doc.create_by
+                doc_model.save()
+            else:
+                doc_model = doc_receive.doc
 
             doc_receive_model = doc_receive_form.save(commit=False)
             doc_receive_model.id = doc_receive.id
