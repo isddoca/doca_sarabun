@@ -33,10 +33,10 @@ def get_credential_docs_no(user):
 
 class ThaiDateCEField(forms.DateField):
     def to_python(self, value):
-        splitdate = value.split('/')
-        ce = int(splitdate[2]) - 543
-        splitdate[2] = str(ce)
-        return "-".join(splitdate[::-1])
+        split_date = value.split('/')
+        ce = int(split_date[2]) - 543
+        split_date[2] = str(ce)
+        return "-".join(split_date[::-1])
 
 
 class BasicSignupForm(b_form):
@@ -99,7 +99,7 @@ class DocModelForm(forms.ModelForm):
             self.fields['title'].widget.attrs['readonly'] = True
             self.fields['urgent'].widget.attrs['disabled'] = True
             self.fields['credential'].widget.attrs['disabled'] = True
-            self.fields['file'].widget.attrs['readonly'] = True
+            self.fields['file'].widget.attrs['disabled'] = True
 
     timezone = pytz.timezone('Asia/Bangkok')
     doc_date = ThaiDateCEField(input_formats=['%d/%m/%Y'],
