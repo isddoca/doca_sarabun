@@ -8,7 +8,7 @@
             <th class="min-tablet">จาก</th>
             <th class="min-tablet">ถึง</th>
             <th class="min-tablet">เรื่อง</th>
-            <th class="min-tablet">การปฏิบัติ</th>
+            <th class="min-tablet">ออกโดย</th>
             <th>เครื่องมือ</th>
         </tr>
         </thead>
@@ -24,15 +24,7 @@
                 <td class="small">{% if data.doc.doc_from %}{{ data.doc.doc_from }}{% else %}-{% endif %}</td>
                 <td class="small">{% if data.doc.doc_to %}{{ data.doc.doc_to }}{% else %}-{% endif %}</td>
                 <td class="small">{{ data.doc.title }}</td>
-                <td class="small">
-                    {% if data.send_to_all %}
-                        {% for send_unit in data.send_to.all %}
-                            {{ send_unit.name }}<br>
-                        {% endfor %}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
+                <td class="small">{{ data.doc.create_by.groups.all.0 }}</td>
                 <td class="text-center">
                     <div class="row">
                         <div class="col-auto">
