@@ -31,6 +31,7 @@ class DocSendListView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['current_group'] = self.request.user.groups.all()[0]
         context['title'] = "ทะเบียนหนังสือส่ง"
         context['add_button'] = "ลงทะเบียนส่งหนังสือ"
         context['add_path'] = "add"
@@ -48,6 +49,7 @@ class DocSendCredentialListView(DocSendListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['current_group'] = self.request.user.groups.all()[0]
         context['title'] = "ทะเบียนหนังสือส่ง (ลับ)"
         context['add_button'] = "ลงทะเบียนส่งหนังสือ (ลับ)"
         context['add_path'] = "credential/add"
@@ -59,15 +61,14 @@ class DocSendCredentialListView(DocSendListView):
 class DocSendOutListView(DocSendListView):
     def get_queryset(self):
         doca_group = Group.objects.get(id=1)
-        current_group_id = self.request.user.groups.all()[0].id
         search = self.request.GET.get('year', datetime.now().year)
         return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
-                                      doc__create_by__groups=current_group_id,
                                       doc__credential__id=1).order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['current_group'] = self.request.user.groups.all()[0]
         context['title'] = "ทะเบียนหนังสือนอกหน่วย"
         context['add_button'] = "ลงทะเบียนส่งหนังสือนอกหน่วย"
         context['add_path'] = "out/add"
@@ -79,15 +80,14 @@ class DocSendOutListView(DocSendListView):
 class DocSendCredentialOutListView(DocSendListView):
     def get_queryset(self):
         doca_group = Group.objects.get(id=1)
-        current_group_id = self.request.user.groups.all()[0].id
         search = self.request.GET.get('year', datetime.now().year)
         return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
-                                      doc__create_by__groups=current_group_id,
                                       doc__credential__id__gt=1).order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['current_group'] = self.request.user.groups.all()[0]
         context['title'] = "ทะเบียนหนังสือนอกหน่วย (ลับ)"
         context['add_button'] = "ลงทะเบียนส่งหนังสือนอกหน่วย (ลับ)"
         context['add_path'] = "credential/add"

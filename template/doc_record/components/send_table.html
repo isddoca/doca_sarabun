@@ -26,15 +26,19 @@
                 <td class="small">{{ data.doc.title }}</td>
                 <td class="small">{{ data.doc.create_by.groups.all.0 }}</td>
                 <td class="text-center">
-                    <div class="row">
-                        <div class="col-auto">
-                            <a href="{{ edit_path }}{{ data.id }}/edit" class="btn text-info m-1"><i
-                                    class="fas fa-pencil-alt"></i></a>
-                            <button type="button" class="btn text-danger m-1" data-bs-toggle="modal"
-                                    data-bs-target="#delete-{{ data.id }}"><i class="fas fa-trash-alt"></i>
-                            </button>
+                    {% if data.doc.create_by.groups.all.0 == current_group %}
+                        <div class="row">
+                            <div class="col-auto">
+                                <a href="{{ edit_path }}{{ data.id }}/edit" class="btn text-info m-1"><i
+                                        class="fas fa-pencil-alt"></i></a>
+                                <button type="button" class="btn text-danger m-1" data-bs-toggle="modal"
+                                        data-bs-target="#delete-{{ data.id }}"><i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    {% else %}
+                        -
+                    {% endif %}
                 </td>
             </tr>
 
