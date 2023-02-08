@@ -19,7 +19,11 @@
                 <td class="small">{{ data.send_no }}</td>
                 <td class="small"><a href="{{ edit_path }}{{ data.id }}">{{ data.doc.doc_no }}</a></td>
                 <td class="small">
-                    {{ data.doc.doc_date_th }}
+                    {% if data.doc.doc_date %}
+                        {{ data.doc.doc_date_th }}
+                    {% else %}
+                        -
+                    {% endif %}
                 </td>
                 <td class="small">{% if data.doc.doc_from %}{{ data.doc.doc_from }}{% else %}-{% endif %}</td>
                 <td class="small">{% if data.doc.doc_to %}{{ data.doc.doc_to }}{% else %}-{% endif %}</td>
