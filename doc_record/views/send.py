@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 import pytz
 from django.contrib.auth.decorators import login_required
@@ -265,10 +265,15 @@ def doc_send_edit(request, id):
             send_to = doc_send_model.send_to.all()
 
             # หาหน่วยที่ทำเสร็จแล้ว
-            done_traces = DocTrace.objects.filter(doc=doc_model, done=True)
+            doc_traces = DocTrace.objects.filter(doc=doc_model)
             done_unit = []
-            for trace in done_traces:
-                done_unit.append(trace.action_to)
+            for trace in doc_traces:
+                if trace.done:
+                    done_unit.append(trace.action_to)
+
+                if trace.action_to not in send_to:
+                    unused_trace = DocTrace.objects.filter(doc=doc_model, action_to=trace.action_to)
+                    unused_trace.delete()
 
             for unit in send_to:
                 if unit not in done_unit:  # เพิ่มหรือแก้ไขประวัติการส่งเฉพาะหน่วยที่ยังดำเนินการไม่เสร็จ
@@ -283,7 +288,8 @@ def doc_send_edit(request, id):
             return return_page(request)
     else:
         tmp_doc_date = doc_send.doc.doc_date
-        doc_send.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
+        if tmp_doc_date:
+            doc_send.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year + 543)
         doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[current_group.id])
         if is_credential:
             if is_sent_outside:
@@ -343,7 +349,6 @@ def get_send_no(user, is_secret=False, is_outside=False):
     else:
         docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id=1,
                                       doc__create_time__year=datetime.now().year).order_by('send_no')
-        print(datetime.now().year)
     return 1 if len(docs) == 0 else docs.last().send_no + 1
 
 
