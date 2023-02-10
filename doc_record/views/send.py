@@ -138,6 +138,8 @@ def doc_send_add(request):
 
     is_sent_outside = "out" in request.path
     is_credential = 'credential' in request.path
+    unit_group = doca_group if is_sent_outside else current_group
+
     if request.method == 'POST':
         if is_credential:
             doc_form = DocCredentialModelForm(request.POST, request.FILES, can_edit=True)
@@ -157,11 +159,10 @@ def doc_send_add(request):
             for f in req_files:
                 DocFile.objects.create(file=f, doc=doc_model)
 
-            doc_send_group = doca_group if is_sent_outside else user.groups.all()[0]
             doc_send_model = doc_send_form.save(commit=False)
-            doc_send_model.id = get_object_or_404(DocSend, doc=doc_model, group=doc_send_group).id
+            doc_send_model.id = get_object_or_404(DocSend, doc=doc_model, group=unit_group).id
             doc_send_model.doc = doc_model
-            doc_send_model.group = doca_group if is_sent_outside else user.groups.all()[0]
+            doc_send_model.group = unit_group
             doc_send_model.save()
             doc_send_form.save_m2m()
 
@@ -190,11 +191,11 @@ def doc_send_add(request):
                                  active=True, create_by=user, create_time=datetime.now(timezone))
         doc.save()
         doc_id = doc.id
-        doc_send = DocSend.objects.create(send_no=send_no, doc=doc, group=current_group)
+        doc_send = DocSend.objects.create(send_no=send_no, doc=doc, group=unit_group)
         doc_send.save()
         doc_send_id = doc_send.id
 
-        doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[current_group.id])
+        doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[unit_group.id])
         if is_credential:
             doc_form = DocCredentialModelForm(instance=doc, can_edit=True)
             if is_sent_outside:
@@ -252,7 +253,6 @@ def doc_send_edit(request, id):
                 doc_model.update_by = user
                 doc_model.create_time = doc_send.doc.create_time
                 doc_model.create_by = doc_send.doc.create_by
-                print(doc_model)
                 doc_model.save()
             else:
                 doc_model = doc_send.doc
