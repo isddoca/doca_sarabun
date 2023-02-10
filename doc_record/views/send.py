@@ -147,7 +147,7 @@ def doc_send_add(request):
 
         if doc_form.is_valid() and doc_send_form.is_valid():
             doc_model = doc_form.save(commit=False)
-            doc_model.id = generate_doc_id()
+            doc_model.id = get_object_or_404(Doc, doc_no=doc_model.doc_no).id
             doc_model.active = 1
             doc_model.create_time = datetime.now(timezone)
             doc_model.create_by = user
@@ -157,7 +157,9 @@ def doc_send_add(request):
             for f in req_files:
                 DocFile.objects.create(file=f, doc=doc_model)
 
+            doc_send_group = doca_group if is_sent_outside else user.groups.all()[0]
             doc_send_model = doc_send_form.save(commit=False)
+            doc_send_model.id = get_object_or_404(DocSend, doc=doc_model, group=doc_send_group).id
             doc_send_model.doc = doc_model
             doc_send_model.group = doca_group if is_sent_outside else user.groups.all()[0]
             doc_send_model.save()
@@ -183,9 +185,18 @@ def doc_send_add(request):
     else:
         send_no = get_send_no(request.user, is_secret=is_credential, is_outside=is_sent_outside)
         doc_no = get_doc_no(current_group, is_outside=is_sent_outside, send_no=send_no)
-        doc_send_form = DocSendModelForm(initial={'send_no': send_no}, groups_id=[current_group.id])
+
+        doc = Doc.objects.create(id=generate_doc_id(), doc_no=doc_no, credential_id=2 if is_credential else 1,
+                                 active=True, create_by=user, create_time=datetime.now(timezone))
+        doc.save()
+        doc_id = doc.id
+        doc_send = DocSend.objects.create(send_no=send_no, doc=doc, group=current_group)
+        doc_send.save()
+        doc_send_id = doc_send.id
+
+        doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[current_group.id])
         if is_credential:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no}, can_edit=True)
+            doc_form = DocCredentialModelForm(instance=doc, can_edit=True)
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
                 parent_nav_path = "/send/out/credential"
@@ -195,16 +206,17 @@ def doc_send_add(request):
                 parent_nav_path = "/send/credential"
                 title = "ลงทะเบียนส่งหนังสือ (ลับ)"
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': doc_no}, can_edit=True)
+            doc_form = DocModelForm(instance=doc, can_edit=True)
             if is_sent_outside:
                 parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
                 parent_nav_path = "/send/out"
                 title = "ลงทะเบียนส่งหนังสือภายนอกหน่วย"
 
-    context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'title': title,
-               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
-    return render(request, 'doc_record/docsend_out_form.html' if is_sent_outside else 'doc_record/docsend_form.html',
-                  context)
+        context = {'doc_id': doc_id, 'doc_send_id': doc_send_id, 'doc_form': doc_form, 'doc_send_form': doc_send_form,
+                   'title': title, 'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
+        return render(request,
+                      'doc_record/docsend_out_form.html' if is_sent_outside else 'doc_record/docsend_form.html',
+                      context)
 
 
 @login_required(login_url='/accounts/login')
