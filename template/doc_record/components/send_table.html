@@ -27,7 +27,13 @@
                 </td>
                 <td class="small">{% if data.doc.doc_from %}{{ data.doc.doc_from }}{% else %}-{% endif %}</td>
                 <td class="small">{% if data.doc.doc_to %}{{ data.doc.doc_to }}{% else %}-{% endif %}</td>
-                <td class="small">{{ data.doc.title }}</td>
+                <td class="small">
+                    {% if data.doc.title %}
+                        {{ data.doc.title }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
                 <td class="small">{{ data.doc.create_by.groups.all.0 }}</td>
                 <td class="text-center">
                     {% if data.doc.create_by.groups.all.0 == current_group %}
