@@ -64,7 +64,11 @@
                     <p class="fw-bold">ลงวันที่</p>
                 </div>
                 <div class="form-group col-sm-10">
-                    {{ doc_order.doc.doc_date_th }}
+                    {% if data.doc.doc_date %}
+                        {{ data.doc.doc_date_th }}
+                    {% else %}
+                        -
+                    {% endif %}
                 </div>
             </div>
             <div class="row form-row mb-3">
@@ -72,7 +76,11 @@
                     <p class="fw-bold">เรื่อง</p>
                 </div>
                 <div class="form-group col-sm-10">
-                    {{ doc_order.doc.title }}
+                    {% if data.doc.title %}
+                        {{ data.doc.title }}
+                    {% else %}
+                        -
+                    {% endif %}
                 </div>
             </div>
             <div class="row form-row mb-3">

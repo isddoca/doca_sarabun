@@ -73,6 +73,7 @@ def doc_order_detail(request, id):
 def doc_order_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
+    current_group = user.groups.all()[0]
 
     is_specific = 'specific' in request.path
 
@@ -84,7 +85,7 @@ def doc_order_add(request):
         doc_order_form = DocOrderModelForm(request.POST)
         if doc_form.is_valid() and doc_order_form.is_valid():
             doc_model = doc_form.save(commit=False)
-            doc_model.id = generate_doc_id()
+            doc_model.id = request.POST["doc_id"]
             doc_model.active = 1
             doc_model.create_time = datetime.now(timezone)
             doc_model.create_by = user
@@ -95,9 +96,10 @@ def doc_order_add(request):
                 DocFile.objects.create(file=f, doc=doc_model)
 
             doc_order = doc_order_form.save(commit=False)
+            doc_order.id = request.POST["order_id"]
             doc_order.doc = doc_model
             doc_order.specific = is_specific
-            doc_order.issue_by = user.groups.all()[0]
+            doc_order.issue_by = current_group
             doc_order.save()
 
             if 'specific' in request.path:
@@ -105,9 +107,15 @@ def doc_order_add(request):
             else:
                 return HttpResponseRedirect('/order')
     else:
-        doc_form = DocModelForm(initial={'id': generate_doc_id(), 'doc_no': get_doc_no(is_specific)}, can_edit=True)
-        doc_order_form = DocOrderModelForm(
-            initial={'order_no': get_order_no(is_specific)})
+        order_no = get_order_no(is_specific=is_specific)
+        doc = Doc.objects.create(id=generate_doc_id(), doc_no=get_doc_no(is_specific), active=True, create_by=user,
+                                 create_time=datetime.now(timezone))
+        doc.save()
+        doc_order = DocOrder.objects.create(order_no=order_no, doc=doc, specific=is_specific, issue_by=current_group)
+        doc_order.save()
+
+        doc_form = DocModelForm(instance=doc, can_edit=True)
+        doc_order_form = DocOrderModelForm(instance=doc_order)
         if is_specific:
             title = "ลงทะเบียนคำสั่ง (เฉพาะ)"
             parent_nav_title = "ทะเบียนคำสั่ง (เฉพาะ)"
@@ -115,9 +123,10 @@ def doc_order_add(request):
         else:
             parent_nav_path = "/order"
 
-    context = {'doc_form': doc_form, 'doc_order_form': doc_order_form, 'title': title,
-               'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
-    return render(request, 'doc_record/docorder_form.html', context)
+        context = {'doc_id': doc.id, 'order_id': doc_order.id, 'doc_form': doc_form,
+                   'doc_order_form': doc_order_form, 'title': title, 'parent_nav_title': parent_nav_title,
+                   'parent_nav_path': parent_nav_path}
+        return render(request, 'doc_record/docorder_form.html', context)
 
 
 @login_required(login_url='/accounts/login')
@@ -177,7 +186,7 @@ def doc_order_edit(request, id):
                 return HttpResponseRedirect('/order')
     else:
         tmp_doc_date = doc_order.doc.doc_date
-        doc_order.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
+        doc_order.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year + 543)
         doc_form = DocModelForm(instance=doc_order.doc, can_edit=can_edit_doc)
         doc_order_form = DocOrderModelForm(instance=doc_order)
         if is_specific:
@@ -203,7 +212,8 @@ def doc_order_delete(request, id):
 
 
 def get_order_no(is_specific=False):
-    docs = DocOrder.objects.filter(specific=is_specific, doc__create_time__year=datetime.now().year).order_by('order_no')
+    docs = DocOrder.objects.filter(specific=is_specific, doc__create_time__year=datetime.now().year).order_by(
+        'order_no')
     return 1 if len(docs) == 0 else docs.last().order_no + 1
 
 
