@@ -88,19 +88,18 @@ def doc_receive_add(request):
     parent_nav_path = "/receive"
     title = "ลงทะเบียนรับหนังสือ"
 
-    is_secret = 'credential' in request.path
+    is_credential = 'credential' in request.path
 
     if request.method == 'POST':
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(request.POST, request.FILES, can_edit=True)
         else:
             doc_form = DocModelForm(request.POST, request.FILES, can_edit=True)
-
         doc_receive_form = DocReceiveModelForm(request.POST, groups_id=[current_group.id])
 
         if doc_form.is_valid() and doc_receive_form.is_valid():
             doc_model = doc_form.save(commit=False)
-            doc_model.id = generate_doc_id()
+            doc_model.id = request.POST["doc_id"]
             doc_model.active = 1
             doc_model.create_time = datetime.now(timezone)
             doc_model.create_by = user
@@ -111,6 +110,7 @@ def doc_receive_add(request):
                 DocFile.objects.create(file=f, doc=doc_model)
 
             doc_receive_model = doc_receive_form.save(commit=False)
+            doc_receive_model.id = request.POST["receive_id"]
             doc_receive_model.doc = doc_model
             doc_receive_model.group = current_group
             doc_receive_model.save()
@@ -129,23 +129,29 @@ def doc_receive_add(request):
                 url = request.build_absolute_uri('/trace/pending/' + str(doctrace.pk))
                 send_doc_notify(current_group, doc_model, unit, url)
 
-            if is_secret:
+            if is_credential:
                 return HttpResponseRedirect('/receive/credential')
             else:
                 return HttpResponseRedirect('/receive')
     else:
+        send_no = get_receive_no(request.user, is_credential=is_credential)
+        doc = Doc.objects.create(id=generate_doc_id(), credential_id=2 if is_credential else 1,
+                                 active=True, create_by=user, create_time=datetime.now(timezone))
+        doc.save()
+        doc_receive = DocReceive.objects.create(receive_no=send_no, doc=doc, group=current_group)
+        doc_receive.save()
 
-        if is_secret:
-            doc_form = DocCredentialModelForm(initial={'id': generate_doc_id()}, can_edit=True)
+        doc_receive_form = DocReceiveModelForm(instance=doc_receive, groups_id=[current_group.id])
+        if is_credential:
+            doc_form = DocCredentialModelForm(instance=doc, can_edit=True)
             title = "ลงทะเบียนรับหนังสือ (ลับ)"
             parent_nav_title = "ทะเบียนหนังสือรับ (ลับ)"
             parent_nav_path = "/receive/credential"
         else:
-            doc_form = DocModelForm(initial={'id': generate_doc_id()}, can_edit=True)
+            doc_form = DocModelForm(instance=doc, can_edit=True)
             parent_nav_path = "/receive"
-        doc_receive_form = DocReceiveModelForm(initial={'receive_no': get_docs_no(request.user, is_secret=is_secret)},
-                                               groups_id=[current_group.id])
-    context = {'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
+
+    context = {'doc_id': doc.id, 'receive_id': doc_receive.id, 'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
 
@@ -231,7 +237,8 @@ def doc_receive_edit(request, id):
                 return HttpResponseRedirect('/receive')
     else:
         tmp_doc_date = doc_receive.doc.doc_date
-        doc_receive.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year+543)
+        if tmp_doc_date:
+            doc_receive.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year + 543)
         if 'credential' in request.path:
             doc_form = DocCredentialModelForm(instance=doc_receive.doc, can_edit=can_edit_doc)
             title = "แก้ไขทะเบียนรับหนังสือ (ลับ)"
@@ -272,9 +279,9 @@ def doc_receive_delete(request, id):
         return HttpResponseRedirect('/receive')
 
 
-def get_docs_no(user, is_secret=False):
+def get_receive_no(user, is_credential=False):
     current_group_id = user.groups.all()[0].id
-    if is_secret:
+    if is_credential:
         docs = DocReceive.objects.filter(group_id=current_group_id, doc__credential__id__gt=1,
                                          doc__create_time__year=datetime.now().year).order_by('receive_no')
     else:

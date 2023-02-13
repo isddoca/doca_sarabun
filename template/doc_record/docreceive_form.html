@@ -46,6 +46,10 @@
         <div class="card-style mb-30">
             <form action="" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+
+                <input type="hidden" name="doc_id" value="{{ doc_id }}">
+                <input type="hidden" name="receive_id" value="{{ receive_id }}">
+
                 <div class="row form-row">
                     <div class="form-group col-md-4">
                         {{ doc_receive_form.receive_no | as_crispy_field }}
@@ -131,7 +135,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.13.3/js/standalone/selectize.min.js"></script>
     <script src="{% static 'vendors/selectize/selectize.option.js' %}"></script>
     <script>
-            function classify_doc() {
+        function classify_doc() {
             let doc = {
                 doc_title: $("#id_title").val(),
                 doc_unit: $("#id_doc_from").val(),

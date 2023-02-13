@@ -11,7 +11,7 @@ from django.views.generic import ListView
 from doc_record.forms import DocReceiveModelForm, DocTracePendingModelForm, DocSendModelForm
 from doc_record.models import DocReceive, DocTrace, DocFile, DocSend
 from doc_record.views.linenotify import doc_trace_notify
-from doc_record.views.receive import get_docs_no
+from doc_record.views.receive import get_receive_no
 
 
 @method_decorator(login_required, name='dispatch')
@@ -138,7 +138,7 @@ def doc_trace_action(request, id):
 
                 doc_trace_notify(doc_trace, current_group, current_doc_trace.action_from, None)
                 DocReceive.objects.create(doc=current_doc_trace.doc,
-                                          receive_no=get_docs_no(user, current_doc_trace.doc.is_secret()),
+                                          receive_no=get_receive_no(user, current_doc_trace.doc.is_secret()),
                                           group=current_group)
             return HttpResponseRedirect('/trace/pending')
 
