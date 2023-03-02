@@ -80,6 +80,10 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_ADAPTER = 'doc_record.adapter.SocialAccountAdapter'
 
+GROUPS_MANAGER = {
+    'AUTH_MODELS_SYNC': True,
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
