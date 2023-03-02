@@ -6,6 +6,7 @@ from django.shortcuts import render
 from pythainlp import thai_strftime
 
 from doc_record.models import DocTrace, DocReceive, DocSend
+from groups_manager.models import Group
 
 
 @login_required(login_url='/accounts/login')
@@ -15,6 +16,13 @@ def distribute_info(request):
     query_time = request.GET.get('time', "allday")
     time_range = get_time_range(query_date, query_time)
     current_group = request.user.groups.all().first()
+    g = Group.objects.get(django_group_id=current_group.id)
+    parent = g.parent
+    while parent:
+        group = Group.objects.get(id=parent.id)
+        parent = group.parent
+        print(group.codename)
+
     context = get_count_of_distribute(current_group, time_range, today_th)
     return render(request, 'doc_record/dashboard_dist_view.html', context)
 
