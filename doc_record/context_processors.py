@@ -20,7 +20,7 @@ def get_parent_unit_context(request):
         django_current_group = request.user.groups.all()[0]
 
         current_group = Group.objects.get(django_group_id=django_current_group.id)
-        parents_groups = [current_group]
+        parents_groups = []
         parent = current_group.parent
         while parent:
             group = Group.objects.get(id=parent.id)
