@@ -3,7 +3,8 @@ from datetime import datetime, date
 
 import pytz
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
+from groups_manager.models import Group, DjangoGroup
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
@@ -60,17 +61,18 @@ class DocSendCredentialListView(DocSendListView):
 @method_decorator(login_required, name='dispatch')
 class DocSendOutListView(DocSendListView):
     def get_queryset(self):
-        doca_group = Group.objects.get(id=1)
+        group = Group.objects.get(id=self.kwargs.get('unit_id'))
         search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
+        return DocSend.objects.filter(group_id=group.django_group, doc__create_time__year=search,
                                       doc__credential__id=1).order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        group = Group.objects.get(id=self.kwargs.get('unit_id'))
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
         context['current_group'] = self.request.user.groups.all()[0]
-        context['title'] = "ทะเบียนหนังสือนอกหน่วย"
-        context['add_button'] = "ลงทะเบียนส่งหนังสือนอกหน่วย"
+        context['title'] = "ทะเบียนหนังสือส่ง ("+str(group.group_type)+")"
+        context['add_button'] = "ลงทะเบียนส่งหนังสือ ("+str(group.group_type)+")"
         context['add_path'] = "out/add"
         context['edit_path'] = "out/"
         return context
