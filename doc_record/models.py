@@ -155,6 +155,11 @@ class DocUrgent(models.Model):
 class Unit(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     unit_id = models.CharField(max_length=64, blank=True, null=True)
+    parent_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="parent_unit", blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'groups_unit'
 
 
 class LineNotifyToken(models.Model):
