@@ -152,10 +152,22 @@ class DocUrgent(models.Model):
         db_table = 'doc_urgent'
 
 
+class UnitLevel(models.Model):
+    name = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'unit_level'
+
+    def __str__(self):
+        return self.name
+
+
 class Unit(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     unit_id = models.CharField(max_length=64, blank=True, null=True)
     parent_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="parent_unit", blank=True, null=True)
+    unit_level = models.ForeignKey(UnitLevel, on_delete=models.CASCADE, related_name="unit_level", blank=True, null=True)
 
     class Meta:
         managed = True
