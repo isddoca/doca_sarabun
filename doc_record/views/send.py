@@ -23,18 +23,20 @@ class DocSendListView(ListView):
     context_object_name = 'page_obj'
 
     def get_queryset(self):
-        current_group_id = self.request.user.groups.all()[0].id
+        group = Group.objects.get(id=self.kwargs.get('group_id'))
         search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=current_group_id, doc__create_time__year=search,
+        return DocSend.objects.filter(group_id=group, doc__create_time__year=search,
                                       doc__credential__id=1).order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        parent_group = Group.objects.get(id=self.kwargs.get('group_id'))
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
         context['current_group'] = self.request.user.groups.all()[0]
-        context['title'] = "ทะเบียนหนังสือส่ง"
-        context['add_button'] = "ลงทะเบียนส่งหนังสือ"
-        context['add_path'] = "add"
+        context['title'] = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
+        context['add_button'] = "ลงทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
+        context['add_path'] = str(parent_group.id) + "/add"
+        context['edit_path'] = str(parent_group.id) + "/"
         return context
 
 
@@ -57,61 +59,24 @@ class DocSendCredentialListView(DocSendListView):
         return context
 
 
-@method_decorator(login_required, name='dispatch')
-class DocSendOutListView(DocSendListView):
-    def get_queryset(self):
-        doca_group = Group.objects.get(id=1)
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
-                                      doc__credential__id=1).order_by('-send_no')
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(DocSendListView, self).get_context_data(**kwargs)
-        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        context['current_group'] = self.request.user.groups.all()[0]
-        context['title'] = "ทะเบียนหนังสือนอกหน่วย"
-        context['add_button'] = "ลงทะเบียนส่งหนังสือนอกหน่วย"
-        context['add_path'] = "out/add"
-        context['edit_path'] = "out/"
-        return context
-
-
-@method_decorator(login_required, name='dispatch')
-class DocSendCredentialOutListView(DocSendListView):
-    def get_queryset(self):
-        doca_group = Group.objects.get(id=1)
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=doca_group, doc__create_time__year=search,
-                                      doc__credential__id__gt=1).order_by('-send_no')
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super(DocSendListView, self).get_context_data(**kwargs)
-        context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
-        context['current_group'] = self.request.user.groups.all()[0]
-        context['title'] = "ทะเบียนหนังสือนอกหน่วย (ลับ)"
-        context['add_button'] = "ลงทะเบียนส่งหนังสือนอกหน่วย (ลับ)"
-        context['add_path'] = "credential/add"
-        context['edit_path'] = "credential/"
-        return context
-
-
 @login_required(login_url='/accounts/login')
-def doc_send_detail(request, id):
+def doc_send_detail(request, group_id, id):
     title = "รายละเอียดหนังสือ"
-
-    is_sent_outside = "out" in request.path
+    parent_group = Group.objects.get(id=group_id)
+    current_user_group = request.user.groups.all()[0]
+    is_sent_outside = parent_group != current_user_group
     is_credential = 'credential' in request.path
 
     if is_credential:
         if is_sent_outside:
-            parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
+            parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
             parent_nav_path = "/send/out/credential"
         else:
             parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
             parent_nav_path = "/send/credential"
     else:
         if is_sent_outside:
-            parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
+            parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
             parent_nav_path = "/send/out"
         else:
             parent_nav_title = "ทะเบียนหนังสือส่ง"
