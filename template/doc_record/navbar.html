@@ -90,16 +90,22 @@
                                class="{% if url_name == 'send_credential' %}active{% endif %}"><i
                                     class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่ง (ลับ)</a>
                         </li>
-                        {% if request.user.groups.all.0.unit.unit_id != '0405' %}
-                            <li>
-                                <a href="/send/out" class="{% if url_name == 'send_out' %}active{% endif %}"><i
-                                        class="fa-regular fa-circle-up"></i>ทะเบียนหนังสือส่งนอกหน่วย</a>
-                            </li>
-                            <li>
-                                <a href="/send/out/credential"
-                                   class="{% if url_name == 'send_credential_out' %}active{% endif %}"><i
-                                        class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่งนอกหน่วย (ลับ)</a>
-                            </li>
+                        <span class="divider"><hr/></span>
+                        {% if parents_groups %}
+                            {% for unit in parents_groups %}
+                                <li>
+                                    <a href="/send/out" class="{% if url_name == 'send_out' %}active{% endif %}"><i
+                                            class="fa-regular fa-circle-up"></i>ทะเบียนหนังสือส่งออก{{ unit.unit_level }}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/send/out/credential"
+                                       class="{% if url_name == 'send_credential_out' %}active{% endif %}"><i
+                                            class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่งออก{{ unit.unit_level }}
+                                        (ลับ)</a>
+                                </li>
+                                <span class="divider"><hr/></span>
+                            {% endfor %}
                         {% endif %}
                     </ul>
                 </li>
