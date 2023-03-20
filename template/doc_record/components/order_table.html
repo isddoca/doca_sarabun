@@ -30,6 +30,7 @@
                 <td class="small">{{ data.doc.title }}</td>
                 <td class="small">{{ data.issue_by }}</td>
                 <td class="text-center">
+                    {% if data.doc.create_by.groups.all.0 == current_group %}
                     <div class="row">
                         <div class="col-auto">
 
@@ -40,6 +41,9 @@
                             </button>
                         </div>
                     </div>
+                    {% else %}
+                        -
+                    {% endif %}
                 </td>
             </tr>
 

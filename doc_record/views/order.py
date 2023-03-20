@@ -27,6 +27,7 @@ class DocOrderListView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['current_group'] = self.request.user.groups.all()[0]
         context['title'] = "คำสั่ง"
         context['add_button'] = "ลงทะเบียนคำสั่ง"
         context['add_path'] = "add"
@@ -42,6 +43,7 @@ class DocOrderSpecificListView(DocOrderListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderSpecificListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
+        context['current_group'] = self.request.user.groups.all()[0]
         context['title'] = "คำสั่ง (เฉพาะ)"
         context['add_button'] = "ลงทะเบียนคำสั่ง (เฉพาะ)"
         context['add_path'] = "specific/add"
@@ -186,7 +188,8 @@ def doc_order_edit(request, id):
                 return HttpResponseRedirect('/order')
     else:
         tmp_doc_date = doc_order.doc.doc_date
-        doc_order.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year + 543)
+        if tmp_doc_date:
+            doc_order.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year + 543)
         doc_form = DocModelForm(instance=doc_order.doc, can_edit=can_edit_doc)
         doc_order_form = DocOrderModelForm(instance=doc_order)
         if is_specific:
