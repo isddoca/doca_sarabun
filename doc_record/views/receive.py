@@ -24,7 +24,7 @@ environ.Env.read_env()
 class DocReceiveListView(ListView):
     model = DocReceive
     template_name = 'doc_record/receive_index.html'
-    context_object_name = 'page_obj'
+    paginate_by = 20
 
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
