@@ -6,9 +6,10 @@
 <script>
     $(document).ready(function () {
         $("#datatable").DataTable({
-            paging: true,
+            paging: false,
             ordering: false,
-            info: true,
+            info: false,
+            searching: false,
             pageLength: 50,
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/th.json'

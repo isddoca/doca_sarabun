@@ -1,7 +1,8 @@
 {% extends 'doc_record/base.html' %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.11.5/r-2.2.9/datatables.min.css"/>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/v/bs5/dt-1.11.5/r-2.2.9/datatables.min.css"/>
 {% endblock %}
 
 
@@ -40,28 +41,33 @@
 
             <form action="" method="get">
                 <div class="row">
-                    <div class="col-auto">
-                        <label for="query_year" class="col-form-label">ปี</label>
+                    <div class="col-6">
+                        <label for="query_year" class="w-100">ปี
+                            <select class="form-select  w-100" aria-label="ปี" name="year" onchange="submit()">
+                                {% for year in query_year reversed %}
+                                    <option value="{{ year|date:'Y' }}"
+                                            {% if request.GET.year == year|date:'Y' %}selected{% endif %}>{{ year|date:'Y'|add:"543" }}
+                                    </option>
+                                {% endfor %}
+                            </select></label>
                     </div>
 
-                    <div class="col">
-                        <select class="form-select" aria-label="ปี" name="year" onchange="submit()">
-                            {% for year in query_year reversed %}
-                                <option value="{{ year|date:'Y' }}"
-                                        {% if request.GET.year == year|date:'Y' %}selected{% endif %}>{{ year|date:'Y'|add:"543" }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-auto">
-                        <a type="button" class="btn btn-primary"
-                           href="{{ add_path }}">{{ add_button }}</a>
+                    <div class="col-6">
+                        <label for="keyword" class="w-100">
+                            คำค้นหา<input type="text" name="keyword" class="form-control" placeholder="ชื่อเรื่อง เลขที่หนังสือ หน่วยงาน" value="{{ request.GET.keyword }}">
+                        </label>
                     </div>
                 </div>
             </form>
 
-        {% include "doc_record/components/receive_table.html" %}
+
+            <div class="col-auto mt-md-4">
+                <a type="button" class="btn btn-primary w-100"
+                   href="{{ add_path }}">{{ add_button }}</a>
+            </div>
+
+
+            {% include "doc_record/components/receive_table.html" %}
 
         </div>
     </div>
