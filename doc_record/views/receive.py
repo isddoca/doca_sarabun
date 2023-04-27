@@ -32,9 +32,10 @@ class DocReceiveListView(ListView):
         keyword = self.request.GET.get('keyword', '')
 
         return DocReceive.objects.filter(
-            Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
-            Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword) &
-            Q(doc__create_time__year=year if year else datetime.now().year ) & Q(group_id=current_group_id) & Q(doc__credential__id=1))\
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
+             Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) & Q(group_id=current_group_id) & Q(
+                doc__credential__id=1)) \
             .order_by('-receive_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -50,9 +51,15 @@ class DocReceiveListView(ListView):
 class DocReceiveCredentialListView(DocReceiveListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                         doc__credential__id__gt=1).order_by('-receive_no')
+        year = self.request.GET.get('year', datetime.now().year)
+        keyword = self.request.GET.get('keyword', '')
+
+        return DocReceive.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
+             Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) & Q(group_id=current_group_id) & Q(
+                doc__credential__id__gt=1)) \
+            .order_by('-receive_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocReceiveListView, self).get_context_data(**kwargs)
