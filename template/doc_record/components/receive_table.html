@@ -136,7 +136,7 @@
 
                     {% if page_obj.paginator.num_pages > page_obj.number|add:'3' %}
                         <li><a class="page-link"
-                               href="?page={{ page_obj.number|add:'4' }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year}}}">&hellip;</a>
+                               href="?page={{ page_obj.number|add:'4' }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year}}">&hellip;</a>
                         </li>
                     {% endif %}
 
