@@ -41,7 +41,7 @@
 
             <form action="" method="get">
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-sm-6 mt-2">
                         <label for="query_year" class="w-100">ปี
                             <select class="form-select  w-100" aria-label="ปี" name="year" onchange="submit()">
                                 {% for year in query_year reversed %}
@@ -52,20 +52,22 @@
                             </select></label>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-sm-6 mt-2">
                         <label for="keyword" class="w-100">
-                            คำค้นหา<input type="text" name="keyword" class="form-control" placeholder="ชื่อเรื่อง เลขที่หนังสือ หน่วยงาน" value="{{ request.GET.keyword }}">
+                            คำค้นหา<input type="text" name="keyword" class="form-control"
+                                          placeholder="ชื่อเรื่อง เลขที่หนังสือ หน่วยงาน"
+                                          value="{{ request.GET.keyword }}">
                         </label>
                     </div>
                 </div>
             </form>
 
-
-            <div class="col-auto mt-md-4">
-                <a type="button" class="btn btn-primary w-100"
-                   href="{{ add_path }}">{{ add_button }}</a>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <a type="button" class="btn btn-primary w-100"
+                       href="{{ add_path }}">{{ add_button }}</a>
+                </div>
             </div>
-
 
             {% include "doc_record/components/receive_table.html" %}
 
