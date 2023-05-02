@@ -83,71 +83,59 @@
     </table>
     {% if is_paginated %}
 
-        <div class="row align-items-end">
-            <div class="col-3">
-        <span class="current">
-            แสดง {{ page_obj.number }} จาก {{ page_obj.paginator.num_pages }} หน้า
-        </span>
-            </div>
-            <div class="col-9">
-                <ul class="pagination float-end">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?page={{ page_obj.previous_page_number }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}">
-                                <i class="fa fa-chevron-left" aria-hidden="true"></i>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
+        <div class="row text-center">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ page_obj.previous_page_number }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}">
+                            <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
                             <span class="page-link">
                                 <i class="fa fa-chevron-left" aria-hidden="true"></i>
                             </span>
-                        </li>
-                    {% endif %}
+                    </li>
+                {% endif %}
 
-                    {% if page_obj.number|add:'-3' > 1 %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?page={{ page_obj.number|add:'-4' }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}">&hellip;
-                            </a>
-                        </li>
-                    {% endif %}
-
-                    {% for i in page_obj.paginator.page_range %}
-                        {% if page_obj.number == i %}
-                            <li class="page-item active">
+                {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                        <li class="page-item active">
                                 <span class="page-link">{{ i }}
                                     <span class="sr-only">(current)</span>
                                 </span>
-                            </li>
-                        {% elif i > page_obj.number|add:'-4' and i < page_obj.number|add:'4' %}
-                            <li>
-                                <a class="page-link"
-                                   href="?page={{ i }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}">{{ i }}
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if page_obj.paginator.num_pages > page_obj.number|add:'3' %}
-                        <li><a class="page-link"
-                               href="?page={{ page_obj.number|add:'4' }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}">&hellip;</a>
+                        </li>
+                    {% elif i > page_obj.number|add:'-4' and i < page_obj.number|add:'4' %}
+                        <li>
+                            <a class="page-link"
+                               href="?page={{ i }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}">{{ i }}
+                            </a>
                         </li>
                     {% endif %}
+                {% endfor %}
 
-                    {% if page_obj.has_next %}
-                        <li><a class="page-link"
-                               href="?page={{ page_obj.next_page_number }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}"><i
+                {% if page_obj.has_next %}
+                    <li>
+                        <a class="page-link"
+                           href="?page={{ page_obj.next_page_number }}&keyword={{ request.GET.keyword }}&year={{ request.GET.year }}"><i
                                 class="fa fa-chevron-right"
-                                aria-hidden="true"></i></a></li>
-                    {% else %}
-                        <li class="disabled"><span class="page-link"><i class="fa fa-chevron-right"
-                                                                        aria-hidden="true"></i></span></li>
-                    {% endif %}
+                                aria-hidden="true"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fa fa-chevron-right" aria-hidden="true"></i></span>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
 
-                </ul>
-            </div>
+        <div class="row align-items-end text-center">
+                <span class="current float-lg-start">
+                    แสดง {{ page_obj.number }} จาก {{ page_obj.paginator.num_pages }} หน้า
+                </span>
         </div>
     {% endif %}
 </div>
