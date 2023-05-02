@@ -80,7 +80,11 @@
                     <p class="fw-bold">ลงวันที่</p>
                 </div>
                 <div class="form-group col-sm-10">
-                    {{ doc_send.doc.doc_date_th }}
+                    {% if doc_send.doc.doc_date %}
+                        {{ doc_send.doc.doc_date_th }}
+                    {% else %}
+                        -
+                    {% endif %}
                 </div>
             </div>
             <div class="row form-row mb-3">
@@ -88,7 +92,11 @@
                     <p class="fw-bold">จาก</p>
                 </div>
                 <div class="form-group col-sm-10">
-                    {{ doc_send.doc.doc_from }}
+                    {% if doc_send.doc.doc_from %}
+                        {{ doc_send.doc.doc_from }}
+                    {% else %}
+                        -
+                    {% endif %}
                 </div>
             </div>
             <div class="row form-row mb-3">
@@ -96,7 +104,11 @@
                     <p class="fw-bold">ถึง</p>
                 </div>
                 <div class="form-group col-sm-10">
-                    {{ doc_send.doc.doc_to }}
+                    {% if doc_send.doc.doc_to %}
+                        {{ doc_send.doc.doc_to }}
+                    {% else %}
+                        -
+                    {% endif %}
                 </div>
             </div>
             <div class="row form-row mb-3">
@@ -104,8 +116,8 @@
                     <p class="fw-bold">เรื่อง</p>
                 </div>
                 <div class="form-group col-sm-10">
-                    {% if data.doc.title %}
-                        {{ data.doc.title }}
+                    {% if doc_send.doc.title %}
+                        {{ doc_send.doc.title }}
                     {% else %}
                         -
                     {% endif %}
