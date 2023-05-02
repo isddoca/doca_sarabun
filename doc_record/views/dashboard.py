@@ -28,7 +28,6 @@ def send_receive_info(request):
     context = {"today": query_date}
     context.update(get_count_of_receive(current_group, time_range))
     context.update(get_count_of_send(current_group, time_range))
-    print(context)
     return render(request, 'doc_record/dashboard_send_receive_view.html', context)
 
 
