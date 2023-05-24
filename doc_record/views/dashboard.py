@@ -124,11 +124,11 @@ def get_count_of_send(current_group, time_range):
     doc_receive_urgent_count = DocSend.objects.order_by("doc__urgent__id").values('doc__urgent')\
         .annotate(urgent_count=Count("doc__urgent", filter=Q(group_id=current_group.id,
                                                    doc__create_time__range=time_range)))\
-        .exclude(doc__urgent=None, doc__credential=None)
+        .exclude(doc__credential=None).exclude(doc__urgent=None).exclude(doc__title=None)
     doc_receive_credential_count = DocSend.objects.order_by("doc__credential__id").values('doc__credential')\
         .annotate(credential_count=Count("doc__credential", filter=Q(group_id=current_group.id,
                                                            doc__create_time__range=time_range)))\
-        .exclude(doc__urgent=None, doc__credential=None)
+        .exclude(doc__credential=None).exclude(doc__urgent=None).exclude(doc__title=None)
 
     urgent_label = list(doc_receive_urgent_count.values_list("doc__urgent__name", flat=True))
     credential_label = list(doc_receive_credential_count.values_list("doc__credential__name", flat=True))
