@@ -4,6 +4,7 @@ from datetime import datetime, date
 import pytz
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
@@ -20,13 +21,19 @@ from doc_record.views.linenotify import send_doc_notify
 class DocSendListView(ListView):
     model = DocSend
     template_name = 'doc_record/send_index.html'
-    context_object_name = 'page_obj'
+    paginate_by = 20
 
     def get_queryset(self):
-        group = Group.objects.get(id=self.kwargs.get('group_id'))
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=group, doc__create_time__year=search,
-                                      doc__credential__id=1).order_by('-send_no')
+        current_group_id = self.request.user.groups.all()[0].id
+        year = self.request.GET.get('year', datetime.now().year)
+        keyword = self.request.GET.get('keyword', '')
+
+        return DocSend.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
+             Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) & Q(group_id=current_group_id) & Q(
+                doc__credential__id=1)) \
+            .order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         parent_group = Group.objects.get(id=self.kwargs.get('group_id'))
@@ -44,9 +51,15 @@ class DocSendListView(ListView):
 class DocSendCredentialListView(DocSendListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocSend.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                      doc__credential__id__gt=1).order_by('-send_no')
+        year = self.request.GET.get('year', datetime.now().year)
+        keyword = self.request.GET.get('keyword', '')
+
+        return DocSend.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
+             Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) & Q(group_id=current_group_id) & Q(
+                doc__credential__id__gt=1)) \
+            .order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocSendListView, self).get_context_data(**kwargs)

@@ -18,13 +18,15 @@ from doc_record.views.receive import get_receive_no
 class DocTraceListView(ListView):
     model = DocTrace
     template_name = 'doc_record/trace_index.html'
-    context_object_name = 'page_obj'
+    paginate_by = 50
 
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        object_list = DocTrace.objects.filter(
-            Q(action_from_id=current_group_id) | Q(action_to_id=current_group_id)).order_by('-time')
-        return object_list
+        keyword = self.request.GET.get('keyword', '')
+        return DocTrace.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
+             Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword)) &
+            (Q(action_from_id=current_group_id) | Q(action_to_id=current_group_id))).order_by('-time')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -126,7 +128,7 @@ def doc_trace_action(request, id):
                                                                                      'create_by': user})
 
                         if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
-                            print("send_chat_to "+send_unit)
+                            print("send_chat_to " + send_unit)
                             url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
                             doc_trace_notify(doc_trace, current_group, send_unit, url)
             else:

@@ -11,3 +11,7 @@ class TimePickerInput(forms.TimeInput):
 
 class DateTimePickerInput(forms.DateTimeInput):
     input_type = 'datetime'
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True

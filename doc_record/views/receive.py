@@ -24,13 +24,19 @@ environ.Env.read_env()
 class DocReceiveListView(ListView):
     model = DocReceive
     template_name = 'doc_record/receive_index.html'
-    context_object_name = 'page_obj'
+    paginate_by = 20
 
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                         doc__credential__id=1).order_by('-receive_no')
+        year = self.request.GET.get('year', datetime.now().year)
+        keyword = self.request.GET.get('keyword', '')
+
+        return DocReceive.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
+             Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) & Q(group_id=current_group_id) & Q(
+                doc__credential__id=1)) \
+            .order_by('-receive_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocReceiveListView, self).get_context_data(**kwargs)
@@ -45,9 +51,15 @@ class DocReceiveListView(ListView):
 class DocReceiveCredentialListView(DocReceiveListView):
     def get_queryset(self):
         current_group_id = self.request.user.groups.all()[0].id
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocReceive.objects.filter(group_id=current_group_id, doc__create_time__year=search,
-                                         doc__credential__id__gt=1).order_by('-receive_no')
+        year = self.request.GET.get('year', datetime.now().year)
+        keyword = self.request.GET.get('keyword', '')
+
+        return DocReceive.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) |
+             Q(doc__doc_from__contains=keyword) | Q(doc__doc_to__contains=keyword)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) & Q(group_id=current_group_id) & Q(
+                doc__credential__id__gt=1)) \
+            .order_by('-receive_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocReceiveListView, self).get_context_data(**kwargs)
@@ -151,7 +163,8 @@ def doc_receive_add(request):
             doc_form = DocModelForm(instance=doc, can_edit=True)
             parent_nav_path = "/receive"
 
-    context = {'doc_id': doc.id, 'receive_id': doc_receive.id, 'doc_form': doc_form, 'doc_receive_form': doc_receive_form, 'title': title,
+    context = {'doc_id': doc.id, 'receive_id': doc_receive.id, 'doc_form': doc_form,
+               'doc_receive_form': doc_receive_form, 'title': title,
                'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
     return render(request, 'doc_record/docreceive_form.html', context)
 

@@ -13,6 +13,7 @@ from django.forms import ClearableFileInput
 from pythainlp import thai_strftime
 
 from doc_record.models import DocUrgent, DocCredential, DocReceive, Doc, DocTrace, DocSend, DocOrder
+from doc_record.widgets import MultipleFileInput
 
 URGENT = DocUrgent.objects.all().values_list("id", "name")
 CREDENTIAL = DocCredential.objects.all().values_list("id", "name")
@@ -109,7 +110,7 @@ class DocModelForm(forms.ModelForm):
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน', required=False)
     credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id=1), empty_label=None,
                                         label='ชั้นความลับ', required=False)
-    file = forms.FileField(widget=ClearableFileInput(attrs={'multiple': True}), required=False, label='ไฟล์เอกสาร',
+    file = forms.FileField(widget=MultipleFileInput(), required=False, label='ไฟล์เอกสาร',
                            help_text='ผู้ใช้ควรอัพโหลดไฟล์ของหนังสือเข้าระบบ เพื่อให้หน่วยที่รับหนังสือสามารถนำหนังสือที่รับไปดำเนินการต่อ รวมถึงภายในกองสามารถดูรายละเอียดหนังสือย้อนหลังได้')
 
     class Meta:
