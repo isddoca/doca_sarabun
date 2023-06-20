@@ -103,19 +103,36 @@ def doc_send_detail(request, group_id, id):
 
 
 @login_required(login_url='/accounts/login')
-def doc_send_add(request):
+def doc_send_add(request, group_id):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
+
+    parent_group = Group.objects.get(id=group_id)
+    current_user_group = request.user.groups.all()[0]
 
     current_group = user.groups.all()[0]
     doca_group = Group.objects.get(id=1)
 
-    parent_nav_title = "ทะเบียนหนังสือส่ง"
-    parent_nav_path = "/send"
-    title = "ลงทะเบียนส่งหนังสือ"
-
     is_sent_outside = "out" in request.path
     is_credential = 'credential' in request.path
+
+    if is_credential:
+        if is_sent_outside:
+            parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
+            parent_nav_path = "/send/out/credential"
+        else:
+            parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
+            parent_nav_path = "/send/credential"
+    else:
+        if is_sent_outside:
+            parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
+            parent_nav_path = "/send/out"
+        else:
+            parent_nav_title = "ทะเบียนหนังสือส่ง"
+            parent_nav_path = "/send"
+
+    title = "ลงทะเบียนส่งหนังสือ"
+
     unit_group = doca_group if is_sent_outside else current_group
 
     if request.method == 'POST':
@@ -144,23 +161,13 @@ def doc_send_add(request):
             doc_send_model.save()
             doc_send_form.save_m2m()
 
-            if is_sent_outside:
-                if is_credential:
-                    return HttpResponseRedirect('/send/out/credential')
-                else:
-                    return HttpResponseRedirect('/send/out')
-            else:
-                send_to = doc_send_model.send_to.all()
-                for unit in send_to:
-                    doc_trace = DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
-                                                        action_from=current_group, time=datetime.now(timezone))
-                    url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
-                    send_doc_notify(current_group, doc_model, unit, url)
-                if is_credential:
-                    return HttpResponseRedirect('/send/credential')
-                else:
-                    return HttpResponseRedirect('/send')
-
+            send_to = doc_send_model.send_to.all()
+            for unit in send_to:
+                doc_trace = DocTrace.objects.create(doc=doc_model, doc_status_id=2, create_by=user, action_to=unit,
+                                                    action_from=current_group, time=datetime.now(timezone))
+                url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
+                send_doc_notify(current_group, doc_model, unit, url)
+            return HttpResponseRedirect(return_page(request, group_id))
     else:
         send_no = get_send_no(request.user, is_secret=is_credential, is_outside=is_sent_outside)
         doc_no = get_doc_no(current_group, is_outside=is_sent_outside, send_no=send_no)
@@ -305,7 +312,7 @@ def doc_send_edit(request, id):
 
 
 @login_required(login_url='/accounts/login')
-def doc_send_delete(request, id):
+def doc_send_delete(request, group_id, id):
     if request.method == "POST":
         doc_send = get_object_or_404(DocSend, id=id)
         units = doc_send.send_to.all()
@@ -317,16 +324,15 @@ def doc_send_delete(request, id):
         doc = doc_send.doc
         if doc.create_by == user:
             doc.delete()
-    return return_page(request)
+    return HttpResponseRedirect(return_page(request, group_id))
 
 
-def return_page(request):
-    is_outside = 'out' in request.path
+def return_page(request, group_id):
     if 'credential' in request.path:
-        return_path = '/send/out/credential' if is_outside else '/send/credential'
+        return_path = '/send/unit/{}/credential'.format(group_id)
     else:
-        return_path = '/send/out' if is_outside else '/send'
-    return HttpResponseRedirect(return_path)
+        return_path = '/send/unit/{}'.format(group_id)
+    return return_path
 
 
 def get_send_no(user, is_secret=False, is_outside=False):
