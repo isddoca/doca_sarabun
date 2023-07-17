@@ -62,11 +62,12 @@ class DocSendCredentialListView(DocSendListView):
             .order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        parent_group = Group.objects.get(id=self.kwargs.get('group_id'))
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
         context['current_group'] = self.request.user.groups.all()[0]
-        context['title'] = "ทะเบียนหนังสือส่ง (ลับ)"
-        context['add_button'] = "ลงทะเบียนส่งหนังสือ (ลับ)"
+        context['title'] = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
+        context['add_button'] = "ลงทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
         context['add_path'] = "credential/add"
         context['edit_path'] = "credential/"
         return context
@@ -108,7 +109,6 @@ def doc_send_add(request, group_id):
     user = request.user
 
     parent_group = Group.objects.get(id=group_id)
-    current_user_group = request.user.groups.all()[0]
 
     current_group = user.groups.all()[0]
     doca_group = Group.objects.get(id=1)
