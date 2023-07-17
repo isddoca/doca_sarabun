@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, date
+from datetime import datetime
 
 import pytz
 from django.contrib.auth.decorators import login_required
@@ -173,23 +173,27 @@ def doc_send_add(request, group_id):
 
 
 @login_required(login_url='/accounts/login')
-def doc_send_edit(request, id):
+def doc_send_edit(request, group_id, id):
     doc_send = DocSend.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
-    current_group = request.user.groups.all()[0]
+    current_group = Group.objects.get(id=group_id)
+    user = request.user
+    is_sent_outside = current_group != user.groups.all()[0]
 
-    parent_nav_title = "ทะเบียนหนังสือส่ง"
-    parent_nav_path = "/send"
-    title = "แก้ไขทะเบียนส่งหนังสือ"
-
-    is_sent_outside = "out" in request.path
     is_credential = 'credential' in request.path
-    can_edit_doc = current_group in doc_send.doc.create_by.groups.all()
+    can_edit_doc = request.user.groups.all()[0] in doc_send.doc.create_by.groups.all()
+
+    if is_credential:
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(current_group.unit.unit_level)
+        parent_nav_path = "/send/unit/{}/credential".format(group_id)
+        title = "ลงทะเบียนส่งหนังสือออกจาก{} (ลับ)".format(current_group.unit.unit_level)
+    else:
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(current_group.unit.unit_level)
+        parent_nav_path = "/send/unit/{}".format(group_id)
+        title = "ลงทะเบียนส่งหนังสือออกจาก{}".format(current_group.unit.unit_level)
 
     doc_old_files = DocFile.objects.filter(doc=doc_send.doc)
     if request.method == 'POST':
-        user = request.user
-
         if is_credential:
             doc_form = DocCredentialModelForm(request.POST, request.FILES, can_edit=can_edit_doc)
         else:
@@ -212,7 +216,7 @@ def doc_send_edit(request, id):
             doc_send_model = doc_send_form.save(commit=False)
             doc_send_model.id = doc_send.id
             doc_send_model.doc = doc_model
-            doc_send_model.group = Group.objects.get(id=1) if is_sent_outside else current_group
+            doc_send_model.group = current_group
             doc_send_model.save()
             doc_send_form.save_m2m()
 
@@ -249,27 +253,15 @@ def doc_send_edit(request, id):
                     if is_create:  # เตือนเฉพาะหน่วยที่เพิ่มใหม่เท่านั้น
                         url = request.build_absolute_uri('/trace/pending/' + str(doc_trace.pk))
                         send_doc_notify(current_group, doc_model, unit, url)
-            return return_page(request)
+            return HttpResponseRedirect(return_page(request, group_id))
     else:
         tmp_doc_date = doc_send.doc.doc_date
         if tmp_doc_date:
             doc_send.doc.doc_date = tmp_doc_date.replace(year=tmp_doc_date.year + 543)
         doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[current_group.id])
         if is_credential:
-            if is_sent_outside:
-                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
-                parent_nav_path = "/send/out/credential"
-                title = "แก้ไขทะเบียนส่งหนังสือภายนอกหน่วย (ลับ)"
-            else:
-                parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
-                parent_nav_path = "/send/credential"
-                title = "แก้ไขทะเบียนส่งหนังสือ (ลับ)"
             doc_form = DocCredentialModelForm(instance=doc_send.doc, can_edit=can_edit_doc)
         else:
-            if is_sent_outside:
-                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
-                parent_nav_path = "/send/out"
-                title = "แก้ไขทะเบียนส่งหนังสือภายนอกหน่วย"
             doc_form = DocModelForm(instance=doc_send.doc, can_edit=can_edit_doc)
 
     context = {'doc_form': doc_form, 'doc_send_form': doc_send_form, 'doc_files': doc_old_files, 'title': title,
