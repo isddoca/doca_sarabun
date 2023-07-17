@@ -102,7 +102,7 @@ def doc_send_add(request, group_id):
 
     current_group = Group.objects.get(id=group_id)
 
-    is_sent_outside = current_group != request.user.groups.all()[0]
+    is_sent_outside = current_group != user.groups.all()[0]
     is_credential = 'credential' in request.path
 
     if is_credential:
@@ -148,7 +148,7 @@ def doc_send_add(request, group_id):
                 send_doc_notify(current_group, doc_model, unit, url)
             return HttpResponseRedirect(return_page(request, group_id))
     else:
-        send_no = get_send_no(current_group, is_secret=is_credential, is_outside=is_sent_outside)
+        send_no = get_send_no(current_group, is_secret=is_credential)
         doc_no = get_doc_no(current_group, send_no=send_no)
 
         doc = Doc.objects.create(id=generate_doc_id(), doc_no=doc_no, credential_id=2 if is_credential else 1,
@@ -302,7 +302,7 @@ def return_page(request, group_id):
     return return_path
 
 
-def get_send_no(current_group, is_secret=False, is_outside=False):
+def get_send_no(current_group, is_secret=False):
     if is_secret:
         docs = DocSend.objects.filter(group=current_group, doc__credential__id__gt=1,
                                       doc__create_time__year=datetime.now().year).order_by('send_no')
