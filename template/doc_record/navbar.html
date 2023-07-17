@@ -78,16 +78,15 @@
                         <li>
                             <a href="/receive/credential"
                                class="{% if url_name == 'receive_credential' %}active{% endif %}"><i
-                                    class="fa-solid fa-circle-down"></i></i>ทะเบียนหนังสือรับ
-                                (ลับ)</a>
+                                    class="fa-solid fa-circle-down"></i></i>ทะเบียนหนังสือรับ (ลับ)</a>
                         </li>
                         <li>
-                            <a href="/send/unit/{{ user.groups.all.0.id }}" class="{% if url_name == 'send' and request.resolver_match.kwargs.group_id == group.id %}active{% endif %}"><i
+                            <a href="/send/unit/{{ user.groups.all.0.id }}" class="{% if url_name == 'send' and request.resolver_match.kwargs.group_id == user.groups.all.0.id  %}active{% endif %}"><i
                                     class="fa-regular fa-circle-up"></i>ทะเบียนหนังสือส่ง</a>
                         </li>
                         <li>
                             <a href="/send/unit/{{ user.groups.all.0.id }}/credential"
-                               class="{% if url_name == 'send_credential' and request.resolver_match.kwargs.group_id == group.id %}}active{% endif %}"><i
+                               class="{% if url_name == 'send_credential' and request.resolver_match.kwargs.group_id == user.groups.all.0.id %}active{% endif %}"><i
                                     class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่ง (ลับ)</a>
                         </li>
                         <span class="divider"><hr/></span>
@@ -103,7 +102,7 @@
                                     <a href="/send/unit/{{ group.id }}/credential"
                                        class="{% if url_name == 'send_credential' and request.resolver_match.kwargs.group_id == group.id  %}active{% endif %}"><i
                                             class="fa-solid fa-circle-up"></i>ทะเบียนหนังสือส่งออก{{ group.unit.unit_level }}
-                                        (ลับ)</a>
+                                    </a>
                                 </li>
                                 <span class="divider"><hr/></span>
                             {% endfor %}
