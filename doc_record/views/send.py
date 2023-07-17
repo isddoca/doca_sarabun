@@ -100,21 +100,19 @@ def doc_send_add(request, group_id):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
 
-    parent_group = Group.objects.get(id=group_id)
+    current_group = Group.objects.get(id=group_id)
 
-    current_group = user.groups.all()[0]
-
-    is_sent_outside = "out" in request.path
+    is_sent_outside = current_group != request.user.groups.all()[0]
     is_credential = 'credential' in request.path
 
     if is_credential:
-        parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(current_group.unit.unit_level)
         parent_nav_path = "/send/unit/{}/credential".format(group_id)
-        title = "ลงทะเบียนส่งหนังสือออกจาก{} (ลับ)".format(parent_group.unit.unit_level)
+        title = "ลงทะเบียนส่งหนังสือออกจาก{} (ลับ)".format(current_group.unit.unit_level)
     else:
-        parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(current_group.unit.unit_level)
         parent_nav_path = "/send/unit/{}".format(group_id)
-        title = "ลงทะเบียนส่งหนังสือออกจาก{}".format(parent_group.unit.unit_level)
+        title = "ลงทะเบียนส่งหนังสือออกจาก{}".format(current_group.unit.unit_level)
 
     if request.method == 'POST':
         if is_credential:
@@ -150,8 +148,8 @@ def doc_send_add(request, group_id):
                 send_doc_notify(current_group, doc_model, unit, url)
             return HttpResponseRedirect(return_page(request, group_id))
     else:
-        send_no = get_send_no(request.user, is_secret=is_credential, is_outside=is_sent_outside)
-        doc_no = get_doc_no(current_group, is_outside=is_sent_outside, send_no=send_no)
+        send_no = get_send_no(current_group, is_secret=is_credential, is_outside=is_sent_outside)
+        doc_no = get_doc_no(current_group, send_no=send_no)
 
         doc = Doc.objects.create(id=generate_doc_id(), doc_no=doc_no, credential_id=2 if is_credential else 1,
                                  active=True, create_by=user, create_time=datetime.now(timezone))
@@ -304,19 +302,15 @@ def return_page(request, group_id):
     return return_path
 
 
-def get_send_no(user, is_secret=False, is_outside=False):
-    # DOCA is id 1
-    current_group_id = 1 if is_outside else user.groups.all()[0].id
-
+def get_send_no(current_group, is_secret=False, is_outside=False):
     if is_secret:
-        docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id__gt=1,
+        docs = DocSend.objects.filter(group=current_group, doc__credential__id__gt=1,
                                       doc__create_time__year=datetime.now().year).order_by('send_no')
     else:
-        docs = DocSend.objects.filter(group_id=current_group_id, doc__credential__id=1,
+        docs = DocSend.objects.filter(group=current_group, doc__credential__id=1,
                                       doc__create_time__year=datetime.now().year).order_by('send_no')
     return 1 if len(docs) == 0 else docs.last().send_no + 1
 
 
-def get_doc_no(group, is_outside=False, send_no=-1):
-    group = Group.objects.get(id=1) if is_outside else group  # doca_group
+def get_doc_no(group, send_no=-1):
     return 'กห ' + group.unit.unit_id + '/' + str(send_no)
