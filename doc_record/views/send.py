@@ -24,7 +24,7 @@ class DocSendListView(ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        current_group_id = self.request.user.groups.all()[0].id
+        current_group_id = self.kwargs.get('group_id')
         year = self.request.GET.get('year', datetime.now().year)
         keyword = self.request.GET.get('keyword', '')
 
@@ -36,21 +36,21 @@ class DocSendListView(ListView):
             .order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        parent_group = Group.objects.get(id=self.kwargs.get('group_id'))
+        current_group = Group.objects.get(id=self.kwargs.get('group_id'))
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
         context['current_group'] = self.request.user.groups.all()[0]
-        context['title'] = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
-        context['add_button'] = "ลงทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
-        context['add_path'] = str(parent_group.id) + "/add"
-        context['edit_path'] = str(parent_group.id) + "/"
+        context['title'] = "ทะเบียนหนังสือส่งออก{}".format(current_group.unit.unit_level)
+        context['add_button'] = "ลงทะเบียนหนังสือส่งออก{}".format(current_group.unit.unit_level)
+        context['add_path'] = str(current_group.id) + "/add"
+        context['edit_path'] = str(current_group.id) + "/"
         return context
 
 
 @method_decorator(login_required, name='dispatch')
 class DocSendCredentialListView(DocSendListView):
     def get_queryset(self):
-        current_group_id = self.request.user.groups.all()[0].id
+        current_group_id = self.kwargs.get('group_id')
         year = self.request.GET.get('year', datetime.now().year)
         keyword = self.request.GET.get('keyword', '')
 
@@ -62,12 +62,12 @@ class DocSendCredentialListView(DocSendListView):
             .order_by('-send_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        parent_group = Group.objects.get(id=self.kwargs.get('group_id'))
+        current_group = Group.objects.get(id=self.kwargs.get('group_id'))
         context = super(DocSendListView, self).get_context_data(**kwargs)
         context['query_year'] = Doc.objects.dates('create_time', 'year').distinct()
         context['current_group'] = self.request.user.groups.all()[0]
-        context['title'] = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
-        context['add_button'] = "ลงทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
+        context['title'] = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(current_group.unit.unit_level)
+        context['add_button'] = "ลงทะเบียนหนังสือส่งออก{} (ลับ)".format(current_group.unit.unit_level)
         context['add_path'] = "credential/add"
         context['edit_path'] = "credential/"
         return context
@@ -115,7 +115,6 @@ def doc_send_add(request, group_id):
         parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
         parent_nav_path = "/send/unit/{}".format(group_id)
         title = "ลงทะเบียนส่งหนังสือออกจาก{}".format(parent_group.unit.unit_level)
-
 
     if request.method == 'POST':
         if is_credential:
