@@ -82,19 +82,11 @@ def doc_send_detail(request, group_id, id):
     is_credential = 'credential' in request.path
 
     if is_credential:
-        if is_sent_outside:
-            parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
-            parent_nav_path = "/send/out/credential"
-        else:
-            parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
-            parent_nav_path = "/send/credential"
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
+        parent_nav_path = "/send/unit/{}/credential".format(group_id)
     else:
-        if is_sent_outside:
-            parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
-            parent_nav_path = "/send/out"
-        else:
-            parent_nav_title = "ทะเบียนหนังสือส่ง"
-            parent_nav_path = "/send"
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
+        parent_nav_path = "/send/unit/{}".format(group_id)
 
     doc_send = DocSend.objects.get(id=id)
     doc_old_files = DocFile.objects.filter(doc=doc_send.doc)
@@ -111,29 +103,19 @@ def doc_send_add(request, group_id):
     parent_group = Group.objects.get(id=group_id)
 
     current_group = user.groups.all()[0]
-    doca_group = Group.objects.get(id=1)
 
     is_sent_outside = "out" in request.path
     is_credential = 'credential' in request.path
 
     if is_credential:
-        if is_sent_outside:
-            parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
-            parent_nav_path = "/send/out/credential"
-        else:
-            parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
-            parent_nav_path = "/send/credential"
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
+        parent_nav_path = "/send/unit/{}/credential".format(group_id)
+        title = "ลงทะเบียนส่งหนังสือออกจาก{} (ลับ)".format(parent_group.unit.unit_level)
     else:
-        if is_sent_outside:
-            parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
-            parent_nav_path = "/send/out"
-        else:
-            parent_nav_title = "ทะเบียนหนังสือส่ง"
-            parent_nav_path = "/send"
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
+        parent_nav_path = "/send/unit/{}".format(group_id)
+        title = "ลงทะเบียนส่งหนังสือออกจาก{}".format(parent_group.unit.unit_level)
 
-    title = "ลงทะเบียนส่งหนังสือ"
-
-    unit_group = doca_group if is_sent_outside else current_group
 
     if request.method == 'POST':
         if is_credential:
@@ -157,7 +139,7 @@ def doc_send_add(request, group_id):
             doc_send_model = doc_send_form.save(commit=False)
             doc_send_model.id = request.POST["send_id"]
             doc_send_model.doc = doc_model
-            doc_send_model.group = unit_group
+            doc_send_model.group = current_group
             doc_send_model.save()
             doc_send_form.save_m2m()
 
@@ -176,27 +158,15 @@ def doc_send_add(request, group_id):
                                  active=True, create_by=user, create_time=datetime.now(timezone))
         doc.save()
         doc_id = doc.id
-        doc_send = DocSend.objects.create(send_no=send_no, doc=doc, group=unit_group)
+        doc_send = DocSend.objects.create(send_no=send_no, doc=doc, group=current_group)
         doc_send.save()
         send_id = doc_send.id
 
-        doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[unit_group.id])
+        doc_send_form = DocSendModelForm(instance=doc_send, groups_id=[current_group.id])
         if is_credential:
             doc_form = DocCredentialModelForm(instance=doc, can_edit=True)
-            if is_sent_outside:
-                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย (ลับ)"
-                parent_nav_path = "/send/out/credential"
-                title = "ลงทะเบียนส่งหนังสือภายนอกหน่วย (ลับ)"
-            else:
-                parent_nav_title = "ทะเบียนหนังสือส่ง (ลับ)"
-                parent_nav_path = "/send/credential"
-                title = "ลงทะเบียนส่งหนังสือ (ลับ)"
         else:
             doc_form = DocModelForm(instance=doc, can_edit=True)
-            if is_sent_outside:
-                parent_nav_title = "ทะเบียนหนังสือส่งภายนอกหน่วย"
-                parent_nav_path = "/send/out"
-                title = "ลงทะเบียนส่งหนังสือภายนอกหน่วย"
 
         context = {'doc_id': doc_id, 'send_id': send_id, 'doc_form': doc_form, 'doc_send_form': doc_send_form,
                    'title': title, 'parent_nav_title': parent_nav_title, 'parent_nav_path': parent_nav_path}
