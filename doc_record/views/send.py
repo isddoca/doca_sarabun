@@ -76,16 +76,14 @@ class DocSendCredentialListView(DocSendListView):
 @login_required(login_url='/accounts/login')
 def doc_send_detail(request, group_id, id):
     title = "รายละเอียดหนังสือ"
-    parent_group = Group.objects.get(id=group_id)
-    current_user_group = request.user.groups.all()[0]
-    is_sent_outside = parent_group != current_user_group
+    current_group = Group.objects.get(id=group_id)
     is_credential = 'credential' in request.path
 
     if is_credential:
-        parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(parent_group.unit.unit_level)
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{} (ลับ)".format(current_group.unit.unit_level)
         parent_nav_path = "/send/unit/{}/credential".format(group_id)
     else:
-        parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(parent_group.unit.unit_level)
+        parent_nav_title = "ทะเบียนหนังสือส่งออก{}".format(current_group.unit.unit_level)
         parent_nav_path = "/send/unit/{}".format(group_id)
 
     doc_send = DocSend.objects.get(id=id)
