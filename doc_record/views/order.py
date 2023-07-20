@@ -12,6 +12,7 @@ from config import settings
 from doc_record.forms import DocModelForm, DocOrderModelForm
 from doc_record.models import DocFile, Doc, DocOrder
 from doc_record.views.base import generate_doc_id
+from doc_record.context_processors import get_parent_unit_context
 
 
 @method_decorator(login_required, name='dispatch')
@@ -21,8 +22,11 @@ class DocOrderListView(ListView):
     context_object_name = 'page_obj'
 
     def get_queryset(self):
+        parent_group = get_parent_group_id(self.request)
+        print(parent_group.id)
         search = self.request.GET.get('year', datetime.now().year)
-        return DocOrder.objects.filter(doc__create_time__year=search, specific=False).order_by('-order_no')
+        return DocOrder.objects.filter(doc__create_time__year=search, specific=False,
+                                       issue_by=parent_group).order_by('-order_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderListView, self).get_context_data(**kwargs)
@@ -37,8 +41,10 @@ class DocOrderListView(ListView):
 @method_decorator(login_required, name='dispatch')
 class DocOrderSpecificListView(DocOrderListView):
     def get_queryset(self):
+        parent_group = get_parent_group_id(self.request)
         search = self.request.GET.get('year', datetime.now().year)
-        return DocOrder.objects.filter(doc__create_time__year=search, specific=True).order_by('-order_no')
+        return DocOrder.objects.filter(doc__create_time__year=search, specific=True,
+                                       issue_by=parent_group).order_by('-order_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderSpecificListView, self).get_context_data(**kwargs)
@@ -75,12 +81,11 @@ def doc_order_detail(request, id):
 def doc_order_add(request):
     timezone = pytz.timezone('Asia/Bangkok')
     user = request.user
-    current_group = user.groups.all()[0]
+    parent_group = get_parent_group_id(request)
 
     is_specific = 'specific' in request.path
 
     parent_nav_title = "ทะเบียนคำสั่ง"
-    parent_nav_path = "/order"
     title = "ลงทะเบียนคำสั่ง"
     if request.method == 'POST':
         doc_form = DocModelForm(request.POST, request.FILES, can_edit=True)
@@ -101,7 +106,7 @@ def doc_order_add(request):
             doc_order.id = request.POST["order_id"]
             doc_order.doc = doc_model
             doc_order.specific = is_specific
-            doc_order.issue_by = current_group
+            doc_order.issue_by = parent_group
             doc_order.save()
 
             if 'specific' in request.path:
@@ -109,11 +114,11 @@ def doc_order_add(request):
             else:
                 return HttpResponseRedirect('/order')
     else:
-        order_no = get_order_no(is_specific=is_specific)
-        doc = Doc.objects.create(id=generate_doc_id(), doc_no=get_doc_no(is_specific), active=True, create_by=user,
+        order_no = get_order_no(parent_group, is_specific=is_specific)
+        doc = Doc.objects.create(id=generate_doc_id(), doc_no=get_doc_no(parent_group, is_specific), active=True, create_by=user,
                                  create_time=datetime.now(timezone))
         doc.save()
-        doc_order = DocOrder.objects.create(order_no=order_no, doc=doc, specific=is_specific, issue_by=current_group)
+        doc_order = DocOrder.objects.create(order_no=order_no, doc=doc, specific=is_specific, issue_by=parent_group)
         doc_order.save()
 
         doc_form = DocModelForm(instance=doc, can_edit=True)
@@ -136,6 +141,7 @@ def doc_order_edit(request, id):
     doc_order = DocOrder.objects.get(id=id)
     timezone = pytz.timezone('Asia/Bangkok')
     current_group = request.user.groups.all()[0]
+    parent_group = get_parent_group_id(request)
 
     is_specific = 'specific' in request.path
     can_edit_doc = current_group in doc_order.doc.create_by.groups.all()
@@ -169,7 +175,7 @@ def doc_order_edit(request, id):
             upd_doc_order.id = doc_order.id
             upd_doc_order.doc = doc
             upd_doc_order.specific = is_specific
-            upd_doc_order.issue_by = user.groups.all()[0]
+            upd_doc_order.issue_by = parent_group
             upd_doc_order.save()
 
             # ถ้าไม่มีไฟล์อัพเดท ไม่ต้องลบ ถ้ามีให้ลบแล้วเพิ่มใหม่
@@ -214,11 +220,19 @@ def doc_order_delete(request, id):
         return HttpResponseRedirect('/order')
 
 
-def get_order_no(is_specific=False):
-    docs = DocOrder.objects.filter(specific=is_specific, doc__create_time__year=datetime.now().year).order_by(
+def get_parent_group_id(request):
+    parent_groups = get_parent_unit_context(request)['parents_groups']
+    current_group = request.user.groups.all()[0]
+    parent_group = parent_groups[-1] if len(parent_groups) >= 1 else current_group
+    return parent_group
+
+
+def get_order_no(current_group, is_specific=False):
+    docs = DocOrder.objects.filter(specific=is_specific, doc__create_time__year=datetime.now().year,
+                                   issue_by=current_group).order_by(
         'order_no')
     return 1 if len(docs) == 0 else docs.last().order_no + 1
 
 
-def get_doc_no(is_specific=False):
-    return str(get_order_no(is_specific)) + "/" + str(int(datetime.now().year) + 543)
+def get_doc_no(current_group, is_specific=False):
+    return str(get_order_no(current_group, is_specific)) + "/" + str(int(datetime.now().year) + 543)
