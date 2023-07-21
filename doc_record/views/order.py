@@ -3,6 +3,8 @@ from datetime import datetime
 
 import pytz
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
@@ -23,10 +25,14 @@ class DocOrderListView(ListView):
 
     def get_queryset(self):
         parent_group = get_parent_group_id(self.request)
-        print(parent_group.id)
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocOrder.objects.filter(doc__create_time__year=search, specific=False,
-                                       issue_by=parent_group).order_by('-order_no')
+        keyword = self.request.GET.get('keyword', '')
+        year = self.request.GET.get('year', datetime.now().year)
+        query_group = Group.objects.filter(name__contains=keyword)
+        return DocOrder.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) | Q(
+                doc__create_by__groups__in=query_group)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) &
+            Q(specific=False) & Q(issue_by=parent_group)).order_by('-order_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderListView, self).get_context_data(**kwargs)
@@ -42,9 +48,14 @@ class DocOrderListView(ListView):
 class DocOrderSpecificListView(DocOrderListView):
     def get_queryset(self):
         parent_group = get_parent_group_id(self.request)
-        search = self.request.GET.get('year', datetime.now().year)
-        return DocOrder.objects.filter(doc__create_time__year=search, specific=True,
-                                       issue_by=parent_group).order_by('-order_no')
+        keyword = self.request.GET.get('keyword', '')
+        year = self.request.GET.get('year', datetime.now().year)
+        query_group = Group.objects.filter(name__contains=keyword)
+        return DocOrder.objects.filter(
+            (Q(doc__title__contains=keyword) | Q(doc__doc_no__contains=keyword) | Q(
+                doc__create_by__groups__in=query_group)) &
+            Q(doc__create_time__year=year if year else datetime.now().year) &
+            Q(specific=True) & Q(issue_by=parent_group)).order_by('-order_no')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(DocOrderSpecificListView, self).get_context_data(**kwargs)
@@ -115,7 +126,8 @@ def doc_order_add(request):
                 return HttpResponseRedirect('/order')
     else:
         order_no = get_order_no(parent_group, is_specific=is_specific)
-        doc = Doc.objects.create(id=generate_doc_id(), doc_no=get_doc_no(parent_group, is_specific), active=True, create_by=user,
+        doc = Doc.objects.create(id=generate_doc_id(), doc_no=get_doc_no(parent_group, is_specific), active=True,
+                                 create_by=user,
                                  create_time=datetime.now(timezone))
         doc.save()
         doc_order = DocOrder.objects.create(order_no=order_no, doc=doc, specific=is_specific, issue_by=parent_group)
