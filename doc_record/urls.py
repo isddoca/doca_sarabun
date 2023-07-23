@@ -13,6 +13,7 @@ from .views import trace
 urlpatterns = [
     path('', dashboard.distribute_info, name='dist-stat'),
     path('dist-stat', dashboard.distribute_info, name='dist-stat'),
+    path('all-recv-stat', dashboard.all_unit_receive_info, name='all-recv-stat'),
     path('send-recv-stat', dashboard.send_receive_info, name='send-recv-stat'),
     path('fulfillment', base.fulfillment, name='fulfillment'),
     path('accounts/edit', base.user_info_edit, name='account'),

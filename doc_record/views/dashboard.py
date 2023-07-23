@@ -1,6 +1,8 @@
 from datetime import datetime
 
+import pandas as pd
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.db.models import Count, Q
 from django.shortcuts import render
 from pythainlp import thai_strftime
@@ -30,6 +32,43 @@ def send_receive_info(request):
     context.update(get_count_of_send(current_group, time_range))
     return render(request, 'doc_record/dashboard_send_receive_view.html', context)
 
+
+def all_unit_receive_info(request):
+    today_day = datetime.now().day
+    today_month = datetime.now().month
+    today_year = datetime.now().year
+    unit = Group.objects.all().values('name').order_by('id')
+    all_unit_receive = DocTrace.objects.filter(time__day=today_day, time__month=today_month, time__year=today_year) \
+        .values('action_to__name').annotate(total_doc=Count('action_to')).order_by('action_to')
+    all_unit_received = DocTrace.objects.filter(time__day=today_day, time__month=today_month, time__year=today_year) \
+        .values('action_to__name').annotate(total_doc=Count('action_to')).order_by('action_to').filter(done=1)
+    all_unit_unreceive = DocTrace.objects.filter(time__day=today_day, time__month=today_month, time__year=today_year) \
+        .values('action_to__name').annotate(total_doc=Count('action_to')).order_by('action_to').filter(done=0)
+
+    context = {
+        "date": thai_strftime(datetime.now(), "%d %B %Y")
+    }
+
+    if all_unit_receive:
+        unit_df = pd.DataFrame(unit)
+        total_df = pd.DataFrame(all_unit_receive)
+        received_df = pd.DataFrame(all_unit_received)
+        unreceive_df = pd.DataFrame(all_unit_unreceive)
+
+        unit_df['a'] = unit_df.name.map(total_df.set_index('action_to__name').squeeze())
+        unit_df['r'] = unit_df.name.map(received_df.set_index('action_to__name').squeeze())
+        unit_df['u'] = unit_df.name.map(unreceive_df.set_index('action_to__name').squeeze())
+        unit_df = unit_df.fillna(0)
+        unit_df = unit_df.astype({'a': int, 'r': int, 'u': int})
+
+        unit_df.rename(
+            columns={'name': 'หน่วย', 'a': 'หนังสือเข้าทั้งหมด', 'r': 'รับแล้ว',
+                     'u': 'ยังไม่รับ'},
+            inplace=True)
+
+        context.update({"df": unit_df.values.tolist()})
+
+    return render(request, 'doc_record/dashboard_all_receive_view.html', context)
 
 def get_time_range(query_date, query_time):
     split_date = query_date.split('/')

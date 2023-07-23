@@ -1,0 +1,50 @@
+{% extends 'doc_record/base.html' %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/v/bs5/dt-1.11.5/r-2.2.9/datatables.min.css"/>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="title-wrapper pt-30 pb-30">
+            <div class="col-md-12">
+                <h2>สถิติการรับหนังสือ ของ นขต.กร.ทบ./นขต.ฝกร.ศปก.ทบ. ประจำวันที่ {{ date }}</h2>
+            </div>
+        </div>
+        <div class="card-style mb-30">
+            {% if df %}
+                <table id="datatable" class="table table-sm dt-responsive" style="width:100%">
+                    <thead>
+                    <tr>
+                        <th>หน่วย</th>
+                        <th>รับทั้งหมด</th>
+                        <th>รับแล้ว</th>
+                        <th>ยังไม่รับ</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for data in df %}
+                        {% if data.1 > 0 %}
+                        <tr>
+                            <td>{{ data.0 }}</td>
+                            <td>{{ data.1 }}</td>
+                            <td>{{ data.2 }}</td>
+                            <td>{{ data.3 }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>ไม่มีข้อมูล</p>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    {% include "doc_record/scripts/table_script.html" %}
+{% endblock %}
+
