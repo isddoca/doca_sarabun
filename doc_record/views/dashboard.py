@@ -8,6 +8,7 @@ from django.shortcuts import render
 from pythainlp import thai_strftime
 
 from doc_record.models import DocTrace, DocReceive, DocSend
+from groups_manager.models import Group
 
 
 @login_required(login_url='/accounts/login')
