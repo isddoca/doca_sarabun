@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'doc_classify',
     'rest_framework',
 
+    'groups_manager',
     'django.contrib.sites',
     'allauth',  # New
     'allauth.account',  # New
@@ -79,6 +80,10 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_ADAPTER = 'doc_record.adapter.SocialAccountAdapter'
 
+GROUPS_MANAGER = {
+    'AUTH_MODELS_SYNC': True,
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -103,7 +108,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'doc_record.context_processors.get_pending_doc_context'
+                'doc_record.context_processors.get_pending_doc_context',
+                'doc_record.context_processors.get_parent_unit_context'
             ],
         },
     },
