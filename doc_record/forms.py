@@ -34,6 +34,7 @@ def get_credential_docs_no(user):
 
 class ThaiDateCEField(forms.DateField):
     def to_python(self, value):
+        print(value)
         split_date = value.split('/')
         ce = int(split_date[2]) - 543
         split_date[2] = str(ce)
