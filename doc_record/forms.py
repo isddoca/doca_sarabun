@@ -32,6 +32,20 @@ def get_credential_docs_no(user):
     return 1 if len(normal_docs) == 0 else normal_docs.last().receive_no + 1
 
 
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+
+
 class ThaiDateCEField(forms.DateField):
     def to_python(self, value):
         print(value)
@@ -111,7 +125,7 @@ class DocModelForm(forms.ModelForm):
     urgent = forms.ModelChoiceField(queryset=DocUrgent.objects, empty_label=None, label='ความเร่งด่วน', required=False)
     credential = forms.ModelChoiceField(queryset=DocCredential.objects.filter(id=1), empty_label=None,
                                         label='ชั้นความลับ', required=False)
-    file = forms.FileField(widget=MultipleFileInput(), required=False, label='ไฟล์เอกสาร',
+    file = MultipleFileField(widget=MultipleFileInput(), required=False, label='ไฟล์เอกสาร',
                            help_text='ผู้ใช้ควรอัพโหลดไฟล์ของหนังสือเข้าระบบ เพื่อให้หน่วยที่รับหนังสือสามารถนำหนังสือที่รับไปดำเนินการต่อ รวมถึงภายในกองสามารถดูรายละเอียดหนังสือย้อนหลังได้')
 
     class Meta:
@@ -177,3 +191,4 @@ class DocTracePendingModelForm(forms.ModelForm):
         fields = ['note']
         labels = {'note': 'หมายเหตุ'}
         widgets = {'note': forms.TextInput()}
+
