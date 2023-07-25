@@ -183,7 +183,6 @@ def doc_receive_edit(request, id):
 
     doc_old_files = DocFile.objects.filter(doc=doc_receive.doc)
     if request.method == 'POST':
-        print("POST")
         user = request.user
 
         if is_secret:
